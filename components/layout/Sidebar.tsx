@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BookText, Home, Split, Ticket } from "lucide-react";
+import { BookText, Home, Split, Ticket, Building } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const menu = [
@@ -14,6 +14,7 @@ const menu = [
     section: "Management",
     items: [
       { name: "Branches", path: "/auth/branches", icon: Split },
+      { name: "Departments", path: "/auth/departments", icon: Building },
       { name: "Invoice List", path: "/auth/invoice-list", icon: Ticket },
     ],
   },
