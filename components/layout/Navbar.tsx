@@ -17,14 +17,24 @@ const routeConfig: Record<
   string,
   { title: string; desc: string; breadcrumb: string }
 > = {
-  "/branches": {
+  "/auth/branches": {
     title: "Branch Management",
     desc: "Manage your regional offices and branch locations.",
     breadcrumb: "Branches",
   },
-  "/branches/add": {
+  "/auth/branches/add": {
     title: "Add Branch",
     desc: "Create a new branch for your organization.",
+    breadcrumb: "Add",
+  },
+  "/auth/departments": {
+    title: "Department Management",
+    desc: "Manage your organizational departments.",
+    breadcrumb: "Departments",
+  },
+  "/auth/departments/add": {
+    title: "Add Department",
+    desc: "Create a new department for your organization.",
     breadcrumb: "Add",
   },
 };
