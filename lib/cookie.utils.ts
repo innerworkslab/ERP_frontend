@@ -2,10 +2,14 @@ import Cookies from "js-cookie";
 import { decryptData, encryptData } from "./encryption-decryption";
 const env = process.env.NEXT_PUBLIC_ENV || "development";
 
-export function setEncryptedCookie(key: string, value: object) {
+export function setEncryptedCookie(
+  key: string,
+  value: object,
+  expiresInDays = 30,
+) {
   const encryptedValue = encryptData(value);
   Cookies.set(key, encryptedValue!, {
-    expires: 30,
+    expires: expiresInDays,
     secure: env === "production",
   });
 }

@@ -6,8 +6,13 @@ import { Input } from "@/components/ui/input";
 import { useApi } from "@/hooks/useApi";
 import { Loader2 } from "lucide-react";
 import { authService, LoginResponse } from "@/api/auth.service";
+import { setEncryptedCookie } from "@/lib/cookie.utils";
+import { COOKIES } from "@/constants/cookie.constant";
+import { useRouter } from "next/navigation";
 
 export default function Login() {
+  const router = useRouter();
+
   const { request, loading, error } = useApi<LoginResponse>();
   const [phoneNumber, setPhoneNumber] = useState("");
   const [password, setPassword] = useState("");
@@ -18,7 +23,15 @@ export default function Login() {
       authService.login({ phone_number: phoneNumber, password }),
     );
     if (res) {
-      localStorage.setItem("token", res.token);
+      setEncryptedCookie(
+        COOKIES.AUTH_USER,
+        {
+          user: res.user,
+          token: res.token,
+        },
+        7,
+      );
+      router.push("/auth");
     }
   };
 

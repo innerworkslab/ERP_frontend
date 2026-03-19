@@ -4,25 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { BookText, Home, Split, Ticket, Building } from "lucide-react";
 import { cn } from "@/lib/utils";
-
-const menu = [
-  {
-    section: "Overview",
-    items: [{ name: "Dashboard", path: "/auth", icon: Home }],
-  },
-  {
-    section: "Management",
-    items: [
-      { name: "Branches", path: "/auth/branches", icon: Split },
-      { name: "Departments", path: "/auth/departments", icon: Building },
-      { name: "Invoice List", path: "/auth/invoice-list", icon: Ticket },
-    ],
-  },
-  {
-    section: "Accounting",
-    items: [{ name: "Cashbook (COA)", path: "/auth/cashbook", icon: BookText }],
-  },
-];
+import { menu } from "@/configs/route.config";
 
 export default function Sidebar() {
   const pathname = usePathname();
