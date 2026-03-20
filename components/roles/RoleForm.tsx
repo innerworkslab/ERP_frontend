@@ -11,7 +11,7 @@ import {
 import { roleSchema, RoleFormValues } from "./schema";
 import { FormInput } from "@/components/common/FormInput";
 import { FormSelect } from "@/components/common/FormSelect";
-import { rolesService } from "@/api/role.service";
+import { rolesService } from "@/api/roles.service";
 
 interface RoleFormProps {
   roleId?: number | null;

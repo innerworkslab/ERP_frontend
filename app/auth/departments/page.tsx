@@ -95,8 +95,8 @@ export default function DepartmentPage() {
   };
 
   const columns = useMemo(
-    () => getColumns(handleEdit, handleView),
-    [handleEdit, handleView],
+    () => getColumns(handleEdit, handleView, loadDepartments),
+    [handleEdit, handleView, loadDepartments],
   );
 
   return (
