@@ -1,7 +1,0 @@
-"use client";
-
-import DepartmentForm from "@/components/departments/DepartmentForm";
-
-export default function AddDepartmentPage() {
-  return <DepartmentForm />;
-}

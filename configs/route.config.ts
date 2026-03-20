@@ -29,6 +29,11 @@ export const routeConfig: Record<
     desc: "Manage your organizational departments.",
     breadcrumb: "Departments",
   },
+  "/auth/roles": {
+    title: "Role Management",
+    desc: "Manage your role for users.",
+    breadcrumb: "Roles",
+  },
   "/auth/departments/add": {
     title: "Add Department",
     desc: "Create a new department for your organization.",
@@ -51,7 +56,7 @@ export const menu = [
     items: [
       { name: "Branches", path: "/auth/branches", icon: Split },
       { name: "Departments", path: "/auth/departments", icon: Building },
-      { name: "Invoice List", path: "/auth/invoice-list", icon: Ticket },
+      { name: "Role", path: "/auth/roles", icon: Ticket },
     ],
   },
   {

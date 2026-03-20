@@ -2,6 +2,7 @@ import axios from "axios";
 import { getDecryptedCookie } from "./cookie.utils";
 import { COOKIES } from "@/constants/cookie.constant";
 import { LoginResponse } from "@/api/auth.service";
+import { toast } from "sonner";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
 
@@ -14,7 +15,6 @@ api.interceptors.request.use(
     const authData = getDecryptedCookie(
       COOKIES.AUTH_USER,
     ) as LoginResponse | null;
-    const tokenType = authData?.token?.type || "Bearer";
     const token = authData?.token?.accessToken;
 
     if (token) {
@@ -28,9 +28,25 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response.data,
   (error) => {
-    if (error.response?.status === 401) {
-      window.location.href = "/login";
+    const status = error.response?.status;
+    const data = error.response?.data;
+
+    const message =
+      data?.message ||
+      data?.response?.message ||
+      "An unexpected error occurred";
+
+    if (status === 401) {
+      toast.error("Session expired. Please login again.");
+      window.location.href = "/";
+    } else {
+      toast.error(message, {
+        description: data?.errors
+          ? Object.values(data.errors).flat().join(", ")
+          : undefined,
+      });
     }
-    return Promise.reject(error.response?.data || error);
+
+    return Promise.reject(data || error);
   },
 );

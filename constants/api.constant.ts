@@ -5,5 +5,7 @@ export const API_CONSTANT = {
   BRANCH: "branches",
   DEPARTMENT: "departments",
   ALL: "all",
-  TOGGLE_STATUS: "toggle-staus",
+  TOGGLE_STATUS: "toggle-status",
+  ROLE: "roles",
+  BY_BRANCH: "by-branch"
 } as const;

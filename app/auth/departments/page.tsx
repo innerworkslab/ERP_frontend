@@ -1,109 +1,157 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
-import { columns } from "@/components/departments/columns";
+import { useEffect, useState, useCallback, useMemo } from "react";
+import { useForm, Controller } from "react-hook-form";
+import { getColumns } from "@/components/departments/columns";
 import { BaseFilter } from "@/components/common/BaseFilter";
 import { DataTable } from "@/components/data-table/DataTable";
 import { Pagination } from "@/components/common/Pagination";
-import { useRouter } from "next/navigation";
 import { useApi } from "@/hooks/useApi";
+import { branchService } from "@/api/branches.service";
+import { Loader2 } from "lucide-react";
+import { AppDialog } from "@/components/common/AppDialog";
+import DepartmentForm from "@/components/departments/DepartmentForm";
+import { FormSelect, Option } from "@/components/common/FormSelect";
+import { ReadOnlyDetail } from "@/components/common/ReadOnlyDetail";
 import {
-  departmentService,
-  DepartmentesListResponse,
   Department,
+  departmentService,
+  DepartmentsListResponse,
 } from "@/api/departments.service";
-import { Loader2, Filter } from "lucide-react";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 
 export default function DepartmentPage() {
-  const router = useRouter();
-  const [departments, setDepartmentes] = useState<Department[]>([]);
-  const [search, setSearch] = useState("");
-  const [status, setStatus] = useState("all");
-  const [page, setPage] = useState(1);
+  const [departments, setDepartments] = useState<Department[]>([]);
+  const [branches, setBranches] = useState<Option[]>([]);
   const [lastPage, setLastPage] = useState(1);
 
-  const { request, loading, error } = useApi<DepartmentesListResponse>();
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [selectedDept, setSelectedDept] = useState<Department | null>(null);
+  const [formLoading, setFormLoading] = useState(false);
 
-  const loadDepartmentes = useCallback(async () => {
+  const [isViewOpen, setIsViewOpen] = useState(false);
+  const [viewData, setViewData] = useState<Department | null>(null);
+
+  const { control, watch, setValue } = useForm({
+    defaultValues: {
+      search: "",
+      status: "all",
+      branchId: "all",
+      page: 1,
+    },
+  });
+
+  const search = watch("search");
+  const status = watch("status");
+  const branchId = watch("branchId");
+  const page = watch("page");
+
+  const { request, loading, error } = useApi<DepartmentsListResponse>();
+
+  const loadDepartments = useCallback(async () => {
     const res = await request(() =>
       departmentService.getAll({
         search: search || undefined,
         status: status === "all" ? undefined : status,
-        page,
+        branch_id: branchId === "all" ? undefined : Number(branchId),
+        page: page,
       }),
     );
     if (res) {
-      setDepartmentes(res.data || []);
+      setDepartments(res.data || []);
       setLastPage(res.meta?.total_pages || 1);
     }
-  }, [request, search, status, page]);
+  }, [request, search, status, branchId, page]);
+
+  useEffect(() => {
+    branchService.getAll({ status: "active" }).then((res) => {
+      if (res?.data) {
+        setBranches(
+          res.data.map((b) => ({ id: b.id.toString(), name: b.name })),
+        );
+      }
+    });
+  }, []);
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      loadDepartmentes();
+      loadDepartments();
     }, 400);
     return () => clearTimeout(timer);
-  }, [search, status, page, loadDepartmentes]);
+  }, [search, status, branchId, page, loadDepartments]);
+
+  const handleEdit = useCallback((dept: Department) => {
+    setSelectedDept(dept);
+    setIsDialogOpen(true);
+  }, []);
+
+  const handleView = useCallback((dept: Department) => {
+    setViewData(dept);
+    setIsViewOpen(true);
+  }, []);
+
+  const handleAdd = () => {
+    setSelectedDept(null);
+    setIsDialogOpen(true);
+  };
+
+  const columns = useMemo(
+    () => getColumns(handleEdit, handleView),
+    [handleEdit, handleView],
+  );
 
   return (
-    <div className="space-y-6 relative min-h-100">
+    <div className="space-y-6 relative min-h-[400px]">
       <BaseFilter
         onSearch={(val) => {
-          setPage(1);
-          setSearch(val);
+          setValue("page", 1);
+          setValue("search", val);
         }}
         placeholder="Search departments..."
-        onAddClick={() => router.push("/auth/departments/add")}
+        onAddClick={handleAdd}
         addLabel="Add Department"
       >
-        <Select
-          value={status}
-          onValueChange={(val) => {
-            setPage(1);
-            setStatus(val);
-          }}
-        >
-          <SelectTrigger className="w-40 min-h-11 bg-background/50 border-none rounded-2xl focus:ring-primary/30 outline-none transition-all flex items-center justify-between px-4">
-            <div className="flex items-center gap-2 overflow-hidden">
-              <Filter className="w-3.5 h-3.5 text-muted-foreground/50 shrink-0" />
-              <div className="text-[10px] font-bold uppercase tracking-widest truncate">
-                <SelectValue placeholder="Status" />
+        <div className="flex gap-3">
+          <Controller
+            name="branchId"
+            control={control}
+            render={({ field }) => (
+              <div className="w-[180px]">
+                <FormSelect
+                  label=""
+                  placeholder="All Branches"
+                  options={[{ name: "All Branches", id: "all" }, ...branches]}
+                  value={field.value}
+                  onValueChange={(val) => {
+                    field.onChange(val);
+                    setValue("page", 1);
+                  }}
+                />
               </div>
-            </div>
-          </SelectTrigger>
-
-          <SelectContent
-            position="popper"
-            sideOffset={6}
-            className="w-40 bg-card/95 backdrop-blur-3xl border border-white/10 rounded-2xl p-1 overflow-hidden"
-          >
-            <SelectItem
-              value="all"
-              className="text-[10px] font-bold uppercase tracking-widest focus:bg-primary/10 focus:text-primary transition-colors cursor-pointer py-2.5 text-start"
-            >
-              All Status
-            </SelectItem>
-            <SelectItem
-              value="active"
-              className="text-[10px] font-bold uppercase tracking-widest focus:bg-primary/10 focus:text-primary transition-colors cursor-pointer py-2.5 text-start"
-            >
-              Active
-            </SelectItem>
-            <SelectItem
-              value="inactive"
-              className="text-[10px] font-bold uppercase tracking-widest focus:bg-primary/10 focus:text-primary transition-colors cursor-pointer py-2.5 text-start"
-            >
-              Inactive
-            </SelectItem>
-          </SelectContent>
-        </Select>
+            )}
+          />
+          <Controller
+            name="status"
+            control={control}
+            render={({ field }) => (
+              <div className="w-[140px]">
+                <FormSelect
+                  label=""
+                  placeholder="Status"
+                  options={[
+                    { name: "All Status", id: "all" },
+                    { name: "Active", id: "active" },
+                    { name: "Inactive", id: "inactive" },
+                  ]}
+                  value={field.value}
+                  onValueChange={(val) => {
+                    field.onChange(val);
+                    setValue("page", 1);
+                  }}
+                />
+              </div>
+            )}
+          />
+        </div>
       </BaseFilter>
 
       {error && (
@@ -117,12 +165,12 @@ export default function DepartmentPage() {
         <Pagination
           currentPage={page}
           lastPage={lastPage}
-          onPageChange={setPage}
+          onPageChange={(p) => setValue("page", p)}
           loading={loading}
         />
 
         {loading && (
-          <div className="absolute inset-0 z-10 flex items-center justify-center bg-background/10 backdrop-blur-[2px] rounded-4xl transition-all">
+          <div className="absolute inset-0 z-10 flex items-center justify-center bg-background/10 backdrop-blur-[2px] rounded-[2rem]">
             <div className="bg-card/90 p-4 rounded-2xl border border-white/10 shadow-2xl flex items-center gap-3">
               <Loader2 className="h-5 w-5 animate-spin text-primary" />
               <span className="text-sm font-bold uppercase tracking-tighter">
@@ -132,6 +180,40 @@ export default function DepartmentPage() {
           </div>
         )}
       </div>
+
+      <AppDialog
+        open={isDialogOpen}
+        onOpenChange={setIsDialogOpen}
+        title={selectedDept ? "Modify Department" : "Register Department"}
+        description="Configure organizational units and branch alignment."
+        confirmText={selectedDept ? "Update Department" : "Create Department"}
+        loading={formLoading}
+        onConfirm={() =>
+          document
+            .getElementById("department-form")
+            ?.dispatchEvent(
+              new Event("submit", { cancelable: true, bubbles: true }),
+            )
+        }
+      >
+        <DepartmentForm
+          departmentData={selectedDept}
+          setLoading={setFormLoading}
+          onSuccess={() => {
+            setIsDialogOpen(false);
+            loadDepartments();
+          }}
+        />
+      </AppDialog>
+
+      <AppDialog
+        open={isViewOpen}
+        onOpenChange={setIsViewOpen}
+        title="Department Information"
+        description="Detailed overview of department configuration."
+      >
+        <ReadOnlyDetail data={viewData} type="department" />
+      </AppDialog>
     </div>
   );
 }
