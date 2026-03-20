@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 
 interface BaseFilterProps {
   onSearch?: (value: string) => void;
+  searchValue?: string;
   placeholder?: string;
   children?: React.ReactNode;
   onAddClick?: () => void;
@@ -16,6 +17,7 @@ interface BaseFilterProps {
 
 export function BaseFilter({
   onSearch,
+  searchValue,
   placeholder = "Search...",
   children,
   onAddClick,
@@ -29,11 +31,12 @@ export function BaseFilter({
         className,
       )}
     >
-      <div className="flex flex-1 items-center gap-4 w-full">
-        <div className="relative w-full max-w-sm">
+      <div className="flex flex-1 items-start gap-4 w-full">
+        <div className="relative w-full max-w-sm mt-2">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/50" />
           <Input
             placeholder={placeholder}
+            value={searchValue ?? ""}
             onChange={(e) => onSearch?.(e.target.value)}
             className="pl-10 bg-background/50 border-none h-11 rounded-2xl focus-visible:ring-primary/30 transition-all"
           />

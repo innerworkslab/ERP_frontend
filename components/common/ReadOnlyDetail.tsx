@@ -5,18 +5,20 @@ import { ReactNode } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 
-interface DetailItemProps {
+const DetailItem = ({
+  label,
+  value,
+  fullWidth,
+}: {
   label: string;
   value: ReactNode;
   fullWidth?: boolean;
-}
-
-const DetailItem = ({ label, value, fullWidth }: DetailItemProps) => (
+}) => (
   <div
     className={`flex items-start gap-3 py-1 ${fullWidth ? "col-span-2" : "col-span-1"}`}
   >
     <div className="space-y-0.5">
-      <p className="text-[10px] font-bold uppercase tracking-[0.1em] text-muted-foreground/50">
+      <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/50">
         {label}
       </p>
       <div className="text-sm font-semibold text-foreground leading-snug">
@@ -26,18 +28,30 @@ const DetailItem = ({ label, value, fullWidth }: DetailItemProps) => (
   </div>
 );
 
-interface ReadOnlyDetailProps {
+export function ReadOnlyDetail({
+  data,
+  type,
+}: {
   data: any;
-  type: "branch" | "department" | "role";
-}
-
-export function ReadOnlyDetail({ data, type }: ReadOnlyDetailProps) {
+  type: "branch" | "department" | "role" | "feature";
+}) {
   if (!data) return null;
+
+  const formatDate = (date: string) =>
+    date
+      ? new Date(date).toLocaleDateString("en-US", {
+          month: "short",
+          day: "numeric",
+          year: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+        })
+      : "—";
 
   const StatusBadge = (
     <Badge
       variant="outline"
-      className={`capitalize font-bold text-[9px] px-2 py-0 h-5 tracking-wide ${
+      className={`capitalize font-bold text-[9px] px-2 py-0 h-5 ${
         data.status === "active"
           ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
           : "bg-slate-500/10 text-slate-400 border-slate-500/20"
@@ -50,96 +64,121 @@ export function ReadOnlyDetail({ data, type }: ReadOnlyDetailProps) {
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-2 gap-x-8 gap-y-5">
+        {/*BRANCH TYPE*/}
         {type === "branch" && (
           <>
-            <DetailItem
-              label="Status"
-              value={StatusBadge}
-            />
+            <DetailItem label="Branch Name" value={data.name} fullWidth />
+            <DetailItem label="Status" value={StatusBadge} />
             <DetailItem
               label="Prefix"
               value={
                 <span className="font-mono text-primary">{data.prefix}</span>
               }
             />
-            <DetailItem
-              label="Branch Name"
-              value={data.name}
-              fullWidth
-            />
-            <DetailItem
-              label="Location"
-              value={data.location}
-              fullWidth
-            />
+            <DetailItem label="Location" value={data.location} fullWidth />
           </>
         )}
 
+        {/*DEPARTMENT TYPE*/}
         {type === "department" && (
           <>
-            <DetailItem
-              label="Status"
-              value={StatusBadge}
-            />
+            <DetailItem label="Department Name" value={data.name} fullWidth />
+            <DetailItem label="Status" value={StatusBadge} />
             <DetailItem
               label="Dept Code"
               value={
                 <span className="font-mono text-primary">{data.code}</span>
               }
             />
+            <DetailItem label="Branch" value={data.branch?.name} />
             <DetailItem
-              label="Department Name"
-              value={data.name}
-              fullWidth
-            />
-            <DetailItem
-              label="Branch"
-              value={data.branch?.name}
+              label="Description"
+              value={data.description}
               fullWidth
             />
           </>
         )}
 
+        {/*ROLE TYPE*/}
         {type === "role" && (
           <>
+            <DetailItem label="Role Name" value={data.name} fullWidth />
+            <DetailItem label="Status" value={StatusBadge} />
             <DetailItem
-              label="Role"
-              value={data.name}
-            />
-            <DetailItem
-              label="Status"
-              value={StatusBadge}
-            />
-            <DetailItem
-              label="Branch"
-              value={data.branch?.name}
-            />
-            <DetailItem
-              label="Department"
-              value={data.department?.name}
-            />
-            <DetailItem
-              label="Reports To"
+              label="Parent Role"
               value={data.parent_role?.name || "Organization Root"}
+            />
+            <DetailItem label="Branch" value={data.branch?.name} />
+            <DetailItem label="Department" value={data.department?.name} />
+            <DetailItem
+              label="Assigned Features"
+              value={
+                data.features?.length > 0
+                  ? data.features.map((f: any) => f.name).join(", ")
+                  : "-"
+              }
+              fullWidth
+            />
+          </>
+        )}
+
+        {/*FEATURE TYPE*/}
+        {type === "feature" && (
+          <>
+            <DetailItem label="Feature Name" value={data.name} fullWidth />
+            <DetailItem label="Status" value={StatusBadge} />
+            <DetailItem label="Module" value={data.module} />
+            <DetailItem
+              label="Key"
+              value={<span className="font-mono text-xs">{data.key}</span>}
+            />
+            <DetailItem
+              label="Description"
+              value={data.description}
+              fullWidth
+            />
+            <DetailItem
+              label="Related Roles"
+              value={
+                data.roles?.length > 0
+                  ? data.roles.map((r: any) => r.name).join(", ")
+                  : "-"
+              }
+              fullWidth
+            />
+            <DetailItem
+              label="Permissions"
+              value={
+                data.permissions?.length > 0
+                  ? data.permissions.map((p: any) => p.name).join(" • ")
+                  : "-"
+              }
               fullWidth
             />
           </>
         )}
       </div>
 
-      <div className="pt-2">
-        <Separator className="opacity-40" />
-      </div>
+      <Separator className="opacity-40" />
 
-      <div className="grid grid-cols-2 gap-4 bg-muted/20 p-3 rounded-xl border border-border/40">
-        <DetailItem
-          label="Created By"
-          value={data.created_by?.name || "System"}
-        />
-        <DetailItem
-          label="Created At"
-          value={data.created_at || "-"}
-        />
+      {/*METADATA FOOTER*/}
+      <div className="grid grid-cols-2 gap-4 bg-muted/30 p-4 rounded-xl border border-border/50">
+        <div className="space-y-1">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">
+            Creator
+          </p>
+          <p className="text-sm font-semibold text-foreground flex items-center gap-2">
+            {data.created_by?.name || "System"}
+          </p>
+        </div>
+        <div className="space-y-1 text-right">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">
+            Created At
+          </p>
+          <p className="text-sm font-medium text-foreground italic">
+            {formatDate(data.created_at)}
+          </p>
+        </div>
       </div>
     </div>
   );

@@ -5,19 +5,19 @@ import { Edit, Loader2, ToggleLeft, ToggleRight, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { Department, departmentService } from "@/api/departments.service";
 
 const ActionCell = ({
   department,
   onEdit,
   onView,
+  refresh,
 }: {
   department: Department;
   onEdit: (department: Department) => void;
   onView: (department: Department) => void;
+  refresh: () => void;
 }) => {
-  const router = useRouter();
   const [isToggling, setIsToggling] = useState(false);
 
   const handleToggleStatus = async () => {
@@ -25,7 +25,9 @@ const ActionCell = ({
       setIsToggling(true);
       const res = await departmentService.toggle(department.id);
       const newStatus = department.status === "active" ? "inactive" : "active";
-      router.refresh();
+
+      refresh();
+
       toast.success(
         res.response?.message || `Department marked as ${newStatus}`,
       );
@@ -67,7 +69,7 @@ const ActionCell = ({
         disabled={isToggling}
       >
         {isToggling ? (
-          <Loader2 className="animate-spin" />
+          <Loader2 className="animate-spin !h-4 !w-4" />
         ) : department.status === "active" ? (
           <ToggleRight />
         ) : (
@@ -81,6 +83,7 @@ const ActionCell = ({
 export const getColumns = (
   onEdit: (department: Department) => void,
   onView: (department: Department) => void,
+  refresh: () => void,
 ): ColumnDef<Department>[] => [
   {
     accessorKey: "code",
@@ -132,7 +135,12 @@ export const getColumns = (
     id: "actions",
     header: () => <div className="text-center">Actions</div>,
     cell: ({ row }) => (
-      <ActionCell department={row.original} onEdit={onEdit} onView={onView} />
+      <ActionCell
+        department={row.original}
+        onEdit={onEdit}
+        onView={onView}
+        refresh={refresh}
+      />
     ),
   },
 ];

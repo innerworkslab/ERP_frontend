@@ -5,19 +5,19 @@ import { Edit, Loader2, ToggleLeft, ToggleRight, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { Role, rolesService } from "@/api/role.service";
+import { Role, rolesService } from "@/api/roles.service";
 
 const ActionCell = ({
   role,
   onEdit,
   onView,
+  refresh,
 }: {
   role: Role;
   onEdit: (role: Role) => void;
   onView: (role: Role) => void;
+  refresh: () => void;
 }) => {
-  const router = useRouter();
   const [isToggling, setIsToggling] = useState(false);
 
   const handleToggleStatus = async () => {
@@ -25,7 +25,9 @@ const ActionCell = ({
       setIsToggling(true);
       const res = await rolesService.toggle(role.id);
       const newStatus = role.status === "active" ? "inactive" : "active";
-      router.refresh();
+
+      refresh();
+
       toast.success(res.response?.message || `Role marked as ${newStatus}`);
     } catch (error) {
       toast.error("Failed to update status");
@@ -65,7 +67,7 @@ const ActionCell = ({
         disabled={isToggling}
       >
         {isToggling ? (
-          <Loader2 className="animate-spin" />
+          <Loader2 className="animate-spin !h-4 !w-4" />
         ) : role.status === "active" ? (
           <ToggleRight />
         ) : (
@@ -79,6 +81,7 @@ const ActionCell = ({
 export const getColumns = (
   onEdit: (role: Role) => void,
   onView: (role: Role) => void,
+  refresh: () => void,
 ): ColumnDef<Role>[] => [
   {
     accessorKey: "name",
@@ -137,7 +140,12 @@ export const getColumns = (
     id: "actions",
     header: () => <div className="text-center">Actions</div>,
     cell: ({ row }) => (
-      <ActionCell role={row.original} onEdit={onEdit} onView={onView} />
+      <ActionCell
+        role={row.original}
+        onEdit={onEdit}
+        onView={onView}
+        refresh={refresh}
+      />
     ),
   },
 ];

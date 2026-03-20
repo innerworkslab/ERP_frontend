@@ -80,8 +80,8 @@ export default function BranchPage() {
   };
 
   const columns = useMemo(
-    () => getColumns(handleEdit, handleView),
-    [handleEdit, handleView],
+    () => getColumns(handleEdit, handleView, loadBranches),
+    [handleEdit, handleView, loadBranches],
   );
 
   return (
