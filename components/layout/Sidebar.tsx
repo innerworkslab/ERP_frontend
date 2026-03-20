@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BookText, Home, Split, Ticket, Building } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { menu } from "@/configs/route.config";
 
@@ -12,7 +11,7 @@ export default function Sidebar() {
   return (
     <aside className="w-72 h-screen sticky top-0 bg-card/20 backdrop-blur-2xl border-r border-white/5 p-6 flex flex-col transition-all">
       <div className="mb-10 flex items-center gap-3 px-2">
-        <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-purple-500 to-red-500 shadow-lg shadow-purple-500/20 flex items-center justify-center font-bold text-white tracking-tighter">
+        <div className="w-10 h-10 rounded-2xl bg-linear-to-tr from-purple-500 to-red-500 shadow-lg shadow-purple-500/20 flex items-center justify-center font-bold text-white tracking-tighter">
           ERP
         </div>
         <div className="flex flex-col">
