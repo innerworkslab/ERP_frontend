@@ -14,7 +14,7 @@ export const departmentSchema = yup
       .min(3, "Name is too short"),
     branch_id: yup
       .number()
-      .typeError("Branch is required")
+      .min(1, "Branch is required")
       .required("Branch is required"),
     status: yup
       .string()

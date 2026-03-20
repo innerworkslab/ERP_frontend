@@ -1,14 +1,22 @@
 "use client";
 
 import { ColumnDef } from "@tanstack/react-table";
-import { Edit, MapPin, Loader2, ToggleRight, ToggleLeft } from "lucide-react";
+import { Edit, Loader2, ToggleLeft, ToggleRight, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Department, departmentService } from "@/api/departments.service";
 import { toast } from "sonner";
-import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { Department, departmentService } from "@/api/departments.service";
 
-const ActionCell = ({ department }: { department: Department }) => {
+const ActionCell = ({
+  department,
+  onEdit,
+  onView,
+}: {
+  department: Department;
+  onEdit: (department: Department) => void;
+  onView: (department: Department) => void;
+}) => {
   const router = useRouter();
   const [isToggling, setIsToggling] = useState(false);
 
@@ -16,32 +24,41 @@ const ActionCell = ({ department }: { department: Department }) => {
     try {
       setIsToggling(true);
       const res = await departmentService.toggle(department.id);
-
       const newStatus = department.status === "active" ? "inactive" : "active";
+      router.refresh();
       toast.success(
         res.response?.message || `Department marked as ${newStatus}`,
       );
+    } catch (error) {
+      toast.error("Failed to update status");
     } finally {
       setIsToggling(false);
     }
   };
 
   return (
-    <div className="flex items-center justify-center gap-4">
+    <div className="flex items-center justify-center gap-1">
       <Button
         variant="ghost"
-        className="h-8 w-8 p-0 flex items-center justify-center [&_svg]:h-5! [&_svg]:w-5!"
-        onClick={() => router.push(`/auth/departments/${department.id}/edit`)}
+        className="h-8 w-8 p-0 text-blue-500 hover:bg-blue-500/10 [&_svg]:!h-4 [&_svg]:!w-4"
+        onClick={() => onView(department)}
         disabled={isToggling}
       >
-        <Edit />
-        <span className="sr-only">Edit</span>
+        <Eye />
       </Button>
 
       <Button
         variant="ghost"
-        aria-disabled
-        className={`h-8 w-8 p-0 flex items-center justify-center [&_svg]:h-5! [&_svg]:w-5! ${
+        className="h-8 w-8 p-0 [&_svg]:!h-4 [&_svg]:!w-4"
+        onClick={() => onEdit(department)}
+        disabled={isToggling}
+      >
+        <Edit />
+      </Button>
+
+      <Button
+        variant="ghost"
+        className={`h-8 w-8 p-0 [&_svg]:!h-5 [&_svg]:!w-5 ${
           department.status === "active"
             ? "text-emerald-500 hover:bg-emerald-500/10"
             : "text-slate-400 hover:bg-slate-500/10"
@@ -56,18 +73,20 @@ const ActionCell = ({ department }: { department: Department }) => {
         ) : (
           <ToggleLeft />
         )}
-        <span className="sr-only">Toggle Status</span>
       </Button>
     </div>
   );
 };
 
-export const columns: ColumnDef<Department>[] = [
+export const getColumns = (
+  onEdit: (department: Department) => void,
+  onView: (department: Department) => void,
+): ColumnDef<Department>[] => [
   {
     accessorKey: "code",
     header: () => <div className="text-center">Code</div>,
     cell: ({ row }) => (
-      <span className="flex justify-center font-mono text-xs uppercase opacity-70">
+      <span className="flex justify-center font-mono text-[10px] font-bold uppercase opacity-60 tracking-widest">
         {row.getValue("code")}
       </span>
     ),
@@ -76,28 +95,16 @@ export const columns: ColumnDef<Department>[] = [
     accessorKey: "name",
     header: "Department Name",
     cell: ({ row }) => (
-      <span className="font-semibold text-foreground">
-        {row.getValue("name")}
-      </span>
+      <span className="font-bold text-foreground">{row.getValue("name")}</span>
     ),
   },
   {
-    id: "branch",
+    accessorKey: "branch.name",
     header: "Branch",
-    accessorFn: (row) => row.branch?.name,
-    cell: ({ row }) => (
-      <span className="text-sm font-medium">{row.original.branch?.name}</span>
-    ),
-  },
-  {
-    id: "location",
-    header: "Location",
-    accessorFn: (row) => row.branch?.location,
     cell: ({ row }) => (
       <div className="flex items-center gap-2 text-muted-foreground">
-        <MapPin className="h-3.5 w-3.5" />
-        <span className="text-sm truncate max-w-37.5">
-          {row.original.branch?.location}
+        <span className="text-xs truncate">
+          {row.original.branch?.name || "-"}
         </span>
       </div>
     ),
@@ -124,6 +131,8 @@ export const columns: ColumnDef<Department>[] = [
   {
     id: "actions",
     header: () => <div className="text-center">Actions</div>,
-    cell: ({ row }) => <ActionCell department={row.original} />,
+    cell: ({ row }) => (
+      <ActionCell department={row.original} onEdit={onEdit} onView={onView} />
+    ),
   },
 ];

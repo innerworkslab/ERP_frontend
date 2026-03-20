@@ -3,8 +3,9 @@ import { api } from "@/lib/axios";
 import { ApiResponse, Filters, PaginationMeta } from "@/types/api.type";
 import { User } from "./auth.service";
 
-export type DepartmentesFilter = Filters & {
+export type DepartmentsFilter = Filters & {
   status?: string;
+  branch_id: number | undefined;
 };
 
 export interface Department {
@@ -17,6 +18,7 @@ export interface Department {
     name: string;
     location: string;
   };
+  branch_id: number | undefined;
   status: "active" | "inactive";
   created_by: User;
   updated_by: User;
@@ -24,7 +26,7 @@ export interface Department {
   updated_at: string;
 }
 
-export interface DepartmentesListResponse {
+export interface DepartmentsListResponse {
   data: Department[];
   meta?: PaginationMeta;
 }
@@ -43,16 +45,25 @@ const baseUrl = `/${version}/${API_CONSTANT.DEPARTMENT}`;
 
 export const departmentService = {
   getAll: async (
-    params?: DepartmentesFilter,
-  ): Promise<DepartmentesListResponse> => {
+    params?: DepartmentsFilter,
+  ): Promise<DepartmentsListResponse> => {
     const res = (await api.get(`${baseUrl}/${API_CONSTANT.ALL}`, {
       params,
-    })) as unknown as DepartmentesListResponse;
+    })) as unknown as DepartmentsListResponse;
     return res;
   },
 
   getById: async (id: number): Promise<ApiResponse<Department>> => {
     return await api.get(`${baseUrl}/${id}`);
+  },
+
+  getByBranch: async (
+    params?: DepartmentsFilter,
+  ): Promise<DepartmentsListResponse> => {
+    const res = (await api.get(`${baseUrl}/${API_CONSTANT.BY_BRANCH}`, {
+      params,
+    })) as unknown as DepartmentsListResponse;
+    return res;
   },
 
   create: async (
