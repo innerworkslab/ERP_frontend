@@ -34,6 +34,11 @@ export const routeConfig: Record<
     desc: "Create a new department for your organization.",
     breadcrumb: "Departments/Add",
   },
+  "/auth/departments/:id/edit": {
+    title: "Edit Department",
+    desc: "Modify existing department details and status.",
+    breadcrumb: "Departments/Edit",
+  },
 };
 
 export const menu = [

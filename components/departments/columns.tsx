@@ -1,22 +1,65 @@
 "use client";
 
 import { ColumnDef } from "@tanstack/react-table";
-import { Edit, Trash, MapPin } from "lucide-react";
+import { Edit, MapPin, Loader2, ToggleRight, ToggleLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Department, departmentService } from "@/api/departments.service";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 
-export type Department = {
-  id: number;
-  code: string;
-  name: string;
-  status: string;
-  created_at: string;
-  updated_at: string;
-  branch: {
-    id: number;
-    prefix: string;
-    name: string;
-    location: string;
+const ActionCell = ({ department }: { department: Department }) => {
+  const router = useRouter();
+  const [isToggling, setIsToggling] = useState(false);
+
+  const handleToggleStatus = async () => {
+    try {
+      setIsToggling(true);
+      const res = await departmentService.toggle(department.id);
+
+      const newStatus = department.status === "active" ? "inactive" : "active";
+      toast.success(
+        res.response?.message || `Department marked as ${newStatus}`,
+      );
+    } finally {
+      setIsToggling(false);
+    }
   };
+
+  return (
+    <div className="flex items-center justify-center gap-4">
+      <Button
+        variant="ghost"
+        className="h-8 w-8 p-0 flex items-center justify-center [&_svg]:h-5! [&_svg]:w-5!"
+        onClick={() => router.push(`/auth/departments/${department.id}/edit`)}
+        disabled={isToggling}
+      >
+        <Edit />
+        <span className="sr-only">Edit</span>
+      </Button>
+
+      <Button
+        variant="ghost"
+        aria-disabled
+        className={`h-8 w-8 p-0 flex items-center justify-center [&_svg]:h-5! [&_svg]:w-5! ${
+          department.status === "active"
+            ? "text-emerald-500 hover:bg-emerald-500/10"
+            : "text-slate-400 hover:bg-slate-500/10"
+        }`}
+        onClick={handleToggleStatus}
+        disabled={isToggling}
+      >
+        {isToggling ? (
+          <Loader2 className="animate-spin" />
+        ) : department.status === "active" ? (
+          <ToggleRight />
+        ) : (
+          <ToggleLeft />
+        )}
+        <span className="sr-only">Toggle Status</span>
+      </Button>
+    </div>
+  );
 };
 
 export const columns: ColumnDef<Department>[] = [
@@ -81,32 +124,6 @@ export const columns: ColumnDef<Department>[] = [
   {
     id: "actions",
     header: () => <div className="text-center">Actions</div>,
-    cell: ({ row }) => {
-      const DepartmentId = row.original.id;
-
-      return (
-        <div className="flex items-center justify-center gap-2">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
-            onClick={() => console.log("Edit Department:", DepartmentId)}
-          >
-            <Edit className="h-4 w-4" />
-            <span className="sr-only">Edit</span>
-          </Button>
-
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
-            onClick={() => console.log("Delete Department:", DepartmentId)}
-          >
-            <Trash className="h-4 w-4" />
-            <span className="sr-only">Delete</span>
-          </Button>
-        </div>
-      );
-    },
+    cell: ({ row }) => <ActionCell department={row.original} />,
   },
 ];

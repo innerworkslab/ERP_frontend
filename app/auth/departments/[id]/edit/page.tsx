@@ -2,6 +2,6 @@
 
 import DepartmentForm from "@/components/departments/DepartmentForm";
 
-export default function AddDepartmentPage() {
+export default function EditDepartmentPage() {
   return <DepartmentForm />;
 }
