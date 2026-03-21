@@ -4,8 +4,11 @@ export const API_CONSTANT = {
   LOGIN: "login",
   BRANCH: "branches",
   DEPARTMENT: "departments",
+  STAFF: "staffs",
+  SUPPLIER: "suppliers",
+  CUSTOMER: "customers",
   ALL: "all",
   TOGGLE_STATUS: "toggle-status",
   ROLE: "roles",
-  BY_BRANCH: "by-branch"
+  BY_BRANCH: "by-branch",
 } as const;
