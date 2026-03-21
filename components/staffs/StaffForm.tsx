@@ -14,8 +14,8 @@ import * as yup from "yup";
 import { staffSchema } from "./schema";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { FileInput } from "../common/FileInput";
-import { rolesService } from "@/api/role.service";
 import { departmentService } from "@/api/departments.service";
+import { rolesService } from "@/api/roles.service";
 
 type StaffFormValues = yup.InferType<typeof staffSchema>;
 
@@ -43,9 +43,6 @@ export default function StaffForm() {
     resolver: yupResolver(staffSchema),
     defaultValues: {
       status: "active",
-      role_id: 1,
-      department_id: 1,
-      branch_id: undefined,
       employment_information: {
         is_contract: 0,
         salary: 0,
@@ -134,7 +131,9 @@ export default function StaffForm() {
     formData.append("name", data.name);
     formData.append("email", data.email);
     formData.append("phone_number", data.phone_number);
-    formData.append("password", data.password);
+    if (!isUpdate) {
+      formData.append("password", data.password);
+    }
     formData.append("role_id", String(data.role_id));
     formData.append("branch_id", String(data.branch_id));
     formData.append("department_id", String(data.department_id));
@@ -185,19 +184,29 @@ export default function StaffForm() {
     formData.append("banking_information[bank_name]", b.bank_name);
     formData.append("banking_information[account_number]", b.account_number);
 
-    formData.append("authorized_features[0][feature_id]", "1");
-    formData.append("authorized_features[0][recommended_by_rule]", "rule");
-    formData.append("authorized_features[0][access_type]", "manual");
-    formData.append("authorized_features[0][permission_level]", "write");
+    if (!numericId) {
+      formData.append("authorized_features[0][feature_id]", "1");
+      formData.append("authorized_features[0][recommended_by_rule]", "rule");
+      formData.append("authorized_features[0][access_type]", "manual");
+      formData.append("authorized_features[0][permission_level]", "write");
+    }
 
-    const res = numericId
-      ? await staffService.update(numericId, formData)
-      : await staffService.create(formData);
+    try {
+      const res = numericId
+        ? await staffService.update(numericId, formData)
+        : await staffService.create(formData);
 
-    toast.success(res.response?.message || "Success");
-    router.push("/auth/staffs");
-    router.refresh();
+      toast.success(res.response?.message || "Success");
+      router.push("/auth/staffs");
+      router.refresh();
+    } catch (error: any) {
+      toast.error(error?.response?.data?.message || "Something went wrong");
+    }
   };
+
+  useEffect(() => {
+    console.log(errors);
+  }, [errors]);
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-5 py-2">
@@ -217,12 +226,14 @@ export default function StaffForm() {
           registration={register("phone_number")}
           error={errors.phone_number?.message}
         />
-        <FormInput
-          label="Password"
-          type="password"
-          registration={register("password")}
-          error={errors.password?.message}
-        />
+        {!isUpdate && (
+          <FormInput
+            label="Password"
+            type="password"
+            registration={register("password")}
+            error={errors.password?.message}
+          />
+        )}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -254,8 +265,8 @@ export default function StaffForm() {
         value={watch("status")}
         onValueChange={(val) => setValue("status", val)}
         options={[
-          { id: "Active", name: "active" },
-          { id: "Inactive", name: "inactive" },
+          { id: "active", name: "Active" },
+          { id: "inactive", name: "Inactive" },
         ]}
         error={errors.status?.message}
       />
@@ -325,14 +336,14 @@ export default function StaffForm() {
           error={errors.employment_information?.join_date?.message}
         />
         <FormSelect
-          label="Contract Type"
+          label="Contract"
           value={watch("employment_information.is_contract")?.toString()}
           onValueChange={(val) =>
             setValue("employment_information.is_contract", Number(val))
           }
           options={[
-            { id: "Permanent", name: "0" },
-            { id: "Contract", name: "1" },
+            { id: "1", name: "True" },
+            { id: "0", name: "False" },
           ]}
           error={errors.employment_information?.is_contract?.message}
         />
@@ -351,9 +362,9 @@ export default function StaffForm() {
             setValue("employment_information.overtime_fee_type", val)
           }
           options={[
-            { id: "Hourly", name: "hourly" },
-            { id: "Daily", name: "daily" },
-            { id: "Monthly", name: "monthly" },
+            { id: "hourly", name: "Hourly" },
+            { id: "daily", name: "Daily" },
+            { id: "monthly", name: "Monthly" },
           ]}
           error={errors.employment_information?.overtime_fee_type?.message}
         />
@@ -405,7 +416,7 @@ export default function StaffForm() {
           ) : (
             <CheckCircle2 className="mr-2" />
           )}
-          {isSubmitting ? "Saving..." : "Create Staff"}
+          {isSubmitting ? "Saving..." : "Submit"}
         </Button>
       </div>
     </form>
