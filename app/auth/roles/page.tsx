@@ -12,7 +12,7 @@ import { Loader2 } from "lucide-react";
 import { AppDialog } from "@/components/common/AppDialog";
 import RoleForm from "@/components/roles/RoleForm";
 import { FormSelect, Option } from "@/components/common/FormSelect";
-import { Role, RolesListResponse, rolesService } from "@/api/role.service";
+import { Role, RolesListResponse, rolesService } from "@/api/roles.service";
 import { ReadOnlyDetail } from "@/components/common/ReadOnlyDetail";
 
 export default function RolePage() {
@@ -93,8 +93,8 @@ export default function RolePage() {
   };
 
   const columns = useMemo(
-    () => getColumns(handleEdit, handleView),
-    [handleEdit, handleView],
+    () => getColumns(handleEdit, handleView, loadRoles),
+    [handleEdit, handleView, loadRoles],
   );
 
   return (

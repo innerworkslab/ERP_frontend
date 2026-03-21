@@ -11,4 +11,6 @@ export const API_CONSTANT = {
   TOGGLE_STATUS: "toggle-status",
   ROLE: "roles",
   BY_BRANCH: "by-branch",
+  FEATURE: "features",
+  ASSIGN_ROLES: "assign-roles",
 } as const;

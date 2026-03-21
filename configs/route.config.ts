@@ -6,6 +6,8 @@ import {
   Ticket,
   Users,
   Users2,
+  Component,
+  ShieldCheck
 } from "lucide-react";
 
 export const routeConfig: Record<
@@ -22,16 +24,6 @@ export const routeConfig: Record<
     desc: "Manage your regional offices and branch locations.",
     breadcrumb: "Branches",
   },
-  "/auth/branches/add": {
-    title: "Add Branch",
-    desc: "Create a new branch for your organization.",
-    breadcrumb: "Branches/Add",
-  },
-  "/auth/branches/:id/edit": {
-    title: "Edit Branch",
-    desc: "Modify existing branch details and status.",
-    breadcrumb: "Branches/Edit",
-  },
   "/auth/departments": {
     title: "Department Management",
     desc: "Manage your organizational departments.",
@@ -39,18 +31,13 @@ export const routeConfig: Record<
   },
   "/auth/roles": {
     title: "Role Management",
-    desc: "Manage your role for users.",
+    desc: "Define organizational hierarchy and permission profiles.",
     breadcrumb: "Roles",
   },
-  "/auth/departments/add": {
-    title: "Add Department",
-    desc: "Create a new department for your organization.",
-    breadcrumb: "Departments/Add",
-  },
-  "/auth/departments/:id/edit": {
-    title: "Edit Department",
-    desc: "Modify existing department details and status.",
-    breadcrumb: "Departments/Edit",
+  "/auth/features": {
+    title: "Feature Management",
+    desc: "Configure system capabilities and assign functional access.",
+    breadcrumb: "Features",
   },
   "/auth/staffs": {
     title: "Staff Management",
@@ -105,7 +92,7 @@ export const menu = [
     items: [{ name: "Dashboard", path: "/auth", icon: Home }],
   },
   {
-    section: "Management",
+    section: "Organization",
     items: [
       { name: "Branches", path: "/auth/branches", icon: Split },
       { name: "Departments", path: "/auth/departments", icon: Building },
@@ -116,7 +103,10 @@ export const menu = [
     ],
   },
   {
-    section: "Accounting",
-    items: [{ name: "Cashbook (COA)", path: "/auth/cashbook", icon: BookText }],
+    section: "Access Control",
+    items: [
+      { name: "Roles", path: "/auth/roles", icon: ShieldCheck },
+      { name: "Features", path: "/auth/features", icon: Component },
+    ],
   },
 ];
