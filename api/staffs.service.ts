@@ -3,7 +3,7 @@ import { api } from "@/lib/axios";
 import { ApiResponse, Filters, PaginationMeta } from "@/types/api.type";
 import { Department } from "./departments.service";
 import { Branch } from "./branches.service";
-import { Role } from "./role.service";
+import { Role } from "./roles.service";
 
 export type StaffsFilter = Filters & {
   status?: string;
