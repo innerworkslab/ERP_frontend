@@ -1,3 +1,4 @@
+import { API_CONSTANT } from "@/constants/api.constant";
 import { api } from "@/lib/axios";
 import { ApiResponse, Filters } from "@/types/api.type";
 
@@ -14,7 +15,8 @@ export interface CustomerTypeListResponse {
   meta?: { total_pages: number };
 }
 
-const baseUrl = "/v1/customer-types";
+const version = "v1";
+const baseUrl = `/${version}/${API_CONSTANT.CUSTOMER_TYPE}`;
 
 export const customerTypeService = {
   getAll: async (params?: Filters): Promise<CustomerTypeListResponse> => {

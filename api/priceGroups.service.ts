@@ -2,6 +2,7 @@ import { api } from "@/lib/axios";
 import { ApiResponse, Filters } from "@/types/api.type";
 import { Branch } from "./branches.service";
 import { Customer } from "./customers.service";
+import { API_CONSTANT } from "@/constants/api.constant";
 
 export interface PriceGroup {
   id: number;
@@ -36,7 +37,7 @@ export interface PriceGroupListResponse {
 }
 
 const version = "v1";
-const baseUrl = `/${version}/price-groups`;
+const baseUrl = `/${version}/${API_CONSTANT.PRICE_GROUP}`;
 
 export const priceGroupService = {
   getAll: async (

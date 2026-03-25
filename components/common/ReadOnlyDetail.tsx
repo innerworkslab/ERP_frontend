@@ -39,7 +39,10 @@ export function ReadOnlyDetail({
     | "role"
     | "feature"
     | "priceGroup"
-    | "customerType";
+    | "customerType"
+    | "variation"
+    | "uom"
+    | "uomConversion";
 }) {
   if (!data) return null;
 
@@ -200,6 +203,77 @@ export function ReadOnlyDetail({
               value={<span className="font-mono text-xs">#{data.id}</span>}
             />
             <DetailItem label="Last Sync" value={formatDate(data.updated_at)} />
+          </>
+        )}
+
+        {/* VARIATION */}
+        {type === "variation" && (
+          <>
+            <DetailItem label="Variation Name" value={data.name} fullWidth />
+            <DetailItem label="Status" value={StatusBadge} />
+            <DetailItem
+              label="Data Type"
+              value={<Badge variant="secondary">{data.value_data_type}</Badge>}
+            />
+            <DetailItem
+              label="Last Modified By"
+              value={data.updated_by?.name || "N/A"}
+            />
+            <DetailItem
+              label="Created Date"
+              value={formatDate(data.created_at)}
+              fullWidth
+            />
+          </>
+        )}
+
+        {/* UOM */}
+        {type === "uom" && (
+          <>
+            <DetailItem label="UOM Name" value={data.name} fullWidth />
+            <DetailItem
+              label="UOM Code"
+              value={<Badge variant="secondary">{data.code}</Badge>}
+            />
+            <DetailItem label="Status" value={StatusBadge} />
+            <DetailItem
+              label="Created By"
+              value={data.created_by?.name || "System"}
+            />
+            <DetailItem
+              label="Last Modified By"
+              value={data.updated_by?.name || "N/A"}
+            />
+            <DetailItem
+              label="Created Date"
+              value={formatDate(data.created_at)}
+              fullWidth
+            />
+          </>
+        )}
+
+        {type === "uomConversion" && (
+          <>
+            <DetailItem label="Base Unit ID" value={data.base_unit_id} />
+            <DetailItem
+              label="Conversion Unit ID"
+              value={data.conversion_unit_id}
+            />
+            <DetailItem
+              label="Conversion Rate"
+              value={Number(data.conversion_rate).toFixed(2)}
+              fullWidth
+            />
+            <DetailItem label="Status" value={StatusBadge} />
+            <DetailItem
+              label="Created By"
+              value={data.created_by?.name || "System"}
+            />
+            <DetailItem
+              label="Created Date"
+              value={formatDate(data.created_at)}
+              fullWidth
+            />
           </>
         )}
       </div>

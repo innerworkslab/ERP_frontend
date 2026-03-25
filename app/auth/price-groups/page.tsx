@@ -203,7 +203,6 @@ export default function PriceGroupPage() {
         open={isDialogOpen}
         onOpenChange={setIsDialogOpen}
         title={selectedGroup ? "Modify Price Group" : "Register Price Group"}
-        description="Configure pricing segments and branch availability."
         confirmText={selectedGroup ? "Update Group" : "Create Group"}
         loading={formLoading}
         onConfirm={() =>

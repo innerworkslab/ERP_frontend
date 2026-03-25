@@ -184,7 +184,6 @@ export default function RolePage() {
         open={isDialogOpen}
         onOpenChange={setIsDialogOpen}
         title={selectedRoleId ? "Modify Role" : "Register Role"}
-        description="Configure role permissions and organizational placement."
         confirmText={selectedRoleId ? "Update Changes" : "Create Role"}
         loading={formLoading}
         onConfirm={() =>

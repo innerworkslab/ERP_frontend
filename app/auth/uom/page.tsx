@@ -1,33 +1,31 @@
 "use client";
 
 import { useEffect, useState, useCallback, useMemo } from "react";
-import { getColumns } from "@/components/customer-types/columns";
-import { BaseFilter } from "@/components/common/BaseFilter";
 import { DataTable } from "@/components/data-table/DataTable";
+import { BaseFilter } from "@/components/common/BaseFilter";
 import { useApi } from "@/hooks/useApi";
-import {
-  customerTypeService,
-  CustomerType,
-  CustomerTypeListResponse,
-} from "@/api/customerTypes.service";
 import { Loader2 } from "lucide-react";
+import { uomService, UOM, UOMListResponse } from "@/api/uom.service";
+import { getColumns } from "@/components/uom/columns";
 import { AppDialog } from "@/components/common/AppDialog";
-import CustomerTypeForm from "@/components/customer-types/CustomerTypeForm";
 import { ReadOnlyDetail } from "@/components/common/ReadOnlyDetail";
+import UomForm from "@/components/uom/UomForm";
 
-export default function CustomerTypePage() {
-  const [data, setData] = useState<CustomerType[]>([]);
+export default function UOMPage() {
+  const [data, setData] = useState<UOM[]>([]);
   const [search, setSearch] = useState("");
   const [isOpen, setIsOpen] = useState(false);
   const [isViewOpen, setIsViewOpen] = useState(false);
-  const [selected, setSelected] = useState<CustomerType | null>(null);
+  const [selected, setSelected] = useState<UOM | null>(null);
   const [formLoading, setFormLoading] = useState(false);
 
-  const { request, loading } = useApi<CustomerTypeListResponse>();
+  const { request, loading } = useApi<UOMListResponse>();
 
   const loadData = useCallback(async () => {
-    const res = await request(() => customerTypeService.getAll({ search }));
-    if (res) setData(res.data || []);
+    const res = await request(() =>
+      uomService.getAll({ search: search || undefined }),
+    );
+    if (res) setData(res || []);
   }, [request, search]);
 
   useEffect(() => {
@@ -46,7 +44,7 @@ export default function CustomerTypePage() {
           setSelected(d);
           setIsViewOpen(true);
         },
-        () => {},
+        loadData,
       ),
     [loadData],
   );
@@ -60,8 +58,8 @@ export default function CustomerTypePage() {
           setSelected(null);
           setIsOpen(true);
         }}
-        addLabel="Add Type"
-        placeholder="Search types..."
+        addLabel="Add UOM"
+        placeholder="Search UOMs..."
       />
 
       <div className="relative">
@@ -76,16 +74,16 @@ export default function CustomerTypePage() {
       <AppDialog
         open={isOpen}
         onOpenChange={setIsOpen}
-        title={selected ? "Edit Customer Type" : "New Customer Type"}
-        confirmText="Save Changes"
+        title={selected ? "Edit UOM" : "New UOM"}
+        confirmText={selected ? "Update UOM" : "Save UOM"}
         loading={formLoading}
         onConfirm={() =>
           document
-            .getElementById("customer-type-form")
+            .getElementById("uom-form")
             ?.dispatchEvent(new Event("submit", { bubbles: true }))
         }
       >
-        <CustomerTypeForm
+        <UomForm
           initialData={selected}
           setLoading={setFormLoading}
           onSuccess={() => {
@@ -98,9 +96,9 @@ export default function CustomerTypePage() {
       <AppDialog
         open={isViewOpen}
         onOpenChange={setIsViewOpen}
-        title="Customer Type Detail"
+        title="UOM Detail"
       >
-        <ReadOnlyDetail data={selected} type="customerType" />
+        <ReadOnlyDetail data={selected} type="uom" />
       </AppDialog>
     </div>
   );

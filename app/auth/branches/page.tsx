@@ -152,7 +152,6 @@ export default function BranchPage() {
         open={isDialogOpen}
         onOpenChange={setIsDialogOpen}
         title={selectedBranch ? "Modify Branch" : "Register Branch"}
-        description="Update operational details and branch configuration."
         confirmText={selectedBranch ? "Update Branch" : "Create Branch"}
         loading={formLoading}
         onConfirm={() =>

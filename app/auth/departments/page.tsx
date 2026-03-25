@@ -185,7 +185,6 @@ export default function DepartmentPage() {
         open={isDialogOpen}
         onOpenChange={setIsDialogOpen}
         title={selectedDept ? "Modify Department" : "Register Department"}
-        description="Configure organizational units and branch alignment."
         confirmText={selectedDept ? "Update Department" : "Create Department"}
         loading={formLoading}
         onConfirm={() =>
