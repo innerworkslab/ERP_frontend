@@ -9,6 +9,8 @@ import {
   ShieldCheck,
   DollarSign,
   Layers,
+  Ruler,
+  RefreshCcw,
 } from "lucide-react";
 
 export const routeConfig: Record<
@@ -95,6 +97,21 @@ export const routeConfig: Record<
     desc: "Define and manage different customer categories.",
     breadcrumb: "Customer Types",
   },
+  "/auth/variations": {
+    title: "Variation Management",
+    desc: "Manage product attributes and variations.",
+    breadcrumb: "Variations",
+  },
+  "/auth/uom": {
+    title: "Units of Measure Management",
+    desc: "Manage and define units of measurement for products and inventory.",
+    breadcrumb: "Units of Measure",
+  },
+  "/auth/uom-conversions": {
+    title: "UOM Conversion Management",
+    desc: "Define conversion rates between different units of measure.",
+    breadcrumb: "UOM Conversion",
+  },
 };
 
 export const menu = [
@@ -107,10 +124,10 @@ export const menu = [
     items: [
       { name: "Branches", path: "/auth/branches", icon: Split },
       { name: "Departments", path: "/auth/departments", icon: Building },
-      { name: "Role", path: "/auth/roles", icon: Ticket },
       { name: "Staffs", path: "/auth/staffs", icon: Users },
       { name: "Suppliers", path: "/auth/suppliers", icon: Users2 },
       { name: "Customers", path: "/auth/customers", icon: Users2 },
+      { name: "Variations", path: "/auth/variations", icon: Component },
     ],
   },
   {
@@ -118,6 +135,17 @@ export const menu = [
     items: [
       { name: "Price Group", path: "/auth/price-groups", icon: DollarSign },
       { name: "Customer Types", path: "/auth/customer-types", icon: Layers },
+    ],
+  },
+  {
+    section: "Setup",
+    items: [
+      { name: "Units of Measure", path: "/auth/uom", icon: Ruler },
+      {
+        name: "UOM Conversion",
+        path: "/auth/uom-conversions",
+        icon: RefreshCcw,
+      },
     ],
   },
   {

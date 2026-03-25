@@ -13,4 +13,9 @@ export const API_CONSTANT = {
   BY_BRANCH: "by-branch",
   FEATURE: "features",
   ASSIGN_ROLES: "assign-roles",
+  PRICE_GROUP: "price-groups",
+  CUSTOMER_TYPE: "customer-types",
+  VARIATION: "variations",
+  UOM: "unit-of-measurements",
+  UOM_CONVERSION: "uom-conversions",
 } as const;
