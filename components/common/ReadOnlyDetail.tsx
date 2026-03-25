@@ -33,7 +33,13 @@ export function ReadOnlyDetail({
   type,
 }: {
   data: any;
-  type: "branch" | "department" | "role" | "feature";
+  type:
+    | "branch"
+    | "department"
+    | "role"
+    | "feature"
+    | "priceGroup"
+    | "customerType";
 }) {
   if (!data) return null;
 
@@ -155,6 +161,45 @@ export function ReadOnlyDetail({
               }
               fullWidth
             />
+          </>
+        )}
+
+        {/* PRICE GROUP TYPE */}
+        {type === "priceGroup" && (
+          <>
+            <DetailItem label="Group Name" value={data.name} fullWidth />
+            <DetailItem label="Status" value={StatusBadge} />
+            <DetailItem label="Branch" value={data.branch?.name || "-"} />
+            <DetailItem
+              label="Customer Type"
+              value={data.customer_type?.name || "-"}
+            />
+            <DetailItem
+              label="Created At"
+              value={new Date(data.created_at).toLocaleDateString()}
+            />
+            <DetailItem
+              label="Last Updated"
+              value={new Date(data.updated_at).toLocaleDateString()}
+            />
+            <DetailItem
+              label="Branch Location"
+              value={data.branch?.location || "-"}
+              fullWidth
+            />
+          </>
+        )}
+
+        {/* CUSTOMER TYPE */}
+        {type === "customerType" && (
+          <>
+            <DetailItem label="Type Name" value={data.name} fullWidth />
+            <DetailItem label="Status" value={StatusBadge} />
+            <DetailItem
+              label="System ID"
+              value={<span className="font-mono text-xs">#{data.id}</span>}
+            />
+            <DetailItem label="Last Sync" value={formatDate(data.updated_at)} />
           </>
         )}
       </div>
