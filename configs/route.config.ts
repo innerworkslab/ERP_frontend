@@ -1,5 +1,4 @@
 import {
-  BookText,
   Building,
   Home,
   Split,
@@ -7,7 +6,9 @@ import {
   Users,
   Users2,
   Component,
-  ShieldCheck
+  ShieldCheck,
+  DollarSign,
+  Layers,
 } from "lucide-react";
 
 export const routeConfig: Record<
@@ -84,6 +85,16 @@ export const routeConfig: Record<
     desc: "Modify existing customer details and status.",
     breadcrumb: "Customers/Edit",
   },
+  "/auth/price-groups": {
+    title: "Price Group",
+    desc: "Modify price group configurations.",
+    breadcrumb: "Price Group",
+  },
+  "/auth/customer-types": {
+    title: "Customer Type Management",
+    desc: "Define and manage different customer categories.",
+    breadcrumb: "Customer Types",
+  },
 };
 
 export const menu = [
@@ -100,6 +111,13 @@ export const menu = [
       { name: "Staffs", path: "/auth/staffs", icon: Users },
       { name: "Suppliers", path: "/auth/suppliers", icon: Users2 },
       { name: "Customers", path: "/auth/customers", icon: Users2 },
+    ],
+  },
+  {
+    section: "Sales & Pricing",
+    items: [
+      { name: "Price Group", path: "/auth/price-groups", icon: DollarSign },
+      { name: "Customer Types", path: "/auth/customer-types", icon: Layers },
     ],
   },
   {

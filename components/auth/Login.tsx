@@ -23,6 +23,7 @@ export default function Login() {
       authService.login({ phone_number: phoneNumber, password }),
     );
     if (res) {
+      console.log("token:", res.token);
       setEncryptedCookie(
         COOKIES.AUTH_USER,
         {
