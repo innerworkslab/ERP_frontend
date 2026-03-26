@@ -4,6 +4,7 @@
 import { ReactNode } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { formatDate } from "@/utils/helper.utils";
 
 const DetailItem = ({
   label,
@@ -42,20 +43,10 @@ export function ReadOnlyDetail({
     | "customerType"
     | "variation"
     | "uom"
-    | "uomConversion";
+    | "uomConversion"
+    | "currency";
 }) {
   if (!data) return null;
-
-  const formatDate = (date: string) =>
-    date
-      ? new Date(date).toLocaleDateString("en-US", {
-          month: "short",
-          day: "numeric",
-          year: "numeric",
-          hour: "2-digit",
-          minute: "2-digit",
-        })
-      : "—";
 
   const StatusBadge = (
     <Badge
@@ -273,6 +264,31 @@ export function ReadOnlyDetail({
               label="Created Date"
               value={formatDate(data.created_at)}
               fullWidth
+            />
+          </>
+        )}
+
+        {type === "currency" && (
+          <>
+            <DetailItem label="Currency Name" value={data.name} fullWidth />
+            <DetailItem label="Currency Code" value={data.code} />
+            <DetailItem label="Symbol" value={data.symbol} />
+            <DetailItem
+              label="Exchange Rate"
+              value={Number(data.exchange_rate).toFixed(4)}
+              fullWidth
+            />
+            <DetailItem
+              label="Base Currency"
+              value={data.is_base_currency ? "Yes" : "No"}
+            />
+            <DetailItem
+              label="Last Rate Update"
+              value={
+                data.last_exchange_rate_update
+                  ? formatDate(data.last_exchange_rate_update)
+                  : "Never"
+              }
             />
           </>
         )}

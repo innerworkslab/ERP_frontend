@@ -1,3 +1,5 @@
+"use client";
+
 import axios from "axios";
 import { getDecryptedCookie } from "./cookie.utils";
 import { COOKIES } from "@/constants/cookie.constant";
@@ -32,19 +34,27 @@ api.interceptors.response.use(
     const data = error.response?.data;
 
     const message =
-      data?.message ||
       data?.response?.message ||
+      data?.message ||
       "An unexpected error occurred";
 
     if (status === 401) {
-      toast.error("Session expired. Please login again.");
-      window.location.href = "/";
-    } else {
-      toast.error(message, {
-        description: data?.errors
-          ? Object.values(data.errors).flat().join(", ")
-          : undefined,
+      toast.error("Session expired", {
+        description: "Please login again to continue.",
       });
+
+      if (typeof window !== "undefined") {
+        window.location.href = "/";
+      }
+    } else if (status === 422 && data?.errors) {
+      const validationErrors = Object.values(data.errors).flat().join(", ");
+      console.log("validation ERror", validationErrors);
+
+      toast.error("Validation Error", {
+        description: validationErrors,
+      });
+    } else {
+      toast.error(message);
     }
 
     return Promise.reject(data || error);

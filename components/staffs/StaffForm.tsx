@@ -191,17 +191,13 @@ export default function StaffForm() {
       formData.append("authorized_features[0][permission_level]", "write");
     }
 
-    try {
-      const res = numericId
-        ? await staffService.update(numericId, formData)
-        : await staffService.create(formData);
+    const res = numericId
+      ? await staffService.update(numericId, formData)
+      : await staffService.create(formData);
 
-      toast.success(res.response?.message || "Success");
-      router.push("/auth/staffs");
-      router.refresh();
-    } catch (error: any) {
-      toast.error(error?.response?.data?.message || "Something went wrong");
-    }
+    toast.success(res.response?.message || "Success");
+    router.push("/auth/staffs");
+    router.refresh();
   };
 
   useEffect(() => {

@@ -27,8 +27,6 @@ const ActionCell = ({
       const res = await featureService.toggle(feature.id);
       refresh();
       toast.success(res.response?.message || `Status updated successfully`);
-    } catch (error) {
-      toast.error("Failed to update status");
     } finally {
       setIsToggling(false);
     }

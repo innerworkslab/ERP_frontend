@@ -54,8 +54,6 @@ export default function PriceGroupForm({
         toast.success("Price group created");
       }
       onSuccess();
-    } catch (error) {
-      toast.error("Operation failed");
     } finally {
       setLoading(false);
     }

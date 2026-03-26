@@ -37,8 +37,6 @@ export default function CustomerTypeForm({
         toast.success("Customer type created");
       }
       onSuccess();
-    } catch (error) {
-      toast.error("Operation failed");
     } finally {
       setLoading(false);
     }

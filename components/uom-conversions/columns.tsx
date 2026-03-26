@@ -21,8 +21,6 @@ const ActionCell = ({ row, onEdit, onView, refresh }) => {
       await uomConversionService.toggleStatus(data.id);
       refresh();
       toast.success("Status updated");
-    } catch (error) {
-      toast.error("Failed to update status");
     } finally {
       setLoading(false);
     }

@@ -18,4 +18,5 @@ export const API_CONSTANT = {
   VARIATION: "variations",
   UOM: "unit-of-measurements",
   UOM_CONVERSION: "uom-conversions",
+  CURRENCY: "currencies",
 } as const;

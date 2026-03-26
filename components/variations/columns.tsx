@@ -28,8 +28,6 @@ const ActionCell = ({
       await variationService.toggleStatus(variation.id);
       refresh();
       toast.success("Status updated successfully");
-    } catch (error) {
-      toast.error("Operation failed");
     } finally {
       setIsToggling(false);
     }
