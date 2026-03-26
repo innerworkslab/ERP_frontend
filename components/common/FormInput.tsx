@@ -15,6 +15,7 @@ interface FormInputProps {
   registration: UseFormRegisterReturn;
   className?: string;
   rows?: number;
+  step?: string | number;
 }
 
 export function FormInput({
@@ -25,6 +26,7 @@ export function FormInput({
   registration,
   className,
   rows = 3,
+  step,
 }: FormInputProps) {
   const [showPassword, setShowPassword] = useState(false);
   const isPassword = type === "password";
@@ -52,6 +54,7 @@ export function FormInput({
           <>
             <Input
               type={inputType}
+              step={step} // Pass step to the Input component
               placeholder={placeholder}
               {...registration}
               className={`bg-background/50 border-none h-11 rounded-2xl focus-visible:ring-primary/20 transition-all ${

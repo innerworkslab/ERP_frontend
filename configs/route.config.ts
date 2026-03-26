@@ -11,6 +11,7 @@ import {
   Layers,
   Ruler,
   RefreshCcw,
+  Coins,
 } from "lucide-react";
 
 export const routeConfig: Record<
@@ -112,6 +113,11 @@ export const routeConfig: Record<
     desc: "Define conversion rates between different units of measure.",
     breadcrumb: "UOM Conversion",
   },
+  "/auth/currencies": {
+    title: "Currency Management",
+    desc: "Manage currencies and their exchange rates.",
+    breadcrumb: "Currencies",
+  },
 };
 
 export const menu = [
@@ -145,6 +151,11 @@ export const menu = [
         name: "UOM Conversion",
         path: "/auth/uom-conversions",
         icon: RefreshCcw,
+      },
+      {
+        name: "Currencies",
+        path: "/auth/currencies",
+        icon: Coins,
       },
     ],
   },

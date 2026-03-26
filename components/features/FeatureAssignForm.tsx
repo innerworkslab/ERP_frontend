@@ -35,8 +35,6 @@ export default function FeatureAssignForm({
         if (featureRes.data.roles) {
           setSelectedRoleIds(featureRes.data.roles.map((r) => r.id));
         }
-      } catch (error) {
-        toast.error("Failed to load roles");
       } finally {
         setFetching(false);
       }
@@ -62,8 +60,6 @@ export default function FeatureAssignForm({
       });
       toast.success("Roles assigned successfully");
       onSuccess();
-    } catch (error) {
-      toast.error("Assignment failed");
     } finally {
       setLoading(false);
     }

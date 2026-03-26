@@ -29,8 +29,6 @@ const ActionCell = ({
       refresh();
 
       toast.success(res.response?.message || `Branch marked as ${newStatus}`);
-    } catch (error) {
-      toast.error("Failed to update status");
     } finally {
       setIsToggling(false);
     }

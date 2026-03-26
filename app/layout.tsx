@@ -1,6 +1,7 @@
 import { Providers } from "@/components/providers/Index";
 import "./globals.css";
 import { Poppins } from "next/font/google";
+import { Toaster } from "sonner";
 
 const poppins = Poppins({
   subsets: ["latin"],
@@ -16,7 +17,10 @@ export default function RootLayout({
   return (
     <html lang="en" className={poppins.variable} suppressHydrationWarning>
       <body className="font-sans antialiased">
-        <Providers>{children}</Providers>
+        <Providers>
+          {children}
+          <Toaster position="top-right" richColors expand={false} closeButton />
+        </Providers>
       </body>
     </html>
   );
