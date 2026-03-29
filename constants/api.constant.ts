@@ -19,4 +19,10 @@ export const API_CONSTANT = {
   UOM: "unit-of-measurements",
   UOM_CONVERSION: "uom-conversions",
   CURRENCY: "currencies",
+  DISCOUNT_GROUP: "discount-groups",
+  BRAND: "brands",
+  CATEGORY: "categories",
+  STATE: "states",
+  CITY: "cities",
+  ALL_BY_STATE: "all-by-state",
 } as const;

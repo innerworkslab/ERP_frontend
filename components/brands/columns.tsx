@@ -1,29 +1,21 @@
 "use client";
 
 import { ColumnDef } from "@tanstack/react-table";
-import {
-  Edit,
-  Loader2,
-  ToggleLeft,
-  ToggleRight,
-  Eye,
-  Mail,
-  Phone,
-} from "lucide-react";
+import { Edit, Loader2, ToggleLeft, ToggleRight, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { useState } from "react";
-import { branchService, Branch } from "@/api/branches.service";
+import { Brand, brandService } from "@/api/brands.service";
 
 const ActionCell = ({
-  branch,
+  brand,
   onEdit,
   onView,
   refresh,
 }: {
-  branch: Branch;
-  onEdit: (branch: Branch) => void;
-  onView: (branch: Branch) => void;
+  brand: Brand;
+  onEdit: (brand: Brand) => void;
+  onView: (brand: Brand) => void;
   refresh: () => void;
 }) => {
   const [isToggling, setIsToggling] = useState(false);
@@ -31,10 +23,12 @@ const ActionCell = ({
   const handleToggleStatus = async () => {
     try {
       setIsToggling(true);
-      const res = await branchService.toggle(branch.id);
-      const newStatus = branch.status === "active" ? "inactive" : "active";
+      const res = await brandService.toggle(brand.id);
+      const newStatus = brand.status === "active" ? "inactive" : "active";
+
       refresh();
-      toast.success(res.response?.message || `Branch marked as ${newStatus}`);
+
+      toast.success(res.response?.message || `Role marked as ${newStatus}`);
     } finally {
       setIsToggling(false);
     }
@@ -45,7 +39,7 @@ const ActionCell = ({
       <Button
         variant="ghost"
         className="h-8 w-8 p-0 text-blue-500 hover:bg-blue-500/10 [&_svg]:!h-4 [&_svg]:!w-4"
-        onClick={() => onView(branch)}
+        onClick={() => onView(brand)}
         disabled={isToggling}
       >
         <Eye />
@@ -54,7 +48,7 @@ const ActionCell = ({
       <Button
         variant="ghost"
         className="h-8 w-8 p-0 [&_svg]:!h-4 [&_svg]:!w-4"
-        onClick={() => onEdit(branch)}
+        onClick={() => onEdit(brand)}
         disabled={isToggling}
       >
         <Edit />
@@ -63,7 +57,7 @@ const ActionCell = ({
       <Button
         variant="ghost"
         className={`h-8 w-8 p-0 [&_svg]:!h-5 [&_svg]:!w-5 ${
-          branch.status === "active"
+          brand.status === "active"
             ? "text-emerald-500 hover:bg-emerald-500/10"
             : "text-slate-400 hover:bg-slate-500/10"
         }`}
@@ -72,7 +66,7 @@ const ActionCell = ({
       >
         {isToggling ? (
           <Loader2 className="animate-spin !h-4 !w-4" />
-        ) : branch.status === "active" ? (
+        ) : brand.status === "active" ? (
           <ToggleRight />
         ) : (
           <ToggleLeft />
@@ -83,53 +77,31 @@ const ActionCell = ({
 };
 
 export const getColumns = (
-  onEdit: (branch: Branch) => void,
-  onView: (branch: Branch) => void,
+  onEdit: (brand: Brand) => void,
+  onView: (brand: Brand) => void,
   refresh: () => void,
-): ColumnDef<Branch>[] => [
-  {
-    accessorKey: "prefix",
-    header: () => <div className="text-center">Prefix</div>,
-    cell: ({ row }) => (
-      <span className="flex justify-center font-mono text-[10px] font-bold uppercase opacity-60 tracking-widest">
-        {row.original.prefix}
-      </span>
-    ),
-  },
+): ColumnDef<Brand>[] => [
   {
     accessorKey: "name",
-    header: "Branch Name",
+    header: "Name",
     cell: ({ row }) => (
-      <div className="flex flex-col">
-        <span className="font-bold text-foreground leading-none">
-          {row.original.name}
-        </span>
-      </div>
+      <span className="font-bold text-foreground">{row.original.name}</span>
     ),
   },
   {
-    accessorKey: "email",
-    header: "Email",
+    accessorKey: "description",
+    header: "Description",
     cell: ({ row }) => (
-      <div className="text-xs">
-        <span>{row.original.email}</span>
-      </div>
-    ),
-  },
-  {
-    accessorKey: "mobile",
-    header: "Mobile Number",
-    cell: ({ row }) => (
-      <div className="text-xs font-medium">
-        <span>{row.original.mobile}</span>
-      </div>
+      <span className="text-xs font-medium">
+        {row.original.description || "-"}
+      </span>
     ),
   },
   {
     accessorKey: "status",
     header: "Status",
     cell: ({ row }) => {
-      const status = row.original.status;
+      const status = row.getValue("status") as string;
       const isActive = status === "active";
       return (
         <span
@@ -149,7 +121,7 @@ export const getColumns = (
     header: () => <div className="text-center">Actions</div>,
     cell: ({ row }) => (
       <ActionCell
-        branch={row.original}
+        brand={row.original}
         onEdit={onEdit}
         onView={onView}
         refresh={refresh}
