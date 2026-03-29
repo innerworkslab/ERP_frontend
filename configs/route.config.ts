@@ -12,6 +12,8 @@ import {
   Ruler,
   RefreshCcw,
   Coins,
+  Percent,
+  Tag,
 } from "lucide-react";
 
 export const routeConfig: Record<
@@ -27,6 +29,21 @@ export const routeConfig: Record<
     title: "Branch Management",
     desc: "Manage your regional offices and branch locations.",
     breadcrumb: "Branches",
+  },
+  "/auth/branches/add": {
+    title: "Add Branch",
+    desc: "Create a new branch for your organization.",
+    breadcrumb: "Branches/Add",
+  },
+  "/auth/branches/:id": {
+    title: "Branch Details",
+    desc: "View and modify branch details and status.",
+    breadcrumb: "Details",
+  },
+  "/auth/branches/:id/edit": {
+    title: "Edit Branch",
+    desc: "Modify existing branch details and status.",
+    breadcrumb: "Edit",
   },
   "/auth/departments": {
     title: "Department Management",
@@ -118,6 +135,21 @@ export const routeConfig: Record<
     desc: "Manage currencies and their exchange rates.",
     breadcrumb: "Currencies",
   },
+  "/auth/discount-groups": {
+    title: "Discount Groups",
+    desc: "Manage customer discount groups and branch assignments.",
+    breadcrumb: "Discount Groups",
+  },
+  "/auth/brands": {
+    title: "Brand Management",
+    desc: "Manage your product brands.",
+    breadcrumb: "Brands",
+  },
+  "/auth/categories": {
+    title: "Category Management",
+    desc: "Manage your product categories.",
+    breadcrumb: "Categories",
+  },
 };
 
 export const menu = [
@@ -140,6 +172,11 @@ export const menu = [
     section: "Sales & Pricing",
     items: [
       { name: "Price Group", path: "/auth/price-groups", icon: DollarSign },
+      {
+        name: "Discount Groups",
+        path: "/auth/discount-groups",
+        icon: Percent,
+      },
       { name: "Customer Types", path: "/auth/customer-types", icon: Layers },
     ],
   },
@@ -147,6 +184,8 @@ export const menu = [
     section: "Setup",
     items: [
       { name: "Units of Measure", path: "/auth/uom", icon: Ruler },
+      { name: "Brands", path: "/auth/brands", icon: Tag },
+      { name: "Categories", path: "/auth/categories", icon: Layers },
       {
         name: "UOM Conversion",
         path: "/auth/uom-conversions",

@@ -71,32 +71,50 @@ export default function NavHeader() {
 
         <nav className="flex mt-3" aria-label="Breadcrumb">
           <ol className="flex items-center space-x-2 text-xs font-medium text-muted-foreground/60 uppercase tracking-widest">
-            {pathSegments.map((segment, index) => {
-              const href = `/${pathSegments.slice(0, index + 1).join("/")}`;
-              const isLast = index === pathSegments.length - 1;
+            {pathSegments
+              .map((segment, index) => {
+                const isNumber = !isNaN(Number(segment));
+                const isNextEdit =
+                  pathSegments[index + 1]?.toLowerCase() === "edit";
 
-              const isNumber = !isNaN(Number(segment));
+                if (isNumber && isNextEdit) return null;
 
-              return (
-                <React.Fragment key={href}>
-                  {index > 0 && <li>/</li>}
-                  <li>
-                    {isLast || isNumber ? (
-                      <span className="text-primary truncate max-w-[100px] block">
-                        {segment}
-                      </span>
-                    ) : (
-                      <Link
-                        href={href}
-                        className="hover:text-foreground transition-colors cursor-pointer"
-                      >
-                        {segment}
-                      </Link>
-                    )}
-                  </li>
-                </React.Fragment>
-              );
-            })}
+                let displayLabel = segment;
+                if (isNumber) displayLabel = "Detail";
+
+                return {
+                  displayLabel,
+                  href: `/${pathSegments.slice(0, index + 1).join("/")}`,
+                };
+              })
+              .filter(
+                (item): item is { displayLabel: string; href: string } =>
+                  item !== null,
+              )
+              .map((item, index, filteredArray) => {
+                const isLast = index === filteredArray.length - 1;
+
+                return (
+                  <React.Fragment key={item.href}>
+                    {index > 0 && <li>/</li>}
+
+                    <li>
+                      {isLast ? (
+                        <span className="text-primary truncate max-w-[150px] block font-bold">
+                          {item.displayLabel}
+                        </span>
+                      ) : (
+                        <Link
+                          href={item.href}
+                          className="hover:text-foreground transition-colors cursor-pointer"
+                        >
+                          {item.displayLabel}
+                        </Link>
+                      )}
+                    </li>
+                  </React.Fragment>
+                );
+              })}
           </ol>
         </nav>
       </div>

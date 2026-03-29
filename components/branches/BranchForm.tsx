@@ -1,17 +1,19 @@
 "use client";
 
-import { useEffect } from "react";
-import { useForm } from "react-hook-form";
+import { useEffect, useState, useCallback } from "react";
+import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
+import { branchSchema, BranchFormValues } from "./schema";
 import { branchService, Branch } from "@/api/branches.service";
-import { branchSchema } from "./schema";
+import { stateService } from "@/api/states.service";
+import { cityService } from "@/api/cities.service";
+import { priceGroupService } from "@/api/priceGroups.service";
 import { FormInput } from "@/components/common/FormInput";
-import { FormSelect } from "@/components/common/FormSelect";
-import * as yup from "yup";
+import { FormSelect, Option } from "@/components/common/FormSelect";
+import { Button } from "@/components/ui/button";
+import { Loader2 } from "lucide-react";
 
-type BranchFormValues = yup.InferType<typeof branchSchema>;
-
-interface BranchFormProps {
+interface Props {
   branchData?: Branch | null;
   onSuccess: () => void;
   setLoading?: (loading: boolean) => void;
@@ -21,42 +23,63 @@ export default function BranchForm({
   branchData,
   onSuccess,
   setLoading,
-}: BranchFormProps) {
+}: Props) {
+  const [states, setStates] = useState<Option[]>([]);
+  const [cities, setCities] = useState<Option[]>([]);
+  const [priceGroups, setPriceGroups] = useState<Option[]>([]);
+
   const {
     register,
     handleSubmit,
+    control,
     setValue,
     reset,
     watch,
     formState: { errors, isSubmitting },
   } = useForm<BranchFormValues>({
     resolver: yupResolver(branchSchema),
-    defaultValues: {
-      prefix: "",
-      name: "",
-      location: "",
-      status: "active",
-    },
+    defaultValues: { status: "active" },
   });
+
+  const selectedState = watch("state_id");
 
   useEffect(() => {
     setLoading?.(isSubmitting);
   }, [isSubmitting, setLoading]);
 
+  const loadInitialData = useCallback(async () => {
+    const [stateRes, pgRes] = await Promise.all([
+      stateService.getAll(),
+      priceGroupService.getAll(),
+    ]);
+    setStates(
+      stateRes.data.map((s) => ({ id: s.id.toString(), name: s.name })),
+    );
+    setPriceGroups(
+      pgRes.data.map((p) => ({ id: p.id.toString(), name: p.name })),
+    );
+  }, []);
+
+  useEffect(() => {
+    loadInitialData();
+  }, [loadInitialData]);
+
+  useEffect(() => {
+    if (selectedState) {
+      cityService.getAll({ state_id: selectedState }).then((res) => {
+        setCities(res.data.map((c) => ({ id: c.id.toString(), name: c.name })));
+      });
+    }
+  }, [selectedState]);
+
   useEffect(() => {
     if (branchData) {
       reset({
-        prefix: branchData.prefix,
-        name: branchData.name,
-        location: branchData.location,
-        status: branchData.status as "active" | "inactive",
-      });
-    } else {
-      reset({
-        prefix: "",
-        name: "",
-        location: "",
-        status: "active",
+        ...branchData,
+        state_id: branchData.state_id,
+        city_id: branchData.city_id,
+        default_selling_price_group_id:
+          branchData.default_selling_price_group_id,
       });
     }
   }, [branchData, reset]);
@@ -65,28 +88,85 @@ export default function BranchForm({
     const res = branchData
       ? await branchService.update(branchData.id, data)
       : await branchService.create(data);
-
-    if (res) {
-      onSuccess();
-    }
+    if (res) onSuccess();
   };
 
   return (
     <form
       id="branch-form"
       onSubmit={handleSubmit(onSubmit)}
-      className="space-y-5 py-2"
+      className="space-y-4 py-2"
     >
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-2 gap-4">
         <FormInput
-          label="Branch Prefix"
-          placeholder="e.g. YGN"
+          label="Prefix"
           registration={register("prefix")}
           error={errors.prefix?.message}
         />
+        <FormInput
+          label="Name"
+          registration={register("name")}
+          error={errors.name?.message}
+        />
+        <FormInput
+          label="Email"
+          registration={register("email")}
+          error={errors.email?.message}
+        />
+        <FormInput
+          label="Mobile"
+          registration={register("mobile")}
+          error={errors.mobile?.message}
+        />
+
+        <Controller
+          name="state_id"
+          control={control}
+          render={({ field }) => (
+            <FormSelect
+              label="State"
+              options={states}
+              value={field.value?.toString()}
+              onValueChange={(val) => {
+                field.onChange(Number(val));
+                setValue("city_id", 0);
+              }}
+              error={errors.state_id?.message}
+            />
+          )}
+        />
+
+        <Controller
+          name="city_id"
+          control={control}
+          render={({ field }) => (
+            <FormSelect
+              label="City"
+              options={cities}
+              value={field.value?.toString()}
+              onValueChange={(val) => field.onChange(Number(val))}
+              error={errors.city_id?.message}
+              disabled={!selectedState}
+            />
+          )}
+        />
+
+        <Controller
+          name="default_selling_price_group_id"
+          control={control}
+          render={({ field }) => (
+            <FormSelect
+              label="Default Price Group"
+              options={priceGroups}
+              value={field.value?.toString()}
+              onValueChange={(val) => field.onChange(Number(val))}
+              error={errors.default_selling_price_group_id?.message}
+            />
+          )}
+        />
 
         <FormSelect
-          label="Operational Status"
+          label="Status"
           value={watch("status")}
           onValueChange={(val) =>
             setValue("status", val as "active" | "inactive")
@@ -95,24 +175,20 @@ export default function BranchForm({
             { id: "active", name: "Active" },
             { id: "inactive", name: "Inactive" },
           ]}
-          error={errors.status?.message}
         />
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <FormInput
-          label="Branch Name"
-          placeholder="e.g. Yangon Main Branch"
-          registration={register("name")}
-          error={errors.name?.message}
-        />
-
-        <FormInput
-          label="Location Address"
-          placeholder="City, Street address"
-          registration={register("location")}
-          error={errors.location?.message}
-        />
+      <div className="flex justify-end pt-4">
+        <Button type="submit" disabled={isSubmitting} className="min-w-[120px]">
+          {isSubmitting ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Saving...
+            </>
+          ) : (
+            "Save Branch"
+          )}
+        </Button>
       </div>
     </form>
   );

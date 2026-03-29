@@ -9,29 +9,31 @@ import { useApi } from "@/hooks/useApi";
 import { branchService } from "@/api/branches.service";
 import { Loader2 } from "lucide-react";
 import { AppDialog } from "@/components/common/AppDialog";
-import PriceGroupForm from "@/components/price-groups/PriceGroupForm";
+import DiscountGroupForm from "@/components/discountGroups/DiscountGroupForm";
 import { FormSelect, Option } from "@/components/common/FormSelect";
 import { ReadOnlyDetail } from "@/components/common/ReadOnlyDetail";
 import {
-  PriceGroup,
-  priceGroupService,
-  PriceGroupListResponse,
-} from "@/api/priceGroups.service";
-import { getColumns } from "@/components/price-groups/column";
+  DiscountGroup,
+  discountGroupService,
+  DiscountGroupListResponse,
+} from "@/api/discountGroups.service";
+import { getColumns } from "@/components/discountGroups/columns";
 import { customerTypeService } from "@/api/customerTypes.service";
 
-export default function PriceGroupPage() {
-  const [priceGroups, setPriceGroups] = useState<PriceGroup[]>([]);
+export default function DiscountGroupPage() {
+  const [discountGroups, setDiscountGroups] = useState<DiscountGroup[]>([]);
   const [branches, setBranches] = useState<Option[]>([]);
   const [customerTypes, setCustomerTypes] = useState<Option[]>([]);
   const [lastPage, setLastPage] = useState(1);
 
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [selectedGroup, setSelectedGroup] = useState<PriceGroup | null>(null);
+  const [selectedGroup, setSelectedGroup] = useState<DiscountGroup | null>(
+    null,
+  );
   const [formLoading, setFormLoading] = useState(false);
 
   const [isViewOpen, setIsViewOpen] = useState(false);
-  const [viewData, setViewData] = useState<PriceGroup | null>(null);
+  const [viewData, setViewData] = useState<DiscountGroup | null>(null);
 
   const { control, watch, setValue } = useForm({
     defaultValues: {
@@ -47,11 +49,11 @@ export default function PriceGroupPage() {
   const customerTypeId = watch("customerTypeId");
   const page = watch("page");
 
-  const { request, loading, error } = useApi<PriceGroupListResponse>();
+  const { request, loading, error } = useApi<DiscountGroupListResponse>();
 
-  const loadPriceGroups = useCallback(async () => {
+  const loadData = useCallback(async () => {
     const res = await request(() =>
-      priceGroupService.getAll({
+      discountGroupService.getAll({
         search: search || undefined,
         branch_id: branchId === "all" ? undefined : Number(branchId),
         customer_type_id:
@@ -60,7 +62,7 @@ export default function PriceGroupPage() {
       }),
     );
     if (res) {
-      setPriceGroups(res.data || []);
+      setDiscountGroups(res.data || []);
       setLastPage(res.meta?.total_pages || 1);
     }
   }, [request, search, branchId, customerTypeId, page]);
@@ -75,48 +77,56 @@ export default function PriceGroupPage() {
 
         if (branchRes?.data) {
           setBranches(
-            branchRes.data.map((b) => ({ id: b.id.toString(), name: b.name })),
+            branchRes.data.map((b) => ({
+              id: b.id.toString(),
+              name: b.name,
+            })),
           );
         }
 
         if (typeRes?.data) {
           setCustomerTypes(
-            typeRes.data.map((t) => ({ id: t.id.toString(), name: t.name })),
+            typeRes.data.map((t) => ({
+              id: t.id.toString(),
+              name: t.name,
+            })),
           );
         }
       } catch (err) {
         console.error("Failed to load options", err);
       }
     };
-
     loadOptions();
   }, []);
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      loadPriceGroups();
+      loadData();
     }, 400);
     return () => clearTimeout(timer);
-  }, [search, branchId, customerTypeId, page, loadPriceGroups]);
+  }, [search, branchId, customerTypeId, page, loadData]);
 
-  const handleEdit = useCallback((group: PriceGroup) => {
+  const handleEdit = useCallback((group: DiscountGroup) => {
     setSelectedGroup(group);
     setIsDialogOpen(true);
   }, []);
 
-  const handleView = useCallback((group: PriceGroup) => {
+  const handleView = useCallback((group: DiscountGroup) => {
     setViewData(group);
     setIsViewOpen(true);
   }, []);
 
-  const handleAdd = () => {
-    setSelectedGroup(null);
-    setIsDialogOpen(true);
-  };
+  const handleToggle = useCallback(
+    async (id: number) => {
+      await discountGroupService.toggleStatus(id);
+      loadData();
+    },
+    [loadData],
+  );
 
   const columns = useMemo(
-    () => getColumns(handleEdit, handleView, loadPriceGroups),
-    [handleEdit, handleView, loadPriceGroups],
+    () => getColumns(handleEdit, handleView, handleToggle),
+    [handleEdit, handleView, handleToggle],
   );
 
   return (
@@ -126,9 +136,12 @@ export default function PriceGroupPage() {
           setValue("page", 1);
           setValue("search", val);
         }}
-        placeholder="Search price groups..."
-        onAddClick={handleAdd}
-        addLabel="Add Price Group"
+        placeholder="Search discount groups..."
+        onAddClick={() => {
+          setSelectedGroup(null);
+          setIsDialogOpen(true);
+        }}
+        addLabel="Add Discount Group"
       >
         <div className="flex gap-3">
           <Controller
@@ -170,14 +183,8 @@ export default function PriceGroupPage() {
         </div>
       </BaseFilter>
 
-      {error && (
-        <div className="p-4 rounded-2xl bg-destructive/10 border border-destructive/20 text-destructive text-sm font-medium">
-          {error}
-        </div>
-      )}
-
       <div className="relative space-y-2">
-        <DataTable columns={columns} data={priceGroups} />
+        <DataTable columns={columns} data={discountGroups} />
         <Pagination
           currentPage={page}
           lastPage={lastPage}
@@ -187,12 +194,7 @@ export default function PriceGroupPage() {
 
         {loading && (
           <div className="absolute inset-0 z-10 flex items-center justify-center bg-background/10 backdrop-blur-[2px] rounded-[2rem]">
-            <div className="bg-card/90 p-4 rounded-2xl border border-white/10 shadow-2xl flex items-center gap-3">
-              <Loader2 className="h-5 w-5 animate-spin text-primary" />
-              <span className="text-sm font-bold uppercase tracking-tighter">
-                Syncing...
-              </span>
-            </div>
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
           </div>
         )}
       </div>
@@ -200,25 +202,23 @@ export default function PriceGroupPage() {
       <AppDialog
         open={isDialogOpen}
         onOpenChange={setIsDialogOpen}
-        title={selectedGroup ? "Modify Price Group" : "Register Price Group"}
-        confirmText={selectedGroup ? "Update Group" : "Create Group"}
+        title={selectedGroup ? "Edit Discount Group" : "New Discount Group"}
+        confirmText="Save changes"
         loading={formLoading}
         onConfirm={() =>
           document
-            .getElementById("price-group-form")
-            ?.dispatchEvent(
-              new Event("submit", { cancelable: true, bubbles: true }),
-            )
+            .getElementById("discount-group-form")
+            ?.dispatchEvent(new Event("submit", { bubbles: true }))
         }
       >
-        <PriceGroupForm
+        <DiscountGroupForm
           initialData={selectedGroup}
           setLoading={setFormLoading}
           branches={branches}
           customerTypes={customerTypes}
           onSuccess={() => {
             setIsDialogOpen(false);
-            loadPriceGroups();
+            loadData();
           }}
         />
       </AppDialog>
@@ -226,10 +226,9 @@ export default function PriceGroupPage() {
       <AppDialog
         open={isViewOpen}
         onOpenChange={setIsViewOpen}
-        title="Price Group Information"
-        description="Detailed overview of price group configuration."
+        title="Discount Group Details"
       >
-        <ReadOnlyDetail data={viewData} type="priceGroup" />
+        <ReadOnlyDetail data={viewData} type="discountGroup" />
       </AppDialog>
     </div>
   );

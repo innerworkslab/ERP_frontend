@@ -44,7 +44,10 @@ export function ReadOnlyDetail({
     | "variation"
     | "uom"
     | "uomConversion"
-    | "currency";
+    | "currency"
+    | "discountGroup"
+    | "brand"
+    | "category";
 }) {
   if (!data) return null;
 
@@ -64,18 +67,43 @@ export function ReadOnlyDetail({
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-2 gap-x-8 gap-y-5">
-        {/*BRANCH TYPE*/}
+        {/* BRANCH TYPE */}
         {type === "branch" && (
           <>
             <DetailItem label="Branch Name" value={data.name} fullWidth />
+
             <DetailItem label="Status" value={StatusBadge} />
             <DetailItem
               label="Prefix"
               value={
-                <span className="font-mono text-primary">{data.prefix}</span>
+                <span className="font-mono text-primary font-bold">
+                  {data.prefix}
+                </span>
               }
             />
-            <DetailItem label="Location" value={data.location} fullWidth />
+
+            <DetailItem label="Email Address" value={data.email} />
+            <DetailItem label="Mobile Number" value={data.mobile} />
+            {data.alternate_phone && (
+              <DetailItem label="Alt. Phone" value={data.alternate_phone} />
+            )}
+            {data.website && (
+              <DetailItem label="Website" value={data.website} fullWidth />
+            )}
+
+            <DetailItem
+              label="State/Region"
+              value={data.state?.name || data.state_id}
+            />
+            <DetailItem label="City" value={data.city?.name || data.city_id} />
+
+            {(data.latitude || data.longitude) && (
+              <DetailItem
+                label="Coordinates"
+                value={`${data.latitude}, ${data.longitude}`}
+                fullWidth
+              />
+            )}
           </>
         )}
 
@@ -243,6 +271,7 @@ export function ReadOnlyDetail({
           </>
         )}
 
+        {/* UOM CONVERSION */}
         {type === "uomConversion" && (
           <>
             <DetailItem label="Base Unit ID" value={data.base_unit_id} />
@@ -268,6 +297,7 @@ export function ReadOnlyDetail({
           </>
         )}
 
+        {/* CURRENCY */}
         {type === "currency" && (
           <>
             <DetailItem label="Currency Name" value={data.name} fullWidth />
@@ -289,6 +319,53 @@ export function ReadOnlyDetail({
                   ? formatDate(data.last_exchange_rate_update)
                   : "Never"
               }
+            />
+          </>
+        )}
+
+        {/* DISCOUNT GROUP */}
+        {type === "discountGroup" && (
+          <>
+            <DetailItem label="Group Name" value={data.name} fullWidth />
+            <DetailItem
+              label="Customer Type"
+              value={data.customer_type?.name}
+            />
+            <DetailItem label="Branch" value={data.branch?.name} />
+            <DetailItem
+              label="Active Status"
+              value={data.is_active ? "Active" : "Inactive"}
+            />
+            <DetailItem
+              label="Created At"
+              value={formatDate(data.created_at)}
+              fullWidth
+            />
+          </>
+        )}
+
+        {/* BRAND */}
+        {type === "brand" && (
+          <>
+            <DetailItem label="Brand Name" value={data.name} fullWidth />
+            <DetailItem label="Status" value={StatusBadge} />
+            <DetailItem
+              label="Description"
+              value={data.description}
+              fullWidth
+            />
+          </>
+        )}
+
+        {/* CATEGORY */}
+        {type === "category" && (
+          <>
+            <DetailItem label="Category Name" value={data.name} fullWidth />
+            <DetailItem label="Status" value={StatusBadge} />
+            <DetailItem
+              label="Description"
+              value={data.description}
+              fullWidth
             />
           </>
         )}
