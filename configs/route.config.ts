@@ -14,6 +14,7 @@ import {
   Coins,
   Percent,
   Tag,
+  Globe,
 } from "lucide-react";
 
 export const routeConfig: Record<
@@ -122,7 +123,7 @@ export const routeConfig: Record<
   },
   "/auth/uom": {
     title: "Units of Measure Management",
-    desc: "Manage and define units of measurement for products and inventory.",
+    desc: "Manage and define units of measurement for products.",
     breadcrumb: "Units of Measure",
   },
   "/auth/uom-conversions": {
@@ -150,6 +151,36 @@ export const routeConfig: Record<
     desc: "Manage your product categories.",
     breadcrumb: "Categories",
   },
+  "/auth/taxes": {
+    title: "Tax Management",
+    desc: "Manage tax configurations and rates.",
+    breadcrumb: "Taxes",
+  },
+  "/auth/origin-countries": {
+    title: "Origin Country Management",
+    desc: "Manage origin countries for products.",
+    breadcrumb: "Origin Countries",
+  },
+  "/auth/products": {
+    title: "Product Management",
+    desc: "Manage your product catalog.",
+    breadcrumb: "Products",
+  },
+  "/auth/products/add": {
+    title: "Add Product",
+    desc: "Create a new product for your catalog.",
+    breadcrumb: "Products/Add",
+  },
+  "/auth/products/:id": {
+    title: "Product Details",
+    desc: "View and modify product details.",
+    breadcrumb: "Details",
+  },
+  "/auth/products/:id/edit": {
+    title: "Edit Product",
+    desc: "Modify existing product details.",
+    breadcrumb: "Edit",
+  },
 };
 
 export const menu = [
@@ -171,6 +202,7 @@ export const menu = [
   {
     section: "Sales & Pricing",
     items: [
+      { name: "Products", path: "/auth/products", icon: Tag },
       { name: "Price Group", path: "/auth/price-groups", icon: DollarSign },
       {
         name: "Discount Groups",
@@ -178,6 +210,7 @@ export const menu = [
         icon: Percent,
       },
       { name: "Customer Types", path: "/auth/customer-types", icon: Layers },
+      { name: "Taxes", path: "/auth/taxes", icon: Ticket },
     ],
   },
   {
@@ -186,6 +219,7 @@ export const menu = [
       { name: "Units of Measure", path: "/auth/uom", icon: Ruler },
       { name: "Brands", path: "/auth/brands", icon: Tag },
       { name: "Categories", path: "/auth/categories", icon: Layers },
+      { name: "Origin Countries", path: "/auth/origin-countries", icon: Globe },
       {
         name: "UOM Conversion",
         path: "/auth/uom-conversions",
