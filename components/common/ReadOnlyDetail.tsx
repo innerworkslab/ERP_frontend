@@ -4,7 +4,7 @@
 import { ReactNode } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { formatDate } from "@/utils/helper.utils";
+import { formatDate, formatPrice } from "@/utils/helper.utils";
 
 const DetailItem = ({
   label,
@@ -47,7 +47,10 @@ export function ReadOnlyDetail({
     | "currency"
     | "discountGroup"
     | "brand"
-    | "category";
+    | "category"
+    | "tax"
+    | "originCountry"
+    | "product";
 }) {
   if (!data) return null;
 
@@ -368,6 +371,127 @@ export function ReadOnlyDetail({
               fullWidth
             />
           </>
+        )}
+
+        {/* TAX */}
+        {type === "tax" && (
+          <>
+            <DetailItem label="Tax Category" value={data.category} fullWidth />
+            <DetailItem label="Tax Code" value={data.code} />
+            <DetailItem label="Tax Type" value={data.type} />
+            <DetailItem
+              label="Amount (%)"
+              value={Number(data.amount).toFixed(2)}
+              fullWidth
+            />
+            <DetailItem label="Status" value={StatusBadge} />
+          </>
+        )}
+
+        {/* ORIGIN COUNTRY */}
+        {type === "originCountry" && (
+          <>
+            <DetailItem label="Country Name" value={data.name} fullWidth />
+            <DetailItem
+              label="Created By"
+              value={data.created_by?.name || "System"}
+            />
+            <DetailItem
+              label="Created Date"
+              value={formatDate(data.created_at)}
+              fullWidth
+            />
+          </>
+        )}
+
+        {type === "product" && (
+          <div className="space-y-6">
+            <div className="flex flex-col md:flex-row gap-6 mb-6">
+              <div className="w-32 h-32 rounded-xl border bg-muted overflow-hidden flex-shrink-0">
+                {data.image_url ? (
+                  <img
+                    src={data.image_url}
+                    alt={data.name}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-muted-foreground text-[10px] font-bold uppercase">
+                    No Image
+                  </div>
+                )}
+              </div>
+              <div className="flex flex-col justify-center">
+                <h2 className="text-xl font-bold">{data.name}</h2>
+                <p className="text-sm font-mono text-muted-foreground uppercase">
+                  {data.sku}
+                </p>
+                <div className="mt-2">
+                  <span
+                    className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase border ${data.status === "active" ? "bg-green-500/10 text-green-500 border-green-500/20" : "bg-slate-500/10 text-slate-400 border-slate-500/20"}`}
+                  >
+                    {data.status}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <DetailItem label="Product Name" value={data.name} fullWidth />
+              <DetailItem label="SKU / Barcode" value={data.sku} />
+              <DetailItem label="Category" value={data.category?.name} />
+              <DetailItem label="Brand" value={data.brand?.name} />
+              <DetailItem
+                label="Origin Country"
+                value={data.origin_country?.name}
+              />
+              <DetailItem label="Alert Quantity" value={data.alert_quantity} />
+
+              <div className="col-span-2 border-t pt-4 mt-2">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <DetailItem
+                    label="Purchase Price"
+                    value={formatPrice(
+                      data.purchase_price,
+                      data.purchase_currency?.symbol,
+                    )}
+                  />
+                  <DetailItem
+                    label="Purchase Unit"
+                    value={data.purchase_uom?.name}
+                  />
+                  <DetailItem
+                    label="Purchase Currency"
+                    value={data.purchase_currency?.name}
+                  />
+                  <DetailItem
+                    label="Purchase Tax"
+                    value={data.purchase_tax?.category}
+                  />
+                </div>
+              </div>
+
+              <div className="col-span-2 border-t pt-4 mt-2">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <DetailItem
+                    label="Sale Price"
+                    value={formatPrice(
+                      data.sale_price,
+                      data.sale_currency?.symbol,
+                    )}
+                  />
+                  <DetailItem label="Sale Unit" value={data.sale_uom?.name} />
+                  <DetailItem
+                    label="Sale Currency"
+                    value={data.sale_currency?.name}
+                  />
+                  <DetailItem
+                    label="Sale Tax"
+                    value={data.sale_tax?.category}
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
         )}
       </div>
 

@@ -26,3 +26,9 @@ export const formatDate = (date: string) =>
         minute: "2-digit",
       })
     : "—";
+
+export const formatPrice = (price: number | string, currencySymbol?: string) =>
+  `${currencySymbol || ""}${Number(price).toLocaleString(undefined, {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })}`;

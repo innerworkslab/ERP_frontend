@@ -25,4 +25,7 @@ export const API_CONSTANT = {
   STATE: "states",
   CITY: "cities",
   ALL_BY_STATE: "all-by-state",
+  TAX: "taxes",
+  ORIGIN_COUNTRY: "origin-countries",
+  PRODUCT: "products",
 } as const;
