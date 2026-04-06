@@ -50,7 +50,9 @@ export function ReadOnlyDetail({
     | "category"
     | "tax"
     | "originCountry"
-    | "product";
+    | "product"
+    | "inventory"
+    | "collection";
 }) {
   if (!data) return null;
 
@@ -492,6 +494,49 @@ export function ReadOnlyDetail({
               </div>
             </div>
           </div>
+        )}
+
+        {/* INVENTORY */}
+        {type === "inventory" && (
+          <>
+            <DetailItem label="Inventory Name" value={data.name} fullWidth />
+            <DetailItem
+              label="Branches"
+              value={
+                data.branches?.length > 0
+                  ? data.branches.map((b: any) => b.name).join(", ")
+                  : "-"
+              }
+              fullWidth
+            />
+          </>
+        )}
+
+        {/* COLLECTION */}
+        {type === "collection" && data && (
+          <>
+            <DetailItem label="Collection Name" value={data.name} fullWidth />
+
+            <div className="grid grid-cols-2 gap-4 col-span-2">
+              <DetailItem
+                label="Purchase Price"
+                value={`${data.purchase_currency?.symbol || ""} ${data.purchase_price}`}
+              />
+              <DetailItem
+                label="Currency"
+              value={`${data.purchase_currency?.name} (${data.purchase_currency?.code})`}
+              />
+
+              <DetailItem
+                label="Sale Price"
+                value={`${data.sale_currency?.symbol || ""} ${data.sale_price}`}
+              />
+              <DetailItem
+                label="Currency"
+                value={`${data.sale_currency?.name} (${data.sale_currency?.code})`}
+              />
+            </div>
+          </>
         )}
       </div>
 

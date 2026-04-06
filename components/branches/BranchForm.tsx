@@ -12,6 +12,7 @@ import { FormInput } from "@/components/common/FormInput";
 import { FormSelect, Option } from "@/components/common/FormSelect";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
+import { toast } from "sonner";
 
 interface Props {
   branchData?: Branch | null;
@@ -88,7 +89,14 @@ export default function BranchForm({
     const res = branchData
       ? await branchService.update(branchData.id, data)
       : await branchService.create(data);
-    if (res) onSuccess();
+    if (res) {
+      toast.success(
+        res.response?.message || branchData
+          ? "Branch updated successfully."
+          : "Branch created successfully.",
+      );
+      onSuccess();
+    }
   };
 
   return (
