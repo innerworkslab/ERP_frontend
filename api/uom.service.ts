@@ -18,7 +18,7 @@ const version = "v1";
 const baseUrl = `${version}/${API_CONSTANT.UOM}`;
 
 export const uomService = {
-  getAll: async (params: { search?: string; page?: number }) => {
+  getAll: async (params?: { search?: string; page?: number }) => {
     const res = await api.get<UOMListResponse>(
       `${baseUrl}/${API_CONSTANT.ALL}`,
       { params },

@@ -28,4 +28,6 @@ export const API_CONSTANT = {
   TAX: "taxes",
   ORIGIN_COUNTRY: "origin-countries",
   PRODUCT: "products",
+  INVENTORY: "inventories",
+  COLLECTION: "collections",
 } as const;

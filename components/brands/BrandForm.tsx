@@ -7,6 +7,7 @@ import { BrandFormValues, brandSchema } from "./schema";
 import { FormInput } from "@/components/common/FormInput";
 import { FormSelect } from "@/components/common/FormSelect";
 import { Brand, brandService } from "@/api/brands.service";
+import { toast } from "sonner";
 
 interface BrandFormProps {
   brandData?: Brand | null;
@@ -61,6 +62,11 @@ export default function BrandForm({
       : await brandService.create(data);
 
     if (res) {
+      toast.success(
+        res.response?.message || brandData
+          ? "Brand updated successfully."
+          : "Brand created successfully.",
+      );
       onSuccess();
     }
   };

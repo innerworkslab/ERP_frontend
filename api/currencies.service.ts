@@ -45,7 +45,7 @@ const version = "v1";
 const baseUrl = `/${version}/${API_CONSTANT.CURRENCY}`;
 
 export const currencyService = {
-  getAll: (filters: CurrencyFilters): Promise<CurrencyListResponse> =>
+  getAll: (filters?: CurrencyFilters): Promise<CurrencyListResponse> =>
     api.get(`${baseUrl}`, { params: filters }),
 
   getById: (id: string | number): Promise<{ data: Currency }> =>

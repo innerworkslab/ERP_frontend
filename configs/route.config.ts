@@ -15,6 +15,8 @@ import {
   Percent,
   Tag,
   Globe,
+  Warehouse,
+  Package,
 } from "lucide-react";
 
 export const routeConfig: Record<
@@ -181,6 +183,46 @@ export const routeConfig: Record<
     desc: "Modify existing product details.",
     breadcrumb: "Edit",
   },
+  "/auth/inventories": {
+    title: "Inventory Management",
+    desc: "View and modify inventories",
+    breadcrumb: "Inventories",
+  },
+  "/auth/inventories/add": {
+    title: "Add Inventory",
+    desc: "Create a new inventory for your catalog.",
+    breadcrumb: "inventories/Add",
+  },
+  "/auth/inventories/:id": {
+    title: "Inventory Details",
+    desc: "View and modify inventory details.",
+    breadcrumb: "Details",
+  },
+  "/auth/inventories/:id/edit": {
+    title: "Edit Inventory",
+    desc: "Modify existing inventory details.",
+    breadcrumb: "Edit",
+  },
+  "/auth/collections": {
+    title: "Collection Management",
+    desc: "View and modify collections",
+    breadcrumb: "Inventories",
+  },
+  "/auth/collections/add": {
+    title: "Add collection",
+    desc: "Create a new collection for your catalog.",
+    breadcrumb: "collections/Add",
+  },
+  "/auth/collections/:id": {
+    title: "Collection Details",
+    desc: "View and modify collection details.",
+    breadcrumb: "Details",
+  },
+  "/auth/collections/:id/edit": {
+    title: "Edit collection",
+    desc: "Modify existing collection details.",
+    breadcrumb: "Edit",
+  },
 };
 
 export const menu = [
@@ -203,6 +245,7 @@ export const menu = [
     section: "Sales & Pricing",
     items: [
       { name: "Products", path: "/auth/products", icon: Tag },
+      { name: "Collections", path: "/auth/collections", icon: Package },
       { name: "Price Group", path: "/auth/price-groups", icon: DollarSign },
       {
         name: "Discount Groups",
@@ -213,6 +256,11 @@ export const menu = [
       { name: "Taxes", path: "/auth/taxes", icon: Ticket },
     ],
   },
+  {
+    section: "Inventory Management",
+    items: [{ name: "Inventory", path: "/auth/inventories", icon: Warehouse }],
+  },
+
   {
     section: "Setup",
     items: [
