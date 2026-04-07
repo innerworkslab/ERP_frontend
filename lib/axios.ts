@@ -6,8 +6,7 @@ import { COOKIES } from "@/constants/cookie.constant";
 import { LoginResponse } from "@/api/auth.service";
 import { toast } from "sonner";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
-console.log("API_URL", API_URL);
+const API_URL = "/api";
 
 export const api = axios.create({
   baseURL: API_URL,
