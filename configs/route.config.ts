@@ -18,6 +18,7 @@ import {
   Warehouse,
   Package,
   MoveHorizontal,
+  History,
 } from "lucide-react";
 
 export const routeConfig: Record<
@@ -264,6 +265,11 @@ export const routeConfig: Record<
     desc: "Modify pending stock transfer records.",
     breadcrumb: "Edit",
   },
+  "/auth/stock-ledgers": {
+    title: "View Stock Ledgers",
+    desc: "View records of stock ledgers",
+    breadcrumb: "Details",
+  },
 };
 
 export const menu = [
@@ -306,6 +312,11 @@ export const menu = [
         name: "Stock Transfers",
         path: "/auth/stock-transfers",
         icon: MoveHorizontal,
+      },
+      {
+        name: "Stock Ledger",
+        path: "/auth/stock-ledgers",
+        icon: History,
       },
     ],
   },
