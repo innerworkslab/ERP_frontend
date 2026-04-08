@@ -88,6 +88,7 @@ export default function CollectionsPage() {
   return (
     <div className="space-y-6 relative min-h-[400px]">
       <BaseFilter
+        searchValue={search}
         onSearch={(val) => {
           setValue("page", 1);
           setValue("search", val);

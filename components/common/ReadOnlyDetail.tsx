@@ -52,7 +52,9 @@ export function ReadOnlyDetail({
     | "originCountry"
     | "product"
     | "inventory"
-    | "collection";
+    | "collection"
+    | "openingStock"
+    | "stockTransfer";
 }) {
   if (!data) return null;
 
@@ -524,7 +526,7 @@ export function ReadOnlyDetail({
               />
               <DetailItem
                 label="Currency"
-              value={`${data.purchase_currency?.name} (${data.purchase_currency?.code})`}
+                value={`${data.purchase_currency?.name} (${data.purchase_currency?.code})`}
               />
 
               <DetailItem
@@ -535,6 +537,155 @@ export function ReadOnlyDetail({
                 label="Currency"
                 value={`${data.sale_currency?.name} (${data.sale_currency?.code})`}
               />
+            </div>
+          </>
+        )}
+
+        {type === "openingStock" && data && (
+          <>
+            {/* Header Information */}
+            <div className="grid grid-cols-2 gap-4 col-span-2">
+              <DetailItem label="Voucher No" value={data.voucher_no} />
+              <DetailItem label="Voucher Date" value={data.voucher_date} />
+
+              <DetailItem
+                label="Warehouse / Inventory"
+                value={data.inventory?.name || "N/A"}
+              />
+              <DetailItem label="Status" value={data.status} />
+
+              <DetailItem
+                label="Remarks"
+                value={data.remarks || "-"}
+                fullWidth
+              />
+            </div>
+
+            {/* Voucher Lines Table */}
+            <div className="col-span-2 mt-6 space-y-3">
+              <h3 className="text-xs font-bold uppercase tracking-widest text-primary px-1">
+                Voucher Items
+              </h3>
+              <div className="rounded-2xl border border-white/5 bg-card/30 overflow-hidden">
+                <table className="w-full text-left text-sm border-collapse">
+                  <thead className="bg-muted/50 text-[10px] uppercase tracking-wider font-bold text-muted-foreground">
+                    <tr>
+                      <th className="px-4 py-3">Product</th>
+                      <th className="px-4 py-3 text-center">Qty</th>
+                      <th className="px-4 py-3 text-center">Unit</th>
+                      <th className="px-4 py-3 text-right">Price</th>
+                      <th className="px-4 py-3 text-right">Subtotal</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-white/5">
+                    {data.lines?.map((line: any, index: number) => (
+                      <tr
+                        key={index}
+                        className="hover:bg-white/5 transition-colors"
+                      >
+                        <td className="px-4 py-3 font-medium">
+                          {line.product?.name || `Product #${line.product_id}`}
+                        </td>
+                        <td className="px-4 py-3 text-center">
+                          {line.quantity}
+                        </td>
+                        <td className="px-4 py-3 text-center">
+                          <Badge
+                            variant="secondary"
+                            className="text-[10px] px-2 py-0"
+                          >
+                            {line.uom?.name || "Units"}
+                          </Badge>
+                        </td>
+                        <td className="px-4 py-3 text-right">
+                          {Number(line.purchase_price).toLocaleString()}
+                        </td>
+                        <td className="px-4 py-3 text-right font-bold text-primary">
+                          {Number(line.subtotal).toLocaleString()}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <div className="flex justify-end items-center">
+                <span className="px-4 py-4 text-right text-[10px] uppercase font-black tracking-widest text-muted-foreground">
+                  Total
+                </span>
+                <span className="px-4 py-4 text-right text-lg font-black text-primary">
+                  {Number(data.total_amount).toLocaleString()}
+                </span>
+              </div>
+            </div>
+          </>
+        )}
+
+        {/* STOCK TRANSFER */}
+        {type === "stockTransfer" && data && (
+          <>
+            <DetailItem
+              label="Reference ID"
+              value={data.reference_id}
+              fullWidth
+            />
+
+            <div className="grid grid-cols-2 gap-4 col-span-2">
+              <DetailItem label="Transfer Date" value={data.transfer_date} />
+              <DetailItem label="Status" value={data.status?.toUpperCase()} />
+
+              <DetailItem
+                label="Source Warehouse"
+                value={data.source_inventory?.name || "N/A"}
+              />
+              <DetailItem
+                label="Target Warehouse"
+                value={data.target_inventory?.name || "N/A"}
+              />
+
+              <div className="col-span-2">
+                <DetailItem
+                  label="Remarks"
+                  value={data.remarks || "No remarks"}
+                  fullWidth
+                />
+              </div>
+            </div>
+
+            {/* ITEM MANIFEST */}
+            <div className="col-span-2 mt-4 space-y-3">
+              <h3 className="text-[10px] font-black uppercase text-primary tracking-[0.2em] px-1">
+                Items ({data.lines?.length || 0})
+              </h3>
+              <div className="bg-card rounded-2xl border border-white/5 overflow-hidden">
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="bg-muted/50 text-[10px] font-black uppercase text-muted-foreground tracking-widest">
+                      <th className="px-4 py-3">Product</th>
+                      <th className="px-4 py-3 text-right">Qty</th>
+                      <th className="px-4 py-3">Unit</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-white/5">
+                    {data.lines?.map((line: any, idx: number) => (
+                      <tr key={idx} className="text-xs">
+                        <td className="px-4 py-3">
+                          <div className="flex flex-col">
+                            <span className="font-bold">
+                              {line.product?.name}
+                            </span>
+                          </div>
+                        </td>
+                        <td className="px-4 py-3 text-right font-black text-primary">
+                          {line.quantity}
+                        </td>
+                        <td className="px-4 py-3 text-muted-foreground">
+                          {line.uom?.name}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </>
         )}

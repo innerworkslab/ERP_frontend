@@ -8,76 +8,66 @@ import { DataTable } from "@/components/data-table/DataTable";
 import { Pagination } from "@/components/common/Pagination";
 import { useApi } from "@/hooks/useApi";
 import { Loader2 } from "lucide-react";
-import { AppDialog } from "@/components/common/AppDialog";
-import { ReadOnlyDetail } from "@/components/common/ReadOnlyDetail";
-import {
-  inventoryService,
-  Inventory,
-  InventoryListResponse,
-} from "@/api/inventories.service";
-import { getColumns } from "@/components/inventories/columns";
+import { openingStockService, OpeningStock } from "@/api/openingStocks.service";
+import { getColumns } from "@/components/opening-stocks/columns";
+import { ApiResponse } from "@/types/api.type";
 
-export default function InventoryPage() {
+export default function OpeningStockPage() {
   const router = useRouter();
 
-  const [inventories, setInventories] = useState<Inventory[]>([]);
+  const [stocks, setStocks] = useState<OpeningStock[]>([]);
   const [lastPage, setLastPage] = useState(1);
 
-  const [isViewOpen, setIsViewOpen] = useState(false);
-  const [viewData, setViewData] = useState<Inventory | null>(null);
-
-  const { control, watch, setValue } = useForm({
-    defaultValues: { search: "", status: "all", page: 1 },
+  const { watch, setValue } = useForm({
+    defaultValues: { search: "", page: 1 },
   });
 
-  const { search, status, page } = watch();
-  const { request, loading, error } = useApi<InventoryListResponse>();
+  const { search, page } = watch();
+  const { request, loading, error } = useApi<ApiResponse<OpeningStock[]>>();
 
-  const loadInventories = useCallback(async () => {
+  const loadStocks = useCallback(async () => {
     const res = await request(() =>
-      inventoryService.getAll({
+      openingStockService.getAll({
         search: search || undefined,
-        status: status === "all" ? undefined : status,
         page: page,
       }),
     );
 
     if (res) {
-      setInventories(res.data || []);
+      setStocks(res.data || []);
       setLastPage(res.meta?.total_pages || 1);
     }
   }, [request, search, page]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      loadInventories();
+      loadStocks();
     }, 400);
     return () => clearTimeout(timer);
-  }, [search, page, loadInventories]);
+  }, [search, page, loadStocks]);
 
-  // ✅ Navigate to edit page
   const handleEdit = useCallback(
-    (inv: Inventory) => {
-      router.push(`/auth/inventories/${inv.id}/edit`);
+    (stock: OpeningStock) => {
+      router.push(`/auth/opening-stocks/${stock.id}/edit`);
     },
     [router],
   );
 
   const handleView = useCallback(
-    (inv: Inventory) => {
-      router.push(`/auth/inventories/${inv.id}`);
+    (stock: OpeningStock) => {
+      router.push(`/auth/opening-stocks/${stock.id}`);
     },
     [router],
   );
 
-  // ✅ Navigate to create page
   const handleAdd = () => {
-    router.push("/auth/inventories/add");
+    router.push("/auth/opening-stocks/add");
   };
 
+  // Memoize columns to prevent unnecessary re-renders of ActionCells
   const columns = useMemo(
-    () => getColumns(handleEdit, handleView, loadInventories),
-    [handleEdit, handleView, loadInventories],
+    () => getColumns(handleEdit, handleView, loadStocks),
+    [handleEdit, handleView, loadStocks],
   );
 
   return (
@@ -88,9 +78,9 @@ export default function InventoryPage() {
           setValue("page", 1);
           setValue("search", val);
         }}
-        placeholder="Search inventory name..."
+        placeholder="Search Voucher No..."
         onAddClick={handleAdd}
-        addLabel="Add Inventory"
+        addLabel="Add Opening Stock"
       />
 
       {error && (
@@ -100,7 +90,7 @@ export default function InventoryPage() {
       )}
 
       <div className="relative space-y-2">
-        <DataTable columns={columns} data={inventories} />
+        <DataTable columns={columns} data={stocks} />
 
         <Pagination
           currentPage={page}
@@ -114,21 +104,12 @@ export default function InventoryPage() {
             <div className="bg-card/90 p-4 rounded-2xl border border-white/10 shadow-2xl flex items-center gap-3">
               <Loader2 className="h-5 w-5 animate-spin text-primary" />
               <span className="text-sm font-bold uppercase tracking-tighter">
-                Syncing...
+                Processing...
               </span>
             </div>
           </div>
         )}
       </div>
-
-      <AppDialog
-        open={isViewOpen}
-        onOpenChange={setIsViewOpen}
-        title="Inventory Information"
-        description="Detailed overview of inventory and assigned branches."
-      >
-        <ReadOnlyDetail data={viewData} type="inventory" />
-      </AppDialog>
     </div>
   );
 }

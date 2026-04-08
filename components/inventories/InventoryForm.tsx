@@ -71,23 +71,18 @@ export default function InventoryForm({
   }, [initialData, reset]);
 
   const onSubmit = async (data: InventoryFormValues) => {
-    try {
-      const payload = {
-        name: data.name,
-        branch_ids: data.branch_ids as number[],
-      };
+    const payload = {
+      name: data.name,
+      branch_ids: data.branch_ids as number[],
+    };
 
-      const res = initialData
-        ? await inventoryService.update(initialData.id, payload)
-        : await inventoryService.create(payload);
+    const res = initialData
+      ? await inventoryService.update(initialData.id, payload)
+      : await inventoryService.create(payload);
 
-      if (res) {
-        toast.success(`Inventory ${initialData ? "updated" : "created"}`);
-        onSuccess();
-      }
-    } catch (err) {
-      console.error(err);
-      toast.error("An error occurred while saving.");
+    if (res) {
+      toast.success(`Inventory ${initialData ? "updated" : "created"}`);
+      onSuccess();
     }
   };
 
