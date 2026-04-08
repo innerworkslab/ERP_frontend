@@ -8,76 +8,73 @@ import { DataTable } from "@/components/data-table/DataTable";
 import { Pagination } from "@/components/common/Pagination";
 import { useApi } from "@/hooks/useApi";
 import { Loader2 } from "lucide-react";
-import { AppDialog } from "@/components/common/AppDialog";
-import { ReadOnlyDetail } from "@/components/common/ReadOnlyDetail";
 import {
-  inventoryService,
-  Inventory,
-  InventoryListResponse,
-} from "@/api/inventories.service";
-import { getColumns } from "@/components/inventories/columns";
+  stockTransferService,
+  StockTransfer,
+} from "@/api/stockTransfers.service";
+import { getColumns } from "@/components/stock-transfers/columns";
+import { ApiResponse } from "@/types/api.type";
 
-export default function InventoryPage() {
+export default function StockTransferPage() {
   const router = useRouter();
 
-  const [inventories, setInventories] = useState<Inventory[]>([]);
+  const [transfers, setTransfers] = useState<StockTransfer[]>([]);
   const [lastPage, setLastPage] = useState(1);
 
-  const [isViewOpen, setIsViewOpen] = useState(false);
-  const [viewData, setViewData] = useState<Inventory | null>(null);
-
-  const { control, watch, setValue } = useForm({
-    defaultValues: { search: "", status: "all", page: 1 },
+  const { watch, setValue } = useForm({
+    defaultValues: { search: "", page: 1 },
   });
 
-  const { search, status, page } = watch();
-  const { request, loading, error } = useApi<InventoryListResponse>();
+  const { search, page } = watch();
 
-  const loadInventories = useCallback(async () => {
+  // FIX 1: Ensure the generic matches the standard list response structure
+  const { request, loading, error } = useApi<ApiResponse<StockTransfer[]>>();
+
+  const loadTransfers = useCallback(async () => {
+    // FIX 2: Pass search and page as a single object (matching your service signature)
     const res = await request(() =>
-      inventoryService.getAll({
+      stockTransferService.getAll({
         search: search || undefined,
-        status: status === "all" ? undefined : status,
         page: page,
       }),
     );
 
     if (res) {
-      setInventories(res.data || []);
+      // res is the ApiResponse object, so res.data is the array
+      setTransfers(res.data || []);
       setLastPage(res.meta?.total_pages || 1);
     }
   }, [request, search, page]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      loadInventories();
+      loadTransfers();
     }, 400);
     return () => clearTimeout(timer);
-  }, [search, page, loadInventories]);
+  }, [search, page, loadTransfers]);
 
-  // ✅ Navigate to edit page
   const handleEdit = useCallback(
-    (inv: Inventory) => {
-      router.push(`/auth/inventories/${inv.id}/edit`);
+    (transfer: StockTransfer) => {
+      // FIX 3: Ensure route consistency with your sidebar (/inventory/ not /auth/)
+      router.push(`/inventory/stock-transfers/${transfer.id}/edit`);
     },
     [router],
   );
 
   const handleView = useCallback(
-    (inv: Inventory) => {
-      router.push(`/auth/inventories/${inv.id}`);
+    (transfer: StockTransfer) => {
+      router.push(`/inventory/stock-transfers/${transfer.id}`);
     },
     [router],
   );
 
-  // ✅ Navigate to create page
   const handleAdd = () => {
-    router.push("/auth/inventories/add");
+    router.push("/inventory/stock-transfers/add");
   };
 
   const columns = useMemo(
-    () => getColumns(handleEdit, handleView, loadInventories),
-    [handleEdit, handleView, loadInventories],
+    () => getColumns(handleEdit, handleView, loadTransfers),
+    [handleEdit, handleView, loadTransfers],
   );
 
   return (
@@ -88,9 +85,9 @@ export default function InventoryPage() {
           setValue("page", 1);
           setValue("search", val);
         }}
-        placeholder="Search inventory name..."
+        placeholder="Search Reference ID..."
         onAddClick={handleAdd}
-        addLabel="Add Inventory"
+        addLabel="Add Stock Transfer"
       />
 
       {error && (
@@ -100,7 +97,7 @@ export default function InventoryPage() {
       )}
 
       <div className="relative space-y-2">
-        <DataTable columns={columns} data={inventories} />
+        <DataTable columns={columns} data={transfers} />
 
         <Pagination
           currentPage={page}
@@ -113,22 +110,13 @@ export default function InventoryPage() {
           <div className="absolute inset-0 z-10 flex items-center justify-center bg-background/10 backdrop-blur-[2px] rounded-[2rem]">
             <div className="bg-card/90 p-4 rounded-2xl border border-white/10 shadow-2xl flex items-center gap-3">
               <Loader2 className="h-5 w-5 animate-spin text-primary" />
-              <span className="text-sm font-bold uppercase tracking-tighter">
-                Syncing...
+              <span className="text-sm font-bold uppercase tracking-tighter text-muted-foreground">
+                Syncing List...
               </span>
             </div>
           </div>
         )}
       </div>
-
-      <AppDialog
-        open={isViewOpen}
-        onOpenChange={setIsViewOpen}
-        title="Inventory Information"
-        description="Detailed overview of inventory and assigned branches."
-      >
-        <ReadOnlyDetail data={viewData} type="inventory" />
-      </AppDialog>
     </div>
   );
 }

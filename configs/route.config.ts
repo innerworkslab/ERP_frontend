@@ -17,6 +17,7 @@ import {
   Globe,
   Warehouse,
   Package,
+  MoveHorizontal,
 } from "lucide-react";
 
 export const routeConfig: Record<
@@ -211,7 +212,7 @@ export const routeConfig: Record<
   "/auth/collections/add": {
     title: "Add collection",
     desc: "Create a new collection for your catalog.",
-    breadcrumb: "collections/Add",
+    breadcrumb: "collections/add",
   },
   "/auth/collections/:id": {
     title: "Collection Details",
@@ -221,6 +222,46 @@ export const routeConfig: Record<
   "/auth/collections/:id/edit": {
     title: "Edit collection",
     desc: "Modify existing collection details.",
+    breadcrumb: "Edit",
+  },
+  "/auth/opening-stocks": {
+    title: "Collection Management",
+    desc: "View and modify opening stocks",
+    breadcrumb: "Inventories",
+  },
+  "/auth/opening-stocks/add": {
+    title: "Add Opening Stock",
+    desc: "Create a new opening stock for your catalog.",
+    breadcrumb: "opening-stocks/add",
+  },
+  "/auth/opening-stocks/:id": {
+    title: "Collection Details",
+    desc: "View and modify opening stock details.",
+    breadcrumb: "Details",
+  },
+  "/auth/opening-stocks/:id/edit": {
+    title: "Edit Opening Stock",
+    desc: "Modify existing opening stock details.",
+    breadcrumb: "Edit",
+  },
+  "/auth/inventory/stock-transfers": {
+    title: "Stock Transfers",
+    desc: "Manage and track inventory movement between warehouses.",
+    breadcrumb: "Inventories",
+  },
+  "/auth/inventory/stock-transfers/add": {
+    title: "New Stock Transfer",
+    desc: "Create a new inter-warehouse stock movement.",
+    breadcrumb: "stock-transfers/add",
+  },
+  "/auth/inventory/stock-transfers/:id": {
+    title: "Transfer Details",
+    desc: "View manifest and logistics path for this transfer.",
+    breadcrumb: "Details",
+  },
+  "/auth/inventory/stock-transfers/:id/edit": {
+    title: "Edit Stock Transfer",
+    desc: "Modify pending stock transfer records.",
     breadcrumb: "Edit",
   },
 };
@@ -258,7 +299,15 @@ export const menu = [
   },
   {
     section: "Inventory Management",
-    items: [{ name: "Inventory", path: "/auth/inventories", icon: Warehouse }],
+    items: [
+      { name: "Inventory", path: "/auth/inventories", icon: Warehouse },
+      { name: "Opening Stocks", path: "/auth/opening-stocks", icon: Package },
+      {
+        name: "Stock Transfers",
+        path: "/auth/stock-transfers",
+        icon: MoveHorizontal,
+      },
+    ],
   },
 
   {
