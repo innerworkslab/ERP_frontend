@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useRouter, useParams } from "next/navigation";
@@ -8,7 +8,6 @@ import { productSchema, ProductFormValues } from "./schema";
 import { productService } from "@/api/products.service";
 import { categoryService } from "@/api/categories.service";
 import { brandService } from "@/api/brands.service";
-import { uomService } from "@/api/uom.service";
 import { taxService } from "@/api/taxes.service";
 import { originCountryService } from "@/api/originCountries.service";
 import { currencyService } from "@/api/currencies.service";
@@ -21,6 +20,10 @@ import { toast } from "sonner";
 import CategoryForm from "../categories/CategoryForm";
 import BrandForm from "../brands/BrandForm";
 import OriginCountryForm from "../origin-countries/OriginCountryForm";
+import {
+  UOMConversion,
+  uomConversionService,
+} from "@/api/uomConversions.service";
 
 export default function ProductForm() {
   const router = useRouter();
@@ -28,7 +31,15 @@ export default function ProductForm() {
   const isEdit = params.id && params.id !== "create";
 
   const [imagePreview, setImagePreview] = useState<string | null>(null);
-  const [lookups, setLookups] = useState<{ [key: string]: Option[] }>({});
+  const [lookups, setLookups] = useState<{
+    categories?: Option[];
+    brands?: Option[];
+    taxes?: Option[];
+    origins?: Option[];
+    currencies?: Option[];
+    conversionOptions?: Option[];
+    uomConversions?: UOMConversion[];
+  }>({});
   const [fetching, setFetching] = useState(true);
 
   const {
@@ -37,6 +48,7 @@ export default function ProductForm() {
     control,
     setValue,
     reset,
+    watch,
     formState: { errors, isSubmitting },
   } = useForm<ProductFormValues>({
     resolver: yupResolver(productSchema),
@@ -45,12 +57,12 @@ export default function ProductForm() {
 
   const loadData = useCallback(async () => {
     try {
-      const [cats, brds, uoms, txs, origins, curs] = await Promise.all([
+      const [cats, brds, txs, origins, uomCon, curs] = await Promise.all([
         categoryService.getAll(),
         brandService.getAll(),
-        uomService.getAll({}),
         taxService.getAll(),
         originCountryService.getAll(),
+        uomConversionService.getAll(),
         currencyService.getAll({}),
       ]);
 
@@ -59,9 +71,14 @@ export default function ProductForm() {
           id: c.id.toString(),
           name: c.name,
         })),
-        brands: brds.data.map((b) => ({ id: b.id.toString(), name: b.name })),
-        uoms: uoms.map((u) => ({ id: u.id.toString(), name: u.name })),
-        taxes: txs.data.map((t) => ({ id: t.id.toString(), name: t.category })),
+        brands: brds.data.map((b) => ({
+          id: b.id.toString(),
+          name: b.name,
+        })),
+        taxes: txs.data.map((t) => ({
+          id: t.id.toString(),
+          name: t.category,
+        })),
         origins: origins.data.map((o) => ({
           id: o.id.toString(),
           name: o.name,
@@ -69,6 +86,11 @@ export default function ProductForm() {
         currencies: curs.data.map((curr) => ({
           id: curr.id.toString(),
           name: curr.code,
+        })),
+        uomConversions: uomCon.data,
+        conversionOptions: uomCon.data.map((uc) => ({
+          id: uc.id.toString(),
+          name: `${uc.base_unit.name} to ${uc.conversion_unit.name}`,
         })),
       });
 
@@ -93,12 +115,50 @@ export default function ProductForm() {
     loadData();
   }, [loadData]);
 
+  const selectedConversionId = watch("conversion_uom_id");
+
+  const filteredUoms = useMemo(() => {
+    const conversions = lookups.uomConversions || [];
+
+    if (!selectedConversionId) {
+      const map = new Map<number, any>();
+      conversions.forEach((uc) => {
+        map.set(uc.base_unit.id, uc.base_unit);
+        map.set(uc.conversion_unit.id, uc.conversion_unit);
+      });
+      return Array.from(map.values()).map((u) => ({
+        id: u.id.toString(),
+        name: u.name,
+      }));
+    }
+
+    const selected = conversions.find(
+      (uc) => uc.id === Number(selectedConversionId),
+    );
+
+    if (!selected) return [];
+
+    return [
+      {
+        id: selected.base_unit.id.toString(),
+        name: selected.base_unit.name,
+      },
+      {
+        id: selected.conversion_unit.id.toString(),
+        name: selected.conversion_unit.name,
+      },
+    ];
+  }, [selectedConversionId, lookups.uomConversions]);
+
   const onSubmit = async (data: ProductFormValues) => {
     const formData = new FormData();
+
     Object.entries(data).forEach(([key, value]) => {
-      if (key === "image" && value instanceof File) formData.append(key, value);
-      else if (value !== undefined && value !== null)
+      if (key === "image" && value instanceof File) {
+        formData.append(key, value);
+      } else if (value !== undefined && value !== null) {
         formData.append(key, String(value));
+      }
     });
 
     const res = isEdit
@@ -188,7 +248,7 @@ export default function ProductForm() {
               error={errors.name?.message}
             />
             <FormInput
-              label="SKU / Barcode"
+              label="SKU"
               registration={register("sku")}
               error={errors.sku?.message}
             />
@@ -258,6 +318,18 @@ export default function ProductForm() {
                 />
               )}
             />
+            <Controller
+              name="conversion_uom_id"
+              control={control}
+              render={({ field }) => (
+                <FormSelect
+                  label="Conversion UOM"
+                  options={lookups.conversionOptions || []}
+                  value={field.value?.toString()}
+                  onValueChange={(val) => field.onChange(Number(val))}
+                />
+              )}
+            />
           </div>
 
           <div className="p-4 grid grid-cols-2 gap-4">
@@ -285,7 +357,7 @@ export default function ProductForm() {
               render={({ field }) => (
                 <FormSelect
                   label="Purchase UOM"
-                  options={lookups.uoms || []}
+                  options={filteredUoms}
                   value={field.value?.toString()}
                   onValueChange={(val) => field.onChange(Number(val))}
                 />
@@ -298,6 +370,18 @@ export default function ProductForm() {
                 <FormSelect
                   label="Purchase Tax"
                   options={lookups.taxes || []}
+                  value={field.value?.toString()}
+                  onValueChange={(val) => field.onChange(Number(val))}
+                />
+              )}
+            />
+            <Controller
+              name="stock_uom_id"
+              control={control}
+              render={({ field }) => (
+                <FormSelect
+                  label="Stock UOM"
+                  options={filteredUoms}
                   value={field.value?.toString()}
                   onValueChange={(val) => field.onChange(Number(val))}
                 />
@@ -330,7 +414,7 @@ export default function ProductForm() {
               render={({ field }) => (
                 <FormSelect
                   label="Sale UOM"
-                  options={lookups.uoms || []}
+                  options={filteredUoms}
                   value={field.value?.toString()}
                   onValueChange={(val) => field.onChange(Number(val))}
                 />
