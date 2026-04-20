@@ -22,8 +22,6 @@ const ActionCell = ({ stock, onEdit, onView, refresh }) => {
       refresh();
       toast.success("Stock confirmed successfully");
       setShowConfirmDialog(false);
-    } catch (err) {
-      toast.error("Failed to confirm stock");
     } finally {
       setIsConfirming(false);
     }
