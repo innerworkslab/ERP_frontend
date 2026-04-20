@@ -10,7 +10,6 @@ import { UseFormRegisterReturn } from "react-hook-form";
 interface FormInputProps {
   label: string;
   placeholder?: string;
-  // Added "date" to the supported types
   type?: "text" | "password" | "email" | "number" | "textarea" | "date";
   error?: string;
   registration: UseFormRegisterReturn;
@@ -57,9 +56,13 @@ export function FormInput({
               type={inputType}
               step={step}
               placeholder={placeholder}
+              min={type === "number" ? 0 : undefined}
+              onFocus={
+                type === "date"
+                  ? (e) => (e.currentTarget.type = "date")
+                  : undefined
+              }
               {...registration}
-              // Added custom styling for date icon if needed,
-              // and ensured transition-all handles the native browser picker smoothly
               className={`bg-background/50 border-none h-[40px] rounded-2xl focus-visible:ring-primary/20 transition-all ${
                 isPassword ? "pr-11" : ""
               } ${error ? "ring-1 ring-destructive/50" : ""} ${

@@ -9,9 +9,7 @@ export interface UOMConversion {
   conversion_unit_id: number;
   conversion_rate: string | number;
   base_unit: UOM;
-  conversion_unit: {
-    name: string;
-  };
+  conversion_unit: UOM;
   status: "active" | "inactive";
   created_at: string;
   updated_at: string;
