@@ -8,17 +8,13 @@ import { DataTable } from "@/components/data-table/DataTable";
 import { Pagination } from "@/components/common/Pagination";
 import { useApi } from "@/hooks/useApi";
 import { Loader2 } from "lucide-react";
-import {
-  stockTransferService,
-  StockTransfer,
-} from "@/api/stockTransfers.service";
-import { getColumns } from "@/components/stock-transfers/columns";
 import { ApiResponse } from "@/types/api.type";
+import { StockBalance, stockBalanceService } from "@/api/stockBalances.service";
+import { getColumns } from "@/components/stock-balances/columns";
 
-export default function StockTransferPage() {
+export default function StockBalancePage() {
   const router = useRouter();
-
-  const [transfers, setTransfers] = useState<StockTransfer[]>([]);
+  const [balances, setBalances] = useState<StockBalance[]>([]);
   const [lastPage, setLastPage] = useState(1);
 
   const { watch, setValue } = useForm({
@@ -26,55 +22,36 @@ export default function StockTransferPage() {
   });
 
   const { search, page } = watch();
+  const { request, loading, error } = useApi<ApiResponse<StockBalance[]>>();
 
-  // FIX 1: Ensure the generic matches the standard list response structure
-  const { request, loading, error } = useApi<ApiResponse<StockTransfer[]>>();
-
-  const loadTransfers = useCallback(async () => {
-    // FIX 2: Pass search and page as a single object (matching your service signature)
+  const loadBalances = useCallback(async () => {
     const res = await request(() =>
-      stockTransferService.getAll({
+      stockBalanceService.getBalanceList({
         search: search || undefined,
         page: page,
       }),
     );
 
     if (res) {
-      // res is the ApiResponse object, so res.data is the array
-      setTransfers(res.data || []);
+      setBalances(res.data || []);
       setLastPage(res.meta?.total_pages || 1);
     }
   }, [request, search, page]);
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      loadTransfers();
-    }, 400);
+    const timer = setTimeout(loadBalances, 400);
     return () => clearTimeout(timer);
-  }, [search, page, loadTransfers]);
+  }, [search, page, loadBalances]);
 
-  const handleEdit = useCallback(
-    (transfer: StockTransfer) => {
-      router.push(`/auth/stock-transfers/${transfer.id}/edit`);
-    },
-    [router],
-  );
-
+  // View handler for stock balance (e.g., to see ledger history for this specific SKU/Batch)
   const handleView = useCallback(
-    (transfer: StockTransfer) => {
-      router.push(`/auth/stock-transfers/${transfer.id}`);
+    (balance: StockBalance) => {
+      router.push(`/inventory/stock-ledger?search=${balance.sku}`);
     },
     [router],
   );
 
-  const handleAdd = () => {
-    router.push("/auth/stock-transfers/add");
-  };
-
-  const columns = useMemo(
-    () => getColumns(handleEdit, handleView, loadTransfers),
-    [handleEdit, handleView, loadTransfers],
-  );
+  const columns = useMemo(() => getColumns(handleView), [handleView]);
 
   return (
     <div className="space-y-6 relative min-h-[400px]">
@@ -84,9 +61,7 @@ export default function StockTransferPage() {
           setValue("page", 1);
           setValue("search", val);
         }}
-        placeholder="Search Reference ID..."
-        onAddClick={handleAdd}
-        addLabel="Add Stock Transfer"
+        placeholder="Search product, SKU, batch or warehouse..."
       />
 
       {error && (
@@ -96,7 +71,7 @@ export default function StockTransferPage() {
       )}
 
       <div className="relative space-y-2">
-        <DataTable columns={columns} data={transfers} />
+        <DataTable columns={columns} data={balances} />
 
         <Pagination
           currentPage={page}
@@ -110,7 +85,7 @@ export default function StockTransferPage() {
             <div className="bg-card/90 p-4 rounded-2xl border border-white/10 shadow-2xl flex items-center gap-3">
               <Loader2 className="h-5 w-5 animate-spin text-primary" />
               <span className="text-sm font-bold uppercase tracking-tighter text-muted-foreground">
-                Syncing List...
+                Syncing Balances...
               </span>
             </div>
           </div>

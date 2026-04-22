@@ -28,6 +28,7 @@ export const stockTransferSchema = yup.object().shape({
           .required("Quantity is required")
           .positive("Quantity must be greater than 0"),
         uom_id: yup.number().required("Unit is required").positive(),
+        lot_no: yup.string().required("Lot number is required"),
         remarks: yup.string().nullable(),
       }),
     )
