@@ -30,4 +30,5 @@ export const API_CONSTANT = {
   PRODUCT: "products",
   INVENTORY: "inventories",
   COLLECTION: "collections",
+  STOCK_BALANCE: "stock-balances",
 } as const;

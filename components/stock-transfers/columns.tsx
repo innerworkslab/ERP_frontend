@@ -204,15 +204,6 @@ export const getColumns = (
     ),
   },
   {
-    accessorKey: "product_count",
-    header: "Items",
-    cell: ({ row }) => (
-      <Badge variant="secondary" className="font-black text-[10px]">
-        {row.original.product_count}
-      </Badge>
-    ),
-  },
-  {
     accessorKey: "status",
     header: "Status",
     cell: ({ row }) => {

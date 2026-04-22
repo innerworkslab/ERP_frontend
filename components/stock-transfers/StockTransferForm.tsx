@@ -13,7 +13,7 @@ import {
 import { FormInput } from "@/components/common/FormInput";
 import { FormSelect } from "@/components/common/FormSelect";
 import { Button } from "@/components/ui/button";
-import { Loader2, Plus, Trash2, Save } from "lucide-react";
+import { Loader2, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { useApi } from "@/hooks/useApi";
 import {
@@ -21,6 +21,7 @@ import {
   stockTransferSchema,
 } from "../stock-transfers/schema";
 import { ApiResponse } from "@/types/api.type";
+import { stockBalanceService } from "@/api/stockBalances.service";
 
 interface Props {
   initialData?: StockTransfer | null;
@@ -38,8 +39,10 @@ export default function StockTransferForm({
   >([]);
   const [products, setProducts] = useState<{ id: string; name: string }[]>([]);
   const [uoms, setUoms] = useState<{ id: string; name: string }[]>([]);
+  const [lotOptions, setLotOptions] = useState<
+    Record<number, { id: string; name: string }[]>
+  >({});
 
-  // Corrected type here to match StockTransfer
   const { request, loading: apiLoading } = useApi<ApiResponse<StockTransfer>>();
 
   const {
@@ -55,14 +58,19 @@ export default function StockTransferForm({
       source_inventory_id: 0,
       target_inventory_id: 0,
       remarks: "",
-      lines: [{ product_id: 0, quantity: 1, uom_id: 1, remarks: "" }],
+      lines: [
+        { product_id: 0, quantity: 1, uom_id: 1, lot_no: "", remarks: "" },
+      ],
     },
   });
 
   const { fields, append, remove } = useFieldArray({ control, name: "lines" });
 
-  // useWatch for consistency with your OpeningStock pattern
   const watchedLines = useWatch({ control, name: "lines" });
+  const sourceInventoryId = useWatch({
+    control,
+    name: "source_inventory_id",
+  });
 
   useEffect(() => setLoading?.(apiLoading), [apiLoading, setLoading]);
 
@@ -96,16 +104,47 @@ export default function StockTransferForm({
               product_id: l.product_id,
               quantity: Number(l.quantity),
               uom_id: l.uom_id,
+              lot_no: l.lot_no || "",
               remarks: l.remarks || "",
             })),
           });
         }
-      } catch (err) {
+      } catch {
         toast.error("Failed to load form dependencies");
       }
     };
     loadDependencies();
   }, [initialData, reset]);
+
+  useEffect(() => {
+    const fetchLots = async () => {
+      const map: Record<number, { id: string; name: string }[]> = {};
+
+      await Promise.all(
+        watchedLines!.map(async (line, index) => {
+          if (!line.product_id) {
+            map[index] = [];
+            return;
+          }
+
+          const res = await stockBalanceService.getProductLots(line.product_id);
+
+          map[index] = (res.data || [])
+            .filter((l) => Number(l.total_qty) > 0)
+            .map((l) => ({
+              id: l.lot_no,
+              name: `${l.lot_no} (${l.total_qty})`,
+            }));
+        }),
+      );
+
+      console.log("map", map);
+
+      setLotOptions(map);
+    };
+
+    fetchLots();
+  }, [watchedLines, sourceInventoryId]);
 
   const onSubmit = async (data: StockTransferFormValues) => {
     const payload = {
@@ -183,7 +222,13 @@ export default function StockTransferForm({
           variant="outline"
           size="sm"
           onClick={() =>
-            append({ product_id: 0, quantity: 1, uom_id: 1, remarks: "" })
+            append({
+              product_id: 0,
+              quantity: 1,
+              uom_id: 1,
+              lot_no: "",
+              remarks: "",
+            })
           }
           className="rounded-md h-8 border border-dashed"
         >
@@ -197,7 +242,7 @@ export default function StockTransferForm({
             key={field.id}
             className="grid grid-cols-12 gap-3 p-4 rounded-2xl bg-card border border-white/5 items-end transition-all hover:bg-muted/10"
           >
-            <div className="col-span-5">
+            <div className="col-span-4">
               <Controller
                 name={`lines.${index}.product_id`}
                 control={control}
@@ -212,6 +257,22 @@ export default function StockTransferForm({
                 )}
               />
             </div>
+
+            <div className="col-span-3">
+              <Controller
+                name={`lines.${index}.lot_no`}
+                control={control}
+                render={({ field: lField }) => (
+                  <FormSelect
+                    label={index === 0 ? "Lot" : ""}
+                    options={lotOptions[index] || []}
+                    value={lField.value || ""}
+                    onValueChange={lField.onChange}
+                  />
+                )}
+              />
+            </div>
+
             <div className="col-span-2">
               <FormInput
                 label={index === 0 ? "Qty" : ""}
@@ -221,6 +282,7 @@ export default function StockTransferForm({
                 })}
               />
             </div>
+
             <div className="col-span-2">
               <Controller
                 name={`lines.${index}.uom_id`}
@@ -235,12 +297,7 @@ export default function StockTransferForm({
                 )}
               />
             </div>
-            <div className="col-span-2">
-              <FormInput
-                label={index === 0 ? "Note" : ""}
-                registration={register(`lines.${index}.remarks`)}
-              />
-            </div>
+
             <div className="col-span-1 flex justify-center pb-1">
               <Button
                 type="button"

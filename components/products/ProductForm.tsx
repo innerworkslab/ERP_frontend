@@ -447,10 +447,7 @@ export default function ProductForm() {
                 Saving...
               </>
             ) : (
-              <>
-                <Save className="mr-2 h-4 w-4" />
-                Save changes
-              </>
+              <>Save changes</>
             )}
           </Button>
         </div>

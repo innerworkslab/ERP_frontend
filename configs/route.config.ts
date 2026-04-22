@@ -19,6 +19,7 @@ import {
   Package,
   MoveHorizontal,
   History,
+  BarChart,
 } from "lucide-react";
 
 export const routeConfig: Record<
@@ -268,7 +269,12 @@ export const routeConfig: Record<
   "/auth/stock-ledgers": {
     title: "View Stock Ledgers",
     desc: "View records of stock ledgers",
-    breadcrumb: "Details",
+    breadcrumb: "Stock Ledgers",
+  },
+  "/auth/stock-balances": {
+    title: "View Stock Balances",
+    desc: "View records of stock balances",
+    breadcrumb: "Stock Balances",
   },
 };
 
@@ -317,6 +323,11 @@ export const menu = [
         name: "Stock Ledger",
         path: "/auth/stock-ledgers",
         icon: History,
+      },
+      {
+        name: "Stock Balances",
+        path: "/auth/stock-balances",
+        icon: BarChart,
       },
     ],
   },

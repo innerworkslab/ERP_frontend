@@ -54,7 +54,8 @@ export function ReadOnlyDetail({
     | "inventory"
     | "collection"
     | "openingStock"
-    | "stockTransfer";
+    | "stockTransfer"
+    | "stockBalance";
 }) {
   if (!data) return null;
 
@@ -686,6 +687,77 @@ export function ReadOnlyDetail({
                   </tbody>
                 </table>
               </div>
+            </div>
+          </>
+        )}
+
+        {/* STOCK BALANCE */}
+        {type === "stockBalance" && data && (
+          <>
+            <div className="flex items-center gap-4 col-span-2 mb-2">
+              {data.product_image && (
+                <img
+                  src={data.product_image}
+                  className="h-16 w-16 rounded-2xl border border-white/5 object-cover"
+                />
+              )}
+              <div>
+                <h2 className="text-lg font-black uppercase tracking-tighter">
+                  {data.product_name}
+                </h2>
+                <p className="text-xs text-muted-foreground font-mono">
+                  {data.sku}
+                </p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4 col-span-2">
+              <DetailItem label="Warehouse" value={data.inventory_name} />
+              <DetailItem label="Branch" value={data.branch_names} />
+
+              <DetailItem
+                label="On Hand"
+                value={
+                  <span className="font-black text-primary">
+                    {data.on_hand_quantity} {data.stock_uom}
+                  </span>
+                }
+              />
+              <DetailItem
+                label="Available"
+                value={
+                  <span className="font-black text-emerald-500">
+                    {data.available_quantity} {data.stock_uom}
+                  </span>
+                }
+              />
+
+              <DetailItem label="Lot Number" value={data.lot_no || "N/A"} />
+              <DetailItem
+                label="Serial Number"
+                value={data.serial_no || "N/A"}
+              />
+
+              <DetailItem
+                label="Expiry Date"
+                value={data.expired_date || "No Expiry"}
+              />
+              <DetailItem label="Reorder Level" value={data.reorder_level} />
+            </div>
+
+            {/* VALUATION BOX */}
+            <div className="col-span-2 mt-4 p-4 rounded-2xl bg-primary/5 border border-primary/10">
+              <div className="flex justify-between items-center">
+                <span className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">
+                  Total Inventory Value
+                </span>
+                <span className="text-xl font-black text-primary">
+                  {Number(data.total_stock_value).toLocaleString()}
+                </span>
+              </div>
+              <p className="text-[9px] text-muted-foreground mt-1 uppercase">
+                Calculated at unit cost of {Number(data.unit_cost).toFixed(2)}
+              </p>
             </div>
           </>
         )}
