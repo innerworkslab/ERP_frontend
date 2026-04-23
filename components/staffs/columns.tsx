@@ -1,7 +1,7 @@
 "use client";
 
 import { ColumnDef } from "@tanstack/react-table";
-import { Edit, MapPin, Loader2, ToggleRight, ToggleLeft } from "lucide-react";
+import { Edit, Loader2, ToggleRight, ToggleLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Staff, staffService } from "@/api/staffs.service";
 import { toast } from "sonner";
@@ -123,7 +123,6 @@ export const columns: ColumnDef<Staff>[] = [
     accessorFn: (row) => row.branch?.location,
     cell: ({ row }) => (
       <div className="flex items-center gap-2 text-muted-foreground">
-        <MapPin className="h-3.5 w-3.5" />
         <span className="text-sm truncate max-w-37.5">
           {row.original.branch?.location || "-"}
         </span>

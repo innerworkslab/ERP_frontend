@@ -23,9 +23,7 @@ import { customerTypeService } from "@/api/customerTypes.service";
 export default function PriceGroupPage() {
   const [priceGroups, setPriceGroups] = useState<PriceGroup[]>([]);
   const [branches, setBranches] = useState<Option[]>([]);
-  const [customerTypes, setCustomerTypes] = useState<Option[]>([
-    { name: "Retail", id: "1" },
-  ]);
+  const [customerTypes, setCustomerTypes] = useState<Option[]>([]);
   const [lastPage, setLastPage] = useState(1);
 
   const [isDialogOpen, setIsDialogOpen] = useState(false);

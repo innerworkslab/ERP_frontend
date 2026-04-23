@@ -15,6 +15,7 @@ interface FormInputProps {
   registration: UseFormRegisterReturn;
   className?: string;
   rows?: number;
+  step?: string | number;
 }
 
 export function FormInput({
@@ -25,6 +26,7 @@ export function FormInput({
   registration,
   className,
   rows = 3,
+  step,
 }: FormInputProps) {
   const [showPassword, setShowPassword] = useState(false);
   const isPassword = type === "password";
@@ -52,11 +54,20 @@ export function FormInput({
           <>
             <Input
               type={inputType}
+              step={step}
               placeholder={placeholder}
+              min={type === "number" ? 0 : undefined}
+              onFocus={
+                type === "date"
+                  ? (e) => (e.currentTarget.type = "date")
+                  : undefined
+              }
               {...registration}
-              className={`bg-background/50 border-none h-11 rounded-2xl focus-visible:ring-primary/20 transition-all ${
+              className={`bg-background/50 border-none h-[40px] rounded-2xl focus-visible:ring-primary/20 transition-all ${
                 isPassword ? "pr-11" : ""
-              } ${error ? "ring-1 ring-destructive/50" : ""}`}
+              } ${error ? "ring-1 ring-destructive/50" : ""} ${
+                type === "date" ? "block w-full text-left" : ""
+              }`}
             />
 
             {isPassword && (

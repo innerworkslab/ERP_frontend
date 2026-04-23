@@ -45,9 +45,7 @@ export default function UOMConversionForm({
   useEffect(() => {
     const fetchUoms = async () => {
       const res = await uomService.getAll({});
-      setUoms(
-        res.map((u) => ({ id: u.id.toString(), name: u.name })),
-      );
+      setUoms(res.map((u) => ({ id: u.id.toString(), name: u.name })));
     };
     fetchUoms();
   }, []);
@@ -57,23 +55,19 @@ export default function UOMConversionForm({
   }, [isSubmitting, setLoading]);
 
   const onSubmit = async (values: UOMConversionFormValues) => {
-    try {
-      const payload = {
-        ...values,
-        base_unit_id: Number(values.base_unit_id),
-        conversion_unit_id: Number(values.conversion_unit_id),
-      };
-      if (initialData) {
-        await uomConversionService.update(initialData.id, payload);
-        toast.success("Conversion updated");
-      } else {
-        await uomConversionService.create(payload);
-        toast.success("Conversion created");
-      }
-      onSuccess();
-    } catch (error) {
-      toast.error("Operation failed");
+    const payload = {
+      ...values,
+      base_unit_id: Number(values.base_unit_id),
+      conversion_unit_id: Number(values.conversion_unit_id),
+    };
+    if (initialData) {
+      await uomConversionService.update(initialData.id, payload);
+      toast.success("Conversion updated");
+    } else {
+      await uomConversionService.create(payload);
+      toast.success("Conversion created");
     }
+    onSuccess();
   };
 
   return (

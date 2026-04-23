@@ -40,18 +40,14 @@ export default function VariationForm({
   });
 
   const onSubmit = async (values: VariationFormValues) => {
-    try {
-      if (initialData) {
-        await variationService.update(initialData.id, values);
-        toast.success("Variation updated successfully");
-      } else {
-        await variationService.create(values);
-        toast.success("Variation created successfully");
-      }
-      onSuccess();
-    } catch (error) {
-      toast.error("Operation failed");
+    if (initialData) {
+      await variationService.update(initialData.id, values);
+      toast.success("Variation updated successfully");
+    } else {
+      await variationService.create(values);
+      toast.success("Variation created successfully");
     }
+    onSuccess();
   };
 
   return (

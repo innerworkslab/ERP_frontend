@@ -1,7 +1,15 @@
 "use client";
 
 import { ColumnDef } from "@tanstack/react-table";
-import { Edit, Loader2, ToggleLeft, ToggleRight, Eye } from "lucide-react";
+import {
+  Edit,
+  Loader2,
+  ToggleLeft,
+  ToggleRight,
+  Eye,
+  Mail,
+  Phone,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { useState } from "react";
@@ -25,12 +33,8 @@ const ActionCell = ({
       setIsToggling(true);
       const res = await branchService.toggle(branch.id);
       const newStatus = branch.status === "active" ? "inactive" : "active";
-
       refresh();
-
       toast.success(res.response?.message || `Branch marked as ${newStatus}`);
-    } catch (error) {
-      toast.error("Failed to update status");
     } finally {
       setIsToggling(false);
     }
@@ -88,7 +92,7 @@ export const getColumns = (
     header: () => <div className="text-center">Prefix</div>,
     cell: ({ row }) => (
       <span className="flex justify-center font-mono text-[10px] font-bold uppercase opacity-60 tracking-widest">
-        {row.getValue("prefix")}
+        {row.original.prefix}
       </span>
     ),
   },
@@ -96,17 +100,28 @@ export const getColumns = (
     accessorKey: "name",
     header: "Branch Name",
     cell: ({ row }) => (
-      <span className="font-bold text-foreground">{row.getValue("name")}</span>
+      <div className="flex flex-col">
+        <span className="font-bold text-foreground leading-none">
+          {row.original.name}
+        </span>
+      </div>
     ),
   },
   {
-    accessorKey: "location",
-    header: "Location",
+    accessorKey: "email",
+    header: "Email",
     cell: ({ row }) => (
-      <div className="flex items-center gap-2 text-muted-foreground">
-        <span className="text-xs truncate max-w-[200px]">
-          {row.getValue("location")}
-        </span>
+      <div className="text-xs">
+        <span>{row.original.email}</span>
+      </div>
+    ),
+  },
+  {
+    accessorKey: "mobile",
+    header: "Mobile Number",
+    cell: ({ row }) => (
+      <div className="text-xs font-medium">
+        <span>{row.original.mobile}</span>
       </div>
     ),
   },
@@ -114,7 +129,7 @@ export const getColumns = (
     accessorKey: "status",
     header: "Status",
     cell: ({ row }) => {
-      const status = row.getValue("status") as string;
+      const status = row.original.status;
       const isActive = status === "active";
       return (
         <span

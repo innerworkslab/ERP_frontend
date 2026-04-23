@@ -31,8 +31,6 @@ const ActionCell = ({
       toast.success(
         res.response?.message || `Department marked as ${newStatus}`,
       );
-    } catch (error) {
-      toast.error("Failed to update status");
     } finally {
       setIsToggling(false);
     }

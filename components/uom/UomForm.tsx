@@ -36,18 +36,14 @@ export default function UomForm({ initialData, onSuccess, setLoading }: Props) {
   }, [isSubmitting, setLoading]);
 
   const onSubmit = async (values: UOMFormValues) => {
-    try {
-      if (initialData) {
-        await uomService.update(initialData.id, values);
-        toast.success("UOM updated successfully");
-      } else {
-        await uomService.create(values);
-        toast.success("UOM created successfully");
-      }
-      onSuccess();
-    } catch (error) {
-      toast.error("Operation failed");
+    if (initialData) {
+      await uomService.update(initialData.id, values);
+      toast.success("UOM updated successfully");
+    } else {
+      await uomService.create(values);
+      toast.success("UOM created successfully");
     }
+    onSuccess();
   };
 
   return (

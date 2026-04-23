@@ -29,8 +29,6 @@ const ActionCell = ({
       refresh();
 
       toast.success(res.response?.message || `Role marked as ${newStatus}`);
-    } catch (error) {
-      toast.error("Failed to update status");
     } finally {
       setIsToggling(false);
     }

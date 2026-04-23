@@ -1,66 +1,52 @@
 import { API_CONSTANT } from "@/constants/api.constant";
 import { api } from "@/lib/axios";
-import { ApiResponse, Filters, PaginationMeta } from "@/types/api.type";
-import { User } from "./auth.service";
+import { ApiResponse, Filters } from "@/types/api.type";
 
-export type BranchesFilter = Filters & {
+export type BranchFilters = Filters & {
   status?: string;
+  search?: string;
 };
 
 export interface Branch {
   id: number;
   prefix: string;
   name: string;
-  location: string;
+  latitude?: string;
+  longitude?: string;
+  mobile?: string;
+  alternate_phone?: string;
+  email?: string;
+  website?: string;
+  state_id: number;
+  city_id: number;
+  default_selling_price_group_id: number;
   status: "active" | "inactive";
-  created_by: User;
-  updated_by: User;
   created_at: string;
   updated_at: string;
 }
 
 export interface BranchesListResponse {
+  response: { status: string; message: string };
   data: Branch[];
-  meta?: PaginationMeta;
+  meta?: { total_pages: number };
 }
-
-export interface CreateBranchRequest {
-  prefix: string;
-  name: string;
-  location: string;
-  status: "active" | "inactive";
-}
-
-export type UpdateBranchRequest = CreateBranchRequest;
 
 const version = "v1";
 const baseUrl = `/${version}/${API_CONSTANT.BRANCH}`;
 
 export const branchService = {
-  getAll: async (params?: BranchesFilter): Promise<BranchesListResponse> => {
-    const res = (await api.get(`${baseUrl}/${API_CONSTANT.ALL}`, {
-      params,
-    })) as unknown as BranchesListResponse;
-    return res;
+  getAll: async (params?: BranchFilters): Promise<BranchesListResponse> => {
+    return await api.get(`${baseUrl}/${API_CONSTANT.ALL}`, { params });
   },
-
-  getById: async (id: number): Promise<ApiResponse<Branch>> => {
-    return await api.get(`${baseUrl}/${id}`);
-  },
-
-  create: async (
-    payload: CreateBranchRequest,
-  ): Promise<ApiResponse<Branch>> => {
+  create: async (payload: Partial<Branch>): Promise<ApiResponse<Branch>> => {
     return await api.post(baseUrl, payload);
   },
-
   update: async (
     id: number,
-    payload: UpdateBranchRequest,
+    payload: Partial<Branch>,
   ): Promise<ApiResponse<Branch>> => {
     return await api.put(`${baseUrl}/${id}`, payload);
   },
-
   toggle: async (id: number): Promise<ApiResponse<Branch>> => {
     return await api.patch(`${baseUrl}/${id}/${API_CONSTANT.TOGGLE_STATUS}`);
   },

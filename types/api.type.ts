@@ -1,6 +1,7 @@
 export interface Filters {
   search?: string;
   page?: number;
+  status?: string;
 }
 
 export interface PaginationMeta {

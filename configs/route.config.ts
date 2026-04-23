@@ -11,6 +11,15 @@ import {
   Layers,
   Ruler,
   RefreshCcw,
+  Coins,
+  Percent,
+  Tag,
+  Globe,
+  Warehouse,
+  Package,
+  MoveHorizontal,
+  History,
+  BarChart,
 } from "lucide-react";
 
 export const routeConfig: Record<
@@ -26,6 +35,21 @@ export const routeConfig: Record<
     title: "Branch Management",
     desc: "Manage your regional offices and branch locations.",
     breadcrumb: "Branches",
+  },
+  "/auth/branches/add": {
+    title: "Add Branch",
+    desc: "Create a new branch for your organization.",
+    breadcrumb: "Branches/Add",
+  },
+  "/auth/branches/:id": {
+    title: "Branch Details",
+    desc: "View and modify branch details and status.",
+    breadcrumb: "Details",
+  },
+  "/auth/branches/:id/edit": {
+    title: "Edit Branch",
+    desc: "Modify existing branch details and status.",
+    breadcrumb: "Edit",
   },
   "/auth/departments": {
     title: "Department Management",
@@ -104,13 +128,153 @@ export const routeConfig: Record<
   },
   "/auth/uom": {
     title: "Units of Measure Management",
-    desc: "Manage and define units of measurement for products and inventory.",
+    desc: "Manage and define units of measurement for products.",
     breadcrumb: "Units of Measure",
   },
   "/auth/uom-conversions": {
     title: "UOM Conversion Management",
     desc: "Define conversion rates between different units of measure.",
     breadcrumb: "UOM Conversion",
+  },
+  "/auth/currencies": {
+    title: "Currency Management",
+    desc: "Manage currencies and their exchange rates.",
+    breadcrumb: "Currencies",
+  },
+  "/auth/discount-groups": {
+    title: "Discount Groups",
+    desc: "Manage customer discount groups and branch assignments.",
+    breadcrumb: "Discount Groups",
+  },
+  "/auth/brands": {
+    title: "Brand Management",
+    desc: "Manage your product brands.",
+    breadcrumb: "Brands",
+  },
+  "/auth/categories": {
+    title: "Category Management",
+    desc: "Manage your product categories.",
+    breadcrumb: "Categories",
+  },
+  "/auth/taxes": {
+    title: "Tax Management",
+    desc: "Manage tax configurations and rates.",
+    breadcrumb: "Taxes",
+  },
+  "/auth/origin-countries": {
+    title: "Origin Country Management",
+    desc: "Manage origin countries for products.",
+    breadcrumb: "Origin Countries",
+  },
+  "/auth/products": {
+    title: "Product Management",
+    desc: "Manage your product catalog.",
+    breadcrumb: "Products",
+  },
+  "/auth/products/add": {
+    title: "Add Product",
+    desc: "Create a new product for your catalog.",
+    breadcrumb: "Products/Add",
+  },
+  "/auth/products/:id": {
+    title: "Product Details",
+    desc: "View and modify product details.",
+    breadcrumb: "Details",
+  },
+  "/auth/products/:id/edit": {
+    title: "Edit Product",
+    desc: "Modify existing product details.",
+    breadcrumb: "Edit",
+  },
+  "/auth/inventories": {
+    title: "Inventory Management",
+    desc: "View and modify inventories",
+    breadcrumb: "Inventories",
+  },
+  "/auth/inventories/add": {
+    title: "Add Inventory",
+    desc: "Create a new inventory for your catalog.",
+    breadcrumb: "inventories/Add",
+  },
+  "/auth/inventories/:id": {
+    title: "Inventory Details",
+    desc: "View and modify inventory details.",
+    breadcrumb: "Details",
+  },
+  "/auth/inventories/:id/edit": {
+    title: "Edit Inventory",
+    desc: "Modify existing inventory details.",
+    breadcrumb: "Edit",
+  },
+  "/auth/collections": {
+    title: "Collection Management",
+    desc: "View and modify collections",
+    breadcrumb: "Inventories",
+  },
+  "/auth/collections/add": {
+    title: "Add collection",
+    desc: "Create a new collection for your catalog.",
+    breadcrumb: "collections/add",
+  },
+  "/auth/collections/:id": {
+    title: "Collection Details",
+    desc: "View and modify collection details.",
+    breadcrumb: "Details",
+  },
+  "/auth/collections/:id/edit": {
+    title: "Edit collection",
+    desc: "Modify existing collection details.",
+    breadcrumb: "Edit",
+  },
+  "/auth/opening-stocks": {
+    title: "Collection Management",
+    desc: "View and modify opening stocks",
+    breadcrumb: "Inventories",
+  },
+  "/auth/opening-stocks/add": {
+    title: "Add Opening Stock",
+    desc: "Create a new opening stock for your catalog.",
+    breadcrumb: "opening-stocks/add",
+  },
+  "/auth/opening-stocks/:id": {
+    title: "Collection Details",
+    desc: "View and modify opening stock details.",
+    breadcrumb: "Details",
+  },
+  "/auth/opening-stocks/:id/edit": {
+    title: "Edit Opening Stock",
+    desc: "Modify existing opening stock details.",
+    breadcrumb: "Edit",
+  },
+  "/auth/inventory/stock-transfers": {
+    title: "Stock Transfers",
+    desc: "Manage and track inventory movement between warehouses.",
+    breadcrumb: "Inventories",
+  },
+  "/auth/inventory/stock-transfers/add": {
+    title: "New Stock Transfer",
+    desc: "Create a new inter-warehouse stock movement.",
+    breadcrumb: "stock-transfers/add",
+  },
+  "/auth/inventory/stock-transfers/:id": {
+    title: "Transfer Details",
+    desc: "View manifest and logistics path for this transfer.",
+    breadcrumb: "Details",
+  },
+  "/auth/inventory/stock-transfers/:id/edit": {
+    title: "Edit Stock Transfer",
+    desc: "Modify pending stock transfer records.",
+    breadcrumb: "Edit",
+  },
+  "/auth/stock-ledgers": {
+    title: "View Stock Ledgers",
+    desc: "View records of stock ledgers",
+    breadcrumb: "Stock Ledgers",
+  },
+  "/auth/stock-balances": {
+    title: "View Stock Balances",
+    desc: "View records of stock balances",
+    breadcrumb: "Stock Balances",
   },
 };
 
@@ -133,18 +297,57 @@ export const menu = [
   {
     section: "Sales & Pricing",
     items: [
+      { name: "Products", path: "/auth/products", icon: Tag },
+      { name: "Collections", path: "/auth/collections", icon: Package },
       { name: "Price Group", path: "/auth/price-groups", icon: DollarSign },
+      {
+        name: "Discount Groups",
+        path: "/auth/discount-groups",
+        icon: Percent,
+      },
       { name: "Customer Types", path: "/auth/customer-types", icon: Layers },
+      { name: "Taxes", path: "/auth/taxes", icon: Ticket },
     ],
   },
+  {
+    section: "Inventory Management",
+    items: [
+      { name: "Inventory", path: "/auth/inventories", icon: Warehouse },
+      { name: "Opening Stocks", path: "/auth/opening-stocks", icon: Package },
+      {
+        name: "Stock Transfers",
+        path: "/auth/stock-transfers",
+        icon: MoveHorizontal,
+      },
+      {
+        name: "Stock Ledger",
+        path: "/auth/stock-ledgers",
+        icon: History,
+      },
+      {
+        name: "Stock Balances",
+        path: "/auth/stock-balances",
+        icon: BarChart,
+      },
+    ],
+  },
+
   {
     section: "Setup",
     items: [
       { name: "Units of Measure", path: "/auth/uom", icon: Ruler },
+      { name: "Brands", path: "/auth/brands", icon: Tag },
+      { name: "Categories", path: "/auth/categories", icon: Layers },
+      { name: "Origin Countries", path: "/auth/origin-countries", icon: Globe },
       {
         name: "UOM Conversion",
         path: "/auth/uom-conversions",
         icon: RefreshCcw,
+      },
+      {
+        name: "Currencies",
+        path: "/auth/currencies",
+        icon: Coins,
       },
     ],
   },
