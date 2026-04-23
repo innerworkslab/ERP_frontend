@@ -151,6 +151,18 @@ export const staffService = {
     return await api.get(`${baseUrl}/${id}`);
   },
 
+  getFeatureSuggestions: async (
+    role_id: number,
+    department_id: number,
+  ): Promise<any> => {
+    return await api.get(`${baseUrl}/feature-suggestions`, {
+      params: {
+        role_id,
+        department_id,
+      },
+    });
+  },
+
   create: async (
     payload: CreateStaffRequest | FormData,
   ): Promise<ApiResponse<Staff>> => {

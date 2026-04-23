@@ -3,9 +3,9 @@ import { api } from "@/lib/axios";
 import { ApiResponse, Filters, PaginationMeta } from "@/types/api.type";
 import { User } from "./auth.service";
 
-export type DepartmentsFilter = Filters & {
+export type DepartmentsFilters = Filters & {
   status?: string;
-  branch_id: number | undefined;
+  branch_id?: number;
 };
 
 export interface Department {
@@ -45,12 +45,9 @@ const baseUrl = `/${version}/${API_CONSTANT.DEPARTMENT}`;
 
 export const departmentService = {
   getAll: async (
-    params?: DepartmentsFilter,
+    params?: DepartmentsFilters,
   ): Promise<DepartmentsListResponse> => {
-    const res = (await api.get(`${baseUrl}/${API_CONSTANT.ALL}`, {
-      params,
-    })) as unknown as DepartmentsListResponse;
-    return res;
+    return await api.get(`${baseUrl}/${API_CONSTANT.ALL}`, { params });
   },
 
   getById: async (id: number): Promise<ApiResponse<Department>> => {
@@ -58,7 +55,7 @@ export const departmentService = {
   },
 
   getByBranch: async (
-    params?: DepartmentsFilter,
+    params?: DepartmentsFilters,
   ): Promise<DepartmentsListResponse> => {
     const res = (await api.get(`${baseUrl}/${API_CONSTANT.BY_BRANCH}`, {
       params,
