@@ -33,6 +33,8 @@ export default function StockLedgerPage() {
     );
 
     if (res) {
+      console.log("res.data", res.data);
+
       setLedgers(res.data || []);
       setLastPage(res.meta?.total_pages || 1);
     }

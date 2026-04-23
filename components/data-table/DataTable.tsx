@@ -15,6 +15,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { cn } from "@/lib/utils";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -40,19 +41,28 @@ export function DataTable<TData, TValue>({
               key={headerGroup.id}
               className="border-border/30 hover:bg-transparent"
             >
-              {headerGroup.headers.map((header) => (
-                <TableHead
-                  key={header.id}
-                  className="text-muted-foreground font-bold"
-                >
-                  {header.isPlaceholder
-                    ? null
-                    : flexRender(
-                        header.column.columnDef.header,
-                        header.getContext(),
-                      )}
-                </TableHead>
-              ))}
+              {headerGroup.headers.map((header) => {
+                // Get the size from the column definition
+                const size = header.column.columnDef.size;
+
+                return (
+                  <TableHead
+                    key={header.id}
+                    className="text-muted-foreground font-bold whitespace-nowrap"
+                    style={{
+                      width: size ? `${size}px` : "auto",
+                      minWidth: size ? `${size}px` : "auto",
+                    }}
+                  >
+                    {header.isPlaceholder
+                      ? null
+                      : flexRender(
+                          header.column.columnDef.header,
+                          header.getContext(),
+                        )}
+                  </TableHead>
+                );
+              })}
             </TableRow>
           ))}
         </TableHeader>
@@ -63,11 +73,25 @@ export function DataTable<TData, TValue>({
                 key={row.id}
                 className="border-border/20 hover:bg-white/5 transition-colors"
               >
-                {row.getVisibleCells().map((cell) => (
-                  <TableCell key={cell.id}>
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                  </TableCell>
-                ))}
+                {row.getVisibleCells().map((cell) => {
+                  const size = cell.column.columnDef.size;
+
+                  return (
+                    <TableCell
+                      key={cell.id}
+                      className="whitespace-nowrap py-3"
+                      style={{
+                        width: size ? `${size}px` : "auto",
+                        minWidth: size ? `${size}px` : "auto",
+                      }}
+                    >
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext(),
+                      )}
+                    </TableCell>
+                  );
+                })}
               </TableRow>
             ))
           ) : (

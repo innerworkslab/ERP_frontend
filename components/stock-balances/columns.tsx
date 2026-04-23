@@ -4,127 +4,119 @@ import { ColumnDef } from "@tanstack/react-table";
 import { StockBalance } from "@/api/stockBalances.service";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import { Eye, Package2, AlertTriangle, Package } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import Image from "next/image";
+import { Package } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
-
-// const ActionCell = ({
-//   balance,
-//   onView,
-// }: {
-//   balance: StockBalance;
-//   onView: (b: StockBalance) => void;
-// }) => {
-//   return (
-//     <div className="flex items-center justify-center">
-//       <Button variant="ghost" size="icon" onClick={() => onView(balance)}>
-//         <Eye className="h-4 w-4 text-muted-foreground" />
-//       </Button>
-//     </div>
-//   );
-// };
 
 export const getColumns = (
   onView: (balance: StockBalance) => void,
 ): ColumnDef<StockBalance>[] => [
   {
-    accessorKey: "product",
-    header: "Product",
+    accessorKey: "product_image",
+    header: "Image",
+    size: 60,
     cell: ({ row }) => (
-      <div className="flex items-center gap-3">
-        <div className="relative h-9 w-9 rounded-xl overflow-hidden border border-white/5 bg-muted/20">
-          <Avatar className="h-9 w-9 rounded-lg border">
-            <AvatarImage
-              src={row.original.product_image}
-              className="object-cover"
-            />
-            <AvatarFallback className="rounded-lg">
-              <Package className="h-4 w-4 opacity-40" />
-            </AvatarFallback>
-          </Avatar>
-        </div>
-        <div className="flex flex-col">
-          <span className="font-bold text-xs leading-tight">
-            {row.original.product_name}
-          </span>
-        </div>
-      </div>
+      <Avatar className="h-9 w-9 rounded-xl border">
+        <AvatarImage
+          src={row.original.product_image}
+          className="object-cover"
+        />
+        <AvatarFallback>
+          <Package className="h-4 w-4 opacity-40" />
+        </AvatarFallback>
+      </Avatar>
     ),
   },
+  { accessorKey: "product_name", header: "Product Name", size: 200 },
+  { accessorKey: "sku", header: "SKU", size: 120 },
   {
-    accessorKey: "inventory_name",
-    header: "Location",
-    cell: ({ row }) => (
-      <div className="flex flex-col">
-        <span className="text-[11px] font-bold">
-          {row.original.inventory_name}
-        </span>
-      </div>
-    ),
+    accessorKey: "barcode",
+    header: "Barcode",
+    size: 150,
+    cell: ({ row }) => row.original.barcode || "-",
   },
+  { accessorKey: "category_name", header: "Category", size: 140 },
+  { accessorKey: "brand_name", header: "Brand", size: 140 },
+  { accessorKey: "branch_names", header: "Branch", size: 160 },
+  { accessorKey: "inventory_name", header: "Warehouse", size: 180 },
+  { accessorKey: "stock_uom", header: "UOM", size: 100 },
   {
     accessorKey: "on_hand_quantity",
-    header: "Stock Level",
-    cell: ({ row }) => {
-      const isLow =
-        Number(row.original.on_hand_quantity) <=
-        Number(row.original.reorder_level);
-      return (
-        <div className="flex flex-col">
-          <div
-            className={cn(
-              "flex items-center gap-1 font-black text-xs",
-              isLow ? "text-orange-500" : "text-primary",
-            )}
-          >
-            {row.original.on_hand_quantity} {row.original.stock_uom}
-          </div>
-        </div>
-      );
-    },
-  },
-  {
-    accessorKey: "batch_serial",
-    header: "Batch/Serial",
+    header: "On Hand",
+    size: 110,
     cell: ({ row }) => (
-      <div className="flex flex-col gap-1">
-        {row.original.lot_no && (
-          <span className="text-[10px] font-mono text-muted-foreground">
-            Lot: {row.original.lot_no}
-          </span>
-        )}
-        {row.original.serial_no && (
-          <span className="text-[10px] font-mono text-muted-foreground">
-            Serial: {row.original.serial_no}
-          </span>
-        )}
-      </div>
+      <span className="font-bold text-sm">{row.original.on_hand_quantity}</span>
     ),
   },
+  { accessorKey: "reserved_quantity", header: "Reserved", size: 110 },
   {
-    accessorKey: "expired_date",
-    header: "Expiry",
+    accessorKey: "available_quantity",
+    header: "Available",
+    size: 110,
     cell: ({ row }) => (
-      <span className="text-[10px] font-mono text-muted-foreground">
-        {row.original.expired_date || "-"}
+      <span className="font-bold text-sm text-emerald-500">
+        {row.original.available_quantity}
       </span>
     ),
   },
+  { accessorKey: "reorder_level", header: "Alert Qty", size: 110 },
+  {
+    accessorKey: "unit_cost",
+    header: "Unit Cost",
+    size: 130,
+    cell: ({ row }) => Number(row.original.unit_cost).toLocaleString(),
+  },
   {
     accessorKey: "total_stock_value",
-    header: () => <div className="text-right">Valuation</div>,
+    header: "Total Value",
+    size: 150,
     cell: ({ row }) => (
-      <div className="flex flex-col items-end">
-        <span className="font-black text-xs">
-          {Number(row.original.total_stock_value).toLocaleString()}
-        </span>
-      </div>
+      <span className="font-black text-sm">
+        {Number(row.original.total_stock_value).toLocaleString()}
+      </span>
     ),
   },
-  //   {
-  //     id: "actions",
-  //     header: () => <div className="text-center">Action</div>,
-  //     cell: ({ row }) => <ActionCell balance={row.original} onView={onView} />,
-  //   },
+  { accessorKey: "base_currency_value", header: "Base Value", size: 130 },
+  {
+    accessorKey: "lot_no",
+    header: "Lot No",
+    size: 160,
+    cell: ({ row }) => row.original.lot_no || "-",
+  },
+  {
+    accessorKey: "serial_no",
+    header: "Serial No",
+    size: 160,
+    cell: ({ row }) => row.original.serial_no || "-",
+  },
+  {
+    accessorKey: "expired_date",
+    header: "Expiry Date",
+    size: 130,
+    cell: ({ row }) => row.original.expired_date || "-",
+  },
+  { accessorKey: "last_movement_date", header: "Last Movement", size: 140 },
+  {
+    accessorKey: "status",
+    header: "Status",
+    size: 100,
+    cell: ({ row }) => (
+      <Badge
+        variant="outline"
+        className={cn(
+          "text-[10px] uppercase font-bold",
+          row.original.status === "active"
+            ? "border-emerald-500/50 text-emerald-500"
+            : "",
+        )}
+      >
+        {row.original.status}
+      </Badge>
+    ),
+  },
+  {
+    accessorKey: "expiry_remark",
+    header: "Expiry Remark",
+    size: 200,
+    cell: ({ row }) => row.original.expiry_remark || "-",
+  },
 ];
