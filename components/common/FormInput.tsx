@@ -10,7 +10,7 @@ import { UseFormRegisterReturn } from "react-hook-form";
 interface FormInputProps {
   label: string;
   placeholder?: string;
-  type?: "text" | "password" | "email" | "number" | "textarea";
+  type?: "text" | "password" | "email" | "number" | "textarea" | "date";
   error?: string;
   registration: UseFormRegisterReturn;
   className?: string;

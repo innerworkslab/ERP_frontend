@@ -16,6 +16,7 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import { FileInput } from "../common/FileInput";
 import { departmentService } from "@/api/departments.service";
 import { rolesService } from "@/api/roles.service";
+import PermissionGrid from "./PermissionGrid";
 
 type StaffFormValues = yup.InferType<typeof staffSchema>;
 
@@ -26,11 +27,13 @@ export default function StaffForm() {
   const [departments, setDepartments] = useState<
     { id: number; name: string }[]
   >([]);
+  const [permissions, setPermissions] = useState<Feature[]>([]);
   const params = useParams();
   const idParam = params?.id;
   const idValue = Array.isArray(idParam) ? idParam[0] : idParam;
   const isUpdate = !!idValue && idValue !== "add";
   const numericId = isUpdate ? Number(idValue) : null;
+  const [permission_ids, setPermissionIds] = useState<number[]>([]);
 
   const {
     register,
@@ -54,7 +57,7 @@ export default function StaffForm() {
 
   useEffect(() => {
     if (isUpdate && numericId) {
-      const fetchCustomer = async () => {
+      const fetchStaff = async () => {
         const res = await staffService.getById(numericId);
 
         if (res && res.data) {
@@ -109,7 +112,7 @@ export default function StaffForm() {
           });
         }
       };
-      fetchCustomer();
+      fetchStaff();
     }
   }, [numericId, isUpdate, reset]);
 
@@ -124,6 +127,17 @@ export default function StaffForm() {
       if (res?.data) setDepartments(res.data);
     });
   }, []);
+
+  const roleId = watch("role_id");
+  const departmentId = watch("department_id");
+
+  useEffect(() => {
+    if (roleId && departmentId) {
+      staffService.getFeatureSuggestions(roleId, departmentId).then((res) => {
+        if (res?.data) setPermissions(res.data.features);
+      });
+    }
+  }, [roleId, departmentId]);
 
   const onSubmit = async (data: StaffFormValues) => {
     const formData = new FormData();
@@ -199,8 +213,10 @@ export default function StaffForm() {
       toast.success(res.response?.message || "Success");
       router.push("/auth/staffs");
       router.refresh();
-    } catch (error: any) {
-      toast.error(error?.response?.data?.message || "Something went wrong");
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : "Something went wrong";
+      toast.error(errorMessage);
     }
   };
 
@@ -263,7 +279,9 @@ export default function StaffForm() {
       <FormSelect
         label="Status"
         value={watch("status")}
-        onValueChange={(val) => setValue("status", val)}
+        onValueChange={(val) =>
+          setValue("status", val as "active" | "inactive")
+        }
         options={[
           { id: "active", name: "Active" },
           { id: "inactive", name: "Inactive" },
@@ -359,7 +377,10 @@ export default function StaffForm() {
           label="Overtime Fee Type"
           value={watch("employment_information.overtime_fee_type")}
           onValueChange={(val) =>
-            setValue("employment_information.overtime_fee_type", val)
+            setValue(
+              "employment_information.overtime_fee_type",
+              val as "hourly" | "daily" | "monthly",
+            )
           }
           options={[
             { id: "hourly", name: "Hourly" },
@@ -408,6 +429,8 @@ export default function StaffForm() {
           error={errors.banking_information?.account_number?.message}
         />
       </div>
+
+      <PermissionGrid data={permissions} onChange={setPermissionIds} />
 
       <div className="flex justify-end pt-2">
         <Button type="submit" disabled={isSubmitting}>
