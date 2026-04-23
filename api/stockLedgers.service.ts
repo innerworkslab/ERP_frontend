@@ -28,9 +28,8 @@ export const stockLedgerService = {
     search?: string;
     page?: number;
   }): Promise<ApiResponse<StockLedger[]>> => {
-    const res = await api.get("/v1/stock-ledgers", {
+    return await api.get("/v1/stock-ledgers", {
       params,
     });
-    return res.data;
   },
 };
