@@ -189,7 +189,6 @@ export function ReadOnlyDetail({
               label="Parent Role"
               value={data.parent_role?.name || "Organization Root"}
             />
-            <DetailItem label="Branch" value={data.branch?.name} />
             <DetailItem label="Department" value={data.department?.name} />
             <DetailItem
               label="Assigned Features"
