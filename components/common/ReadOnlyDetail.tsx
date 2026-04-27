@@ -76,42 +76,87 @@ export function ReadOnlyDetail({
     <div className="space-y-6">
       <div className="grid grid-cols-2 gap-x-8 gap-y-5">
         {/* BRANCH TYPE */}
-        {type === "branch" && (
+        {type === "branch" && data && (
           <>
             <DetailItem label="Branch Name" value={data.name} fullWidth />
 
-            <DetailItem label="Status" value={StatusBadge} />
-            <DetailItem
-              label="Prefix"
-              value={
-                <span className="font-mono text-primary font-bold">
-                  {data.prefix}
-                </span>
-              }
-            />
-
-            <DetailItem label="Email Address" value={data.email} />
-            <DetailItem label="Mobile Number" value={data.mobile} />
-            {data.alternate_phone && (
-              <DetailItem label="Alt. Phone" value={data.alternate_phone} />
-            )}
-            {data.website && (
-              <DetailItem label="Website" value={data.website} fullWidth />
-            )}
-
-            <DetailItem
-              label="State/Region"
-              value={data.state?.name || data.state_id}
-            />
-            <DetailItem label="City" value={data.city?.name || data.city_id} />
-
-            {(data.latitude || data.longitude) && (
+            <div className="grid grid-cols-2 gap-4 col-span-2">
+              <DetailItem label="Status" value={StatusBadge} />
               <DetailItem
-                label="Coordinates"
-                value={`${data.latitude}, ${data.longitude}`}
-                fullWidth
+                label="Prefix"
+                value={
+                  <span className="font-mono text-primary font-bold">
+                    {data.prefix}
+                  </span>
+                }
               />
-            )}
+
+              <div className="col-span-2">
+                <DetailItem label="Address" value={data.address} fullWidth />
+              </div>
+
+              <DetailItem label="Email Address" value={data.email || "N/A"} />
+
+              <DetailItem
+                label="Mobile Phones"
+                value={
+                  <div className="flex flex-wrap gap-2 mt-1">
+                    {data.mobile_phones?.map((phone: string, idx: number) => (
+                      <Badge
+                        key={idx}
+                        variant="secondary"
+                        className="text-[10px] font-mono"
+                      >
+                        {phone}
+                      </Badge>
+                    )) || "N/A"}
+                  </div>
+                }
+              />
+
+              {data.website && (
+                <DetailItem
+                  label="Website"
+                  value={
+                    <a
+                      href={data.website}
+                      target="_blank"
+                      className="text-primary hover:underline truncate inline-block w-full"
+                    >
+                      {data.website}
+                    </a>
+                  }
+                />
+              )}
+
+              {data.facebook && (
+                <DetailItem
+                  label="Facebook"
+                  value={
+                    <span className="truncate inline-block w-full">
+                      {data.facebook}
+                    </span>
+                  }
+                />
+              )}
+
+              <DetailItem
+                label="State / Region"
+                value={data.state?.name || data.state_id || "N/A"}
+              />
+              <DetailItem
+                label="City"
+                value={data.city?.name || data.city_id || "N/A"}
+              />
+
+              {(data.latitude || data.longitude) && (
+                <DetailItem
+                  label="Coordinates (Lat, Long)"
+                  value={`${data.latitude || "0"}, ${data.longitude || "0"}`}
+                  fullWidth
+                />
+              )}
+            </div>
           </>
         )}
 
