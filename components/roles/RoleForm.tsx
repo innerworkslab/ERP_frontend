@@ -3,10 +3,9 @@
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
-import { branchService } from "@/api/branches.service";
 import {
   departmentService,
-  DepartmentsFilter,
+  DepartmentsFilters,
 } from "@/api/departments.service";
 import { roleSchema, RoleFormValues } from "./schema";
 import { FormInput } from "@/components/common/FormInput";
@@ -24,14 +23,12 @@ export default function RoleForm({
   onSuccess,
   setLoading,
 }: RoleFormProps) {
-  const [branches, setBranches] = useState<{ id: number; name: string }[]>([]);
   const [departments, setDepartments] = useState<
     { id: number; name: string }[]
   >([]);
   const [parentRoles, setParentRoles] = useState<
     { id: number; name: string }[]
   >([]);
-  const [loadingDeps, setLoadingDeps] = useState(false);
 
   const {
     register,
@@ -48,59 +45,28 @@ export default function RoleForm({
     },
   });
 
-  const selectedBranchId = watch("branch_id");
-
   useEffect(() => {
     setLoading?.(isSubmitting);
   }, [isSubmitting, setLoading]);
 
   useEffect(() => {
     const fetchMeta = async () => {
-      const [b, r] = await Promise.all([
-        branchService.getAll({ status: "active" }),
+      const [rolesRes, depRes] = await Promise.all([
         rolesService.getAllWithoutPagination(),
+        departmentService.getAll({ status: "active" } as DepartmentsFilters),
       ]);
-      if (b?.data) setBranches(b.data);
-      if (r?.data) setParentRoles(r.data);
+
+      if (rolesRes?.data) setParentRoles(rolesRes.data);
+      if (depRes?.data) setDepartments(depRes.data);
     };
     fetchMeta();
   }, []);
 
   useEffect(() => {
-    if (selectedBranchId) {
-      const fetchDeps = async () => {
-        setLoadingDeps(true);
-        const res = await departmentService.getByBranch({
-          branch_id: selectedBranchId,
-          status: "active",
-        } as DepartmentsFilter);
-        if (res?.data) setDepartments(res.data);
-        setLoadingDeps(false);
-      };
-      fetchDeps();
-    } else {
-      setDepartments([]);
-    }
-  }, [selectedBranchId]);
-
-  useEffect(() => {
     if (roleId) {
-      rolesService.getById(roleId).then(async (res) => {
+      rolesService.getById(roleId).then((res) => {
         if (res?.data) {
           const roleData = res.data;
-
-          if (roleData.branch_id) {
-            setLoadingDeps(true);
-            const depRes = await departmentService.getByBranch({
-              branch_id: roleData.branch_id,
-              status: "active",
-            } as DepartmentsFilter);
-
-            if (depRes?.data) {
-              setDepartments(depRes.data);
-            }
-            setLoadingDeps(false);
-          }
           reset({
             name: roleData.name,
             status: roleData.status,
@@ -150,25 +116,14 @@ export default function RoleForm({
 
       <div className="grid grid-cols-2 gap-4">
         <FormSelect
-          label="Branch Assignment"
-          placeholder="Select Branch"
-          value={watch("branch_id")?.toString()}
-          onValueChange={(val) => {
-            setValue("branch_id", Number(val));
-            setValue("department_id", 0);
-          }}
-          options={branches}
-          error={errors.branch_id?.message}
-        />
-
-        <FormSelect
           label="Department"
           placeholder="Select Dept"
-          loading={loadingDeps}
-          disabled={!selectedBranchId}
           value={watch("department_id")?.toString()}
           onValueChange={(val) => setValue("department_id", Number(val))}
-          options={departments}
+          options={departments.map((d) => ({
+            id: d.id.toString(),
+            name: d.name,
+          }))}
           error={errors.department_id?.message}
         />
       </div>
@@ -184,7 +139,7 @@ export default function RoleForm({
           { id: "0", name: "None (Root Role)" },
           ...parentRoles
             .filter((r) => r.id !== roleId)
-            .map((r) => ({ id: r.id, name: r.name })),
+            .map((r) => ({ id: r.id.toString(), name: r.name })),
         ]}
         error={errors.parent_role_id?.message}
       />

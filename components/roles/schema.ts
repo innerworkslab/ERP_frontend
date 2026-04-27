@@ -11,12 +11,6 @@ export const roleSchema = yup.object({
     .oneOf(["active", "inactive"])
     .required("Status is required"),
 
-  branch_id: yup
-    .number()
-    .typeError("Please select a branch")
-    .required("Branch is required")
-    .min(1, "Please select a branch"),
-
   department_id: yup
     .number()
     .typeError("Please select a department")

@@ -6,8 +6,7 @@ export const departmentSchema = yup
       .string()
       .required("Code is required")
       .min(2, "Min 2 characters")
-      .max(10, "Max 10 characters")
-      .matches(/^[A-Z0-9]+$/, "Must be uppercase alphanumeric"),
+      .max(10, "Max 10 characters"),
     name: yup
       .string()
       .required("Department name is required")
