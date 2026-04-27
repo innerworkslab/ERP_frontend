@@ -1,17 +1,16 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { useForm, Controller } from "react-hook-form";
+import { useForm, Controller, useFieldArray } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { branchSchema, BranchFormValues } from "./schema";
 import { branchService, Branch } from "@/api/branches.service";
 import { stateService } from "@/api/states.service";
 import { cityService } from "@/api/cities.service";
-import { priceGroupService } from "@/api/priceGroups.service";
 import { FormInput } from "@/components/common/FormInput";
 import { FormSelect, Option } from "@/components/common/FormSelect";
 import { Button } from "@/components/ui/button";
-import { Loader2 } from "lucide-react";
+import { Loader2, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 interface Props {
@@ -27,7 +26,6 @@ export default function BranchForm({
 }: Props) {
   const [states, setStates] = useState<Option[]>([]);
   const [cities, setCities] = useState<Option[]>([]);
-  const [priceGroups, setPriceGroups] = useState<Option[]>([]);
 
   const {
     register,
@@ -39,7 +37,16 @@ export default function BranchForm({
     formState: { errors, isSubmitting },
   } = useForm<BranchFormValues>({
     resolver: yupResolver(branchSchema),
-    defaultValues: { status: "active" },
+    defaultValues: {
+      status: "active",
+      mobile_phones: [""], // Initialize with one empty input
+    },
+  });
+
+  // Manage dynamic phone inputs
+  const { fields, append, remove } = useFieldArray({
+    control,
+    name: "mobile_phones" as never,
   });
 
   const selectedState = watch("state_id");
@@ -49,15 +56,9 @@ export default function BranchForm({
   }, [isSubmitting, setLoading]);
 
   const loadInitialData = useCallback(async () => {
-    const [stateRes, pgRes] = await Promise.all([
-      stateService.getAll(),
-      priceGroupService.getAll(),
-    ]);
+    const stateRes = await stateService.getAll();
     setStates(
       stateRes.data.map((s) => ({ id: s.id.toString(), name: s.name })),
-    );
-    setPriceGroups(
-      pgRes.data.map((p) => ({ id: p.id.toString(), name: p.name })),
     );
   }, []);
 
@@ -77,10 +78,7 @@ export default function BranchForm({
     if (branchData) {
       reset({
         ...branchData,
-        state_id: branchData.state_id,
-        city_id: branchData.city_id,
-        default_selling_price_group_id:
-          branchData.default_selling_price_group_id,
+        mobile_phones: branchData.mobile_phones || [""],
       });
     }
   }, [branchData, reset]);
@@ -90,11 +88,7 @@ export default function BranchForm({
       ? await branchService.update(branchData.id, data)
       : await branchService.create(data);
     if (res) {
-      toast.success(
-        res.response?.message || branchData
-          ? "Branch updated successfully."
-          : "Branch created successfully.",
-      );
+      toast.success(res.response?.message || "Success");
       onSuccess();
     }
   };
@@ -103,7 +97,7 @@ export default function BranchForm({
     <form
       id="branch-form"
       onSubmit={handleSubmit(onSubmit)}
-      className="space-y-4 py-2"
+      className="space-y-6 py-2"
     >
       <div className="grid grid-cols-2 gap-4">
         <FormInput
@@ -116,15 +110,87 @@ export default function BranchForm({
           registration={register("name")}
           error={errors.name?.message}
         />
+
+        <div className="col-span-2">
+          <FormInput
+            type="textarea"
+            label="Address"
+            registration={register("address")}
+            error={errors.address?.message}
+          />
+        </div>
+
+        <div className="col-span-2 space-y-3">
+          <div className="flex items-center justify-between">
+            <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+              Mobile Phones
+            </label>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => append("")}
+              className="h-7 px-2 rounded-xl text-[10px]"
+            >
+              <Plus className="mr-1 h-3 w-3" /> Add Phone
+            </Button>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            {fields.map((field, index) => (
+              <div key={field.id} className="flex gap-2">
+                <div className="flex-1">
+                  <FormInput
+                    placeholder="09..."
+                    registration={register(`mobile_phones.${index}` as const)}
+                    error={errors.mobile_phones?.[index]?.message}
+                  />
+                </div>
+                {fields.length > 1 && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => remove(index)}
+                    className="mt-1 text-destructive hover:bg-destructive/10"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                )}
+              </div>
+            ))}
+          </div>
+          {errors.mobile_phones?.root?.message && (
+            <p className="text-[10px] text-destructive">
+              {errors.mobile_phones.root.message}
+            </p>
+          )}
+        </div>
+
         <FormInput
           label="Email"
           registration={register("email")}
           error={errors.email?.message}
         />
         <FormInput
-          label="Mobile"
-          registration={register("mobile")}
-          error={errors.mobile?.message}
+          label="Website"
+          registration={register("website")}
+          error={errors.website?.message}
+        />
+        <FormInput
+          label="Facebook"
+          registration={register("facebook")}
+          error={errors.facebook?.message}
+        />
+        <span></span>
+        <FormInput
+          label="Latitude"
+          registration={register("latitude")}
+          error={errors.latitude?.message}
+        />
+        <FormInput
+          label="Longitude"
+          registration={register("longitude")}
+          error={errors.longitude?.message}
         />
 
         <Controller
@@ -159,40 +225,29 @@ export default function BranchForm({
           )}
         />
 
-        <Controller
-          name="default_selling_price_group_id"
-          control={control}
-          render={({ field }) => (
-            <FormSelect
-              label="Default Price Group"
-              options={priceGroups}
-              value={field.value?.toString()}
-              onValueChange={(val) => field.onChange(Number(val))}
-              error={errors.default_selling_price_group_id?.message}
-            />
-          )}
-        />
-
-        <FormSelect
-          label="Status"
-          value={watch("status")}
-          onValueChange={(val) =>
-            setValue("status", val as "active" | "inactive")
-          }
-          options={[
-            { id: "active", name: "Active" },
-            { id: "inactive", name: "Inactive" },
-          ]}
-        />
+        <div>
+          <FormSelect
+            label="Status"
+            value={watch("status")}
+            onValueChange={(val) =>
+              setValue("status", val as "active" | "inactive")
+            }
+            options={[
+              { id: "active", name: "Active" },
+              { id: "inactive", name: "Inactive" },
+            ]}
+          />
+        </div>
       </div>
 
       <div className="flex justify-end pt-4">
-        <Button type="submit" disabled={isSubmitting} className="min-w-[120px]">
+        <Button
+          type="submit"
+          disabled={isSubmitting}
+          className="min-w-[150px] rounded-2xl shadow-xl shadow-primary/20"
+        >
           {isSubmitting ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Saving...
-            </>
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
           ) : (
             "Save Branch"
           )}

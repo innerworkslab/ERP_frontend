@@ -8,7 +8,7 @@ import { Eye, EyeOff } from "lucide-react";
 import { UseFormRegisterReturn } from "react-hook-form";
 
 interface FormInputProps {
-  label: string;
+  label?: string;
   placeholder?: string;
   type?: "text" | "password" | "email" | "number" | "textarea" | "date";
   error?: string;
