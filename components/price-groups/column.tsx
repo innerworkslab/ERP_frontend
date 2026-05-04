@@ -52,7 +52,7 @@ const ActionCell = ({
       <Button
         variant="ghost"
         className={`h-8 w-8 p-0 [&_svg]:!h-5 [&_svg]:!w-5 ${
-          priceGroup.is_active
+          priceGroup.status === "active"
             ? "text-emerald-500 hover:bg-emerald-500/10"
             : "text-slate-400 hover:bg-slate-500/10"
         }`}
@@ -61,7 +61,7 @@ const ActionCell = ({
       >
         {isToggling ? (
           <Loader2 className="animate-spin !h-4 !w-4" />
-        ) : priceGroup.is_active ? (
+        ) : priceGroup.status === "active" ? (
           <ToggleRight />
         ) : (
           <ToggleLeft />
@@ -92,10 +92,10 @@ export const getColumns = (
     cell: ({ row }) => <span>{row.original.branch?.name || "-"}</span>,
   },
   {
-    accessorKey: "is_active",
+    accessorKey: "status",
     header: "Status",
     cell: ({ row }) => {
-      const active = row.original.is_active;
+      const active = row.original.status === "active";
       return (
         <span
           className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase border ${

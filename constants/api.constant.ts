@@ -1,3 +1,4 @@
+import { NRC } from "./../api/nrc.service";
 export const API_CONSTANT = {
   USER: "users",
   AUTH: "auth",
@@ -31,4 +32,5 @@ export const API_CONSTANT = {
   INVENTORY: "inventories",
   COLLECTION: "collections",
   STOCK_BALANCE: "stock-balances",
+  NRC: "nrc",
 } as const;

@@ -173,7 +173,7 @@ export const staffService = {
     id: number,
     payload: UpdateStaffRequest | FormData,
   ): Promise<ApiResponse<Staff>> => {
-    return await api.put(`${baseUrl}/${id}`, payload);
+    return await api.post(`${baseUrl}/${id}`, payload);
   },
 
   toggle: async (id: number): Promise<ApiResponse<Staff>> => {

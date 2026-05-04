@@ -8,12 +8,12 @@ export interface PriceGroup {
   id: number;
   name: string;
   customer_type_id: number;
-  branch_id: number;
-  is_active: boolean;
+  branch_id: number[];
+  status?: "active" | "inactive";
   created_at: string;
   updated_at: string;
   customer_type?: Customer;
-  branch?: Branch;
+  branches?: Branch[];
 }
 
 export interface PriceGroupFilters extends Filters {
