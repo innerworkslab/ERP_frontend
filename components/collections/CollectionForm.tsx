@@ -11,7 +11,7 @@ import { uomService } from "@/api/uom.service";
 import { FormInput } from "@/components/common/FormInput";
 import { FormSelect, Option } from "@/components/common/FormSelect";
 import { Button } from "@/components/ui/button";
-import { Loader2, ReceiptEuro, ShoppingCart } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
 interface Props {
@@ -86,9 +86,15 @@ export default function CollectionForm({
   }, [initialData, reset]);
 
   const onSubmit = async (data: CollectionFormValues) => {
+    const payload = Object.fromEntries(
+      Object.entries(data).filter(
+        ([_, value]) => value !== "" && value !== null && value !== undefined,
+      ),
+    ) as CollectionFormValues;
+
     const res = initialData
-      ? await collectionsService.update(initialData.id, data)
-      : await collectionsService.create(data);
+      ? await collectionsService.update(initialData.id, payload)
+      : await collectionsService.create(payload);
     if (res) {
       toast.success(
         res.response?.message || initialData
@@ -143,7 +149,9 @@ export default function CollectionForm({
                 label="Purchase Currency"
                 options={currencies}
                 value={field.value?.toString()}
-                onValueChange={(val) => field.onChange(Number(val))}
+                onValueChange={(val) =>
+                  field.onChange(val ? Number(val) : undefined)
+                }
                 error={errors.purchase_currency_id?.message}
               />
             )}
@@ -157,7 +165,9 @@ export default function CollectionForm({
                 label="Purchase Tax"
                 options={taxes}
                 value={field.value?.toString()}
-                onValueChange={(val) => field.onChange(Number(val))}
+                onValueChange={(val) =>
+                  field.onChange(val ? Number(val) : undefined)
+                }
                 error={errors.purchase_tax_id?.message}
               />
             )}
@@ -171,7 +181,9 @@ export default function CollectionForm({
                 label="Purchase UOM"
                 options={uoms}
                 value={field.value?.toString()}
-                onValueChange={(val) => field.onChange(Number(val))}
+                onValueChange={(val) =>
+                  field.onChange(val ? Number(val) : undefined)
+                }
                 error={errors.purchase_uom_id?.message}
               />
             )}
@@ -194,7 +206,9 @@ export default function CollectionForm({
                 label="Sale Currency"
                 options={currencies}
                 value={field.value?.toString()}
-                onValueChange={(val) => field.onChange(Number(val))}
+                onValueChange={(val) =>
+                  field.onChange(val ? Number(val) : undefined)
+                }
                 error={errors.sale_currency_id?.message}
               />
             )}
@@ -208,7 +222,9 @@ export default function CollectionForm({
                 label="Sale Tax"
                 options={taxes}
                 value={field.value?.toString()}
-                onValueChange={(val) => field.onChange(Number(val))}
+                onValueChange={(val) =>
+                  field.onChange(val ? Number(val) : undefined)
+                }
                 error={errors.sale_tax_id?.message}
               />
             )}
@@ -222,7 +238,9 @@ export default function CollectionForm({
                 label="Sale UOM"
                 options={uoms}
                 value={field.value?.toString()}
-                onValueChange={(val) => field.onChange(Number(val))}
+                onValueChange={(val) =>
+                  field.onChange(val ? Number(val) : undefined)
+                }
                 error={errors.sale_uom_id?.message}
               />
             )}

@@ -1,12 +1,14 @@
 import { API_CONSTANT } from "@/constants/api.constant";
 import { api } from "@/lib/axios";
-import { ApiResponse, Filters } from "@/types/api.type";
+import { Filters } from "@/types/api.type";
+import { Category } from "./categories.service";
 
 export interface Variation {
   id: number;
   name: string;
   value_data_type: "Number" | "String" | "Boolean" | "Date";
   status: "active" | "inactive";
+  product_categories: Category[];
   created_at: string;
   updated_at: string;
   created_by?: string;

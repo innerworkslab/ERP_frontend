@@ -9,6 +9,7 @@ export type OriginCountryFilters = Filters & {
 export interface OriginCountry {
   id: number;
   name: string;
+  status: "active" | "inactive";
   created_at: string;
   updated_at: string;
 }

@@ -64,7 +64,10 @@ export default function OriginCountryPage() {
     setIsDialogOpen(true);
   };
 
-  const columns = useMemo(() => getColumns(handleEdit, handleView), []);
+  const columns = useMemo(
+    () => getColumns(handleEdit, handleView, loadCountries),
+    [loadCountries],
+  );
 
   return (
     <div className="space-y-6 relative min-h-[400px]">

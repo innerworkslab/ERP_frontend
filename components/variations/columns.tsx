@@ -82,16 +82,34 @@ export const getColumns = (
     accessorKey: "name",
     header: "Variation Name",
     cell: ({ row }) => (
-      <div className="flex flex-col">
-        <span className="font-bold text-sm">{row.original.name}</span>
-      </div>
+      <span className="font-bold text-sm">{row.original.name}</span>
     ),
+  },
+  {
+    accessorKey: "product_categories",
+    header: "Categories",
+    cell: ({ row }) => {
+      const categories = row.original.product_categories || [];
+      return (
+        <div className="flex flex-wrap gap-1">
+          {categories.map((cat) => (
+            <Badge
+              key={cat.id}
+              variant="outline"
+              className="text-[9px] px-2 py-0 h-5 bg-primary/5 text-primary border-primary/20"
+            >
+              {cat.name}
+            </Badge>
+          ))}
+        </div>
+      );
+    },
   },
   {
     accessorKey: "value_data_type",
     header: "Data Type",
     cell: ({ row }) => (
-      <span className="text-xs font-medium">
+      <span className="text-xs font-medium italic text-slate-500">
         {row.original.value_data_type}
       </span>
     ),

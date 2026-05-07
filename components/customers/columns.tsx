@@ -1,28 +1,15 @@
 "use client";
 
 import { ColumnDef } from "@tanstack/react-table";
-import { Edit, MapPin, Loader2, ToggleRight, ToggleLeft } from "lucide-react";
+import { Edit } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Customer, customerService } from "@/api/customers.service";
-import { toast } from "sonner";
+import { Customer } from "@/api/customers.service";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 const ActionCell = ({ customer }: { customer: Customer }) => {
   const router = useRouter();
-  const [isToggling, setIsToggling] = useState(false);
-
-  const handleToggleStatus = async () => {
-    try {
-      setIsToggling(true);
-      const res = await customerService.toggle(customer.id);
-
-      const newStatus = customer.status === "active" ? "inactive" : "active";
-      toast.success(res.response?.message || `Customer marked as ${newStatus}`);
-    } finally {
-      setIsToggling(false);
-    }
-  };
+  const [isToggling] = useState(false);
 
   return (
     <div className="flex items-center justify-center gap-4">
@@ -35,27 +22,6 @@ const ActionCell = ({ customer }: { customer: Customer }) => {
         <Edit />
         <span className="sr-only">Edit</span>
       </Button>
-
-      {/* <Button
-        variant="ghost"
-        aria-disabled
-        className={`h-8 w-8 p-0 flex items-center justify-center [&_svg]:h-5! [&_svg]:w-5! ${
-          customer.status === "active"
-            ? "text-emerald-500 hover:bg-emerald-500/10"
-            : "text-slate-400 hover:bg-slate-500/10"
-        }`}
-        onClick={handleToggleStatus}
-        disabled={isToggling}
-      >
-        {isToggling ? (
-          <Loader2 className="animate-spin" />
-        ) : customer.status === "active" ? (
-          <ToggleRight />
-        ) : (
-          <ToggleLeft />
-        )}
-        <span className="sr-only">Toggle Status</span>
-      </Button> */}
     </div>
   );
 };
@@ -98,20 +64,19 @@ export const columns: ColumnDef<Customer>[] = [
     ),
   },
   {
-    accessorKey: "type",
+    id: "type",
     header: "Type",
+    accessorFn: (row) => row.customer_type?.name,
     cell: ({ row }) => (
-      <span className="text-sm">{row.getValue("type") || "-"}</span>
+      <span className="text-sm">{row.original.customer_type?.name || "-"}</span>
     ),
   },
   {
-    id: "branch",
-    header: "Branch",
-    accessorFn: (row) => row.branch?.name,
+    id: "city",
+    header: "City",
+    accessorFn: (row) => row.city?.name,
     cell: ({ row }) => (
-      <span className="text-sm font-medium">
-        {row.original.branch?.name || "-"}
-      </span>
+      <span className="text-sm">{row.original.city?.name || "-"}</span>
     ),
   },
   {

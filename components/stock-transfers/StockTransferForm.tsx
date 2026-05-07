@@ -138,8 +138,6 @@ export default function StockTransferForm({
         }),
       );
 
-      console.log("map", map);
-
       setLotOptions(map);
     };
 
@@ -236,7 +234,7 @@ export default function StockTransferForm({
         </Button>
       </div>
 
-      <div className="max-h-[400px] overflow-y-auto space-y-3 pr-2 custom-scrollbar">
+      <div className="max-h-[600px] overflow-y-auto min-h-[300px] space-y-3 pr-2 custom-scrollbar">
         {fields.map((field, index) => (
           <div
             key={field.id}
