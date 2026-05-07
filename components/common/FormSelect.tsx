@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Plus, Search, ChevronDown, Check } from "lucide-react";
+import { Plus, Search, ChevronDown, Check, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Label } from "@/components/ui/label";
 import {
@@ -27,6 +27,7 @@ interface FormSelectProps {
   error?: string;
   disabled?: boolean;
   loading?: boolean;
+  isClearable?: boolean;
 }
 
 export function FormSelect({
@@ -40,15 +41,23 @@ export function FormSelect({
   error,
   disabled,
   loading,
+  isClearable = true,
 }: FormSelectProps) {
   const [isOpen, setIsOpen] = React.useState(false);
   const [searchTerm, setSearchTerm] = React.useState("");
   const [isModalOpen, setIsModalOpen] = React.useState(false);
+  const [hasInitialOptions, setHasInitialOptions] = React.useState(false);
 
   const containerRef = React.useRef<HTMLDivElement>(null);
   const previousOptionsRef = React.useRef<Option[]>(options);
 
-  // Close dropdown when clicking outside
+  React.useEffect(() => {
+    if (options.length > 0 && !hasInitialOptions) {
+      previousOptionsRef.current = options;
+      setHasInitialOptions(true);
+    }
+  }, [options, hasInitialOptions]);
+
   React.useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -62,9 +71,11 @@ export function FormSelect({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Auto-select newly created options
   React.useEffect(() => {
-    if (previousOptionsRef.current.length < options.length) {
+    if (
+      hasInitialOptions &&
+      previousOptionsRef.current.length < options.length
+    ) {
       const newOption = options.find(
         (opt) => !previousOptionsRef.current.some((prev) => prev.id === opt.id),
       );
@@ -73,7 +84,7 @@ export function FormSelect({
       }
       previousOptionsRef.current = options;
     }
-  }, [options, onValueChange]);
+  }, [options, onValueChange, hasInitialOptions]);
 
   const filteredOptions = options.filter((option) =>
     option.name.toLowerCase().includes(searchTerm.toLowerCase()),
@@ -86,6 +97,12 @@ export function FormSelect({
   const handleSelect = (id: string) => {
     onValueChange(id);
     setIsOpen(false);
+    setSearchTerm("");
+  };
+
+  const handleClear = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onValueChange("");
     setSearchTerm("");
   };
 
@@ -120,7 +137,10 @@ export function FormSelect({
         )}
       >
         <span
-          className={cn("text-sm", !selectedOption && "text-muted-foreground")}
+          className={cn(
+            "text-sm truncate",
+            !selectedOption && "text-muted-foreground",
+          )}
         >
           {loading
             ? "Loading..."
@@ -128,12 +148,21 @@ export function FormSelect({
               ? selectedOption.name
               : placeholder}
         </span>
-        <ChevronDown
-          className={cn(
-            "h-4 w-4 opacity-50 transition-transform",
-            isOpen && "rotate-180",
+
+        <div className="flex items-center gap-1 shrink-0">
+          {isClearable && selectedOption && !disabled && !loading && (
+            <X
+              onClick={handleClear}
+              className="h-3.5 w-3.5 text-muted-foreground hover:text-destructive transition-colors mr-1"
+            />
           )}
-        />
+          <ChevronDown
+            className={cn(
+              "h-4 w-4 opacity-50 transition-transform",
+              isOpen && "rotate-180",
+            )}
+          />
+        </div>
       </div>
 
       {isOpen && (

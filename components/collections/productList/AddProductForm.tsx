@@ -39,7 +39,7 @@ export default function AddProductForm({
   } = useForm<AddProductFormValues>({
     resolver: yupResolver(addProductSchema),
     defaultValues: {
-      products: [], // Start empty while fetching
+      products: [],
     },
   });
 
@@ -55,21 +55,17 @@ export default function AddProductForm({
   const loadInitialData = useCallback(async () => {
     try {
       setFetchingExisting(true);
-
-      // Fetch both product options and current collection products
       const [allProductsRes, existingProductsRes] = await Promise.all([
         productService.getAll(),
         collectionsService.getProductList(collectionId),
       ]);
 
-      // 1. Map options for the dropdown
       const options = allProductsRes.data.map((p) => ({
         id: p.id.toString(),
         name: `${p.name} (${p.sku})`,
       }));
       setProductOptions(options);
 
-      // 2. Map existing products to form values
       if (existingProductsRes.data && existingProductsRes.data.length > 0) {
         const existingItems = existingProductsRes.data.map((p) => ({
           product_id: p.id,
@@ -77,7 +73,6 @@ export default function AddProductForm({
         }));
         reset({ products: existingItems });
       } else {
-        // If no existing products, add one empty row
         reset({ products: [{ product_id: 0, product_qty: 1 }] });
       }
     } catch (err) {
@@ -115,7 +110,7 @@ export default function AddProductForm({
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 py-2">
-      <div className="max-h-[400px] overflow-y-auto pr-2 space-y-3 custom-scrollbar min-h-[100px] relative">
+      <div className="max-h-[600px] overflow-y-auto pr-2 space-y-3 custom-scrollbar min-h-[450px] relative">
         {fetchingExisting && (
           <div className="absolute inset-0 z-10 flex items-center justify-center bg-background/50 backdrop-blur-sm rounded-2xl">
             <Loader2 className="h-6 w-6 animate-spin text-primary" />

@@ -211,7 +211,7 @@ export default function OpeningStockForm({
         </Button>
       </div>
 
-      <div className="max-h-[400px] overflow-y-auto space-y-3 pr-2 custom-scrollbar">
+      <div className="max-h-[600px] overflow-y-auto min-h-[300px] space-y-3 pr-2 custom-scrollbar">
         {fields.map((field, index) => {
           const rowQty = Number(watchedLines?.[index]?.quantity) || 0;
           const rowPrice = Number(watchedLines?.[index]?.purchase_price) || 0;

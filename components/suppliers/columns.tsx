@@ -1,28 +1,15 @@
 "use client";
 
 import { ColumnDef } from "@tanstack/react-table";
-import { Edit, Loader2, ToggleRight, ToggleLeft } from "lucide-react";
+import { Edit } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Supplier, supplierService } from "@/api/suppliers.service";
-import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 const ActionCell = ({ supplier }: { supplier: Supplier }) => {
   const router = useRouter();
-  const [isToggling, setIsToggling] = useState(false);
-
-  const handleToggleStatus = async () => {
-    try {
-      setIsToggling(true);
-      const res = await supplierService.toggle(supplier.id!);
-
-      const newStatus = supplier.status === "active" ? "inactive" : "active";
-      toast.success(res.response?.message || `Supplier marked as ${newStatus}`);
-    } finally {
-      setIsToggling(false);
-    }
-  };
+  const [isToggling] = useState(false);
 
   return (
     <div className="flex items-center justify-center gap-4">
@@ -35,27 +22,6 @@ const ActionCell = ({ supplier }: { supplier: Supplier }) => {
         <Edit />
         <span className="sr-only">Edit</span>
       </Button>
-
-      {/* <Button
-        variant="ghost"
-        aria-disabled
-        className={`h-8 w-8 p-0 flex items-center justify-center [&_svg]:h-5! [&_svg]:w-5! ${
-          supplier.status === "active"
-            ? "text-emerald-500 hover:bg-emerald-500/10"
-            : "text-slate-400 hover:bg-slate-500/10"
-        }`}
-        onClick={handleToggleStatus}
-        disabled={isToggling}
-      >
-        {isToggling ? (
-          <Loader2 className="animate-spin" />
-        ) : supplier.status === "active" ? (
-          <ToggleRight />
-        ) : (
-          <ToggleLeft />
-        )}
-        <span className="sr-only">Toggle Status</span>
-      </Button> */}
     </div>
   );
 };
@@ -98,20 +64,10 @@ export const columns: ColumnDef<Supplier>[] = [
     ),
   },
   {
-    accessorKey: "type",
-    header: "Type",
+    accessorKey: "address",
+    header: "Address",
     cell: ({ row }) => (
-      <span className="text-sm">{row.getValue("type") || "-"}</span>
-    ),
-  },
-  {
-    id: "branch",
-    header: "Branch",
-    accessorFn: (row) => row.branch?.name,
-    cell: ({ row }) => (
-      <span className="text-sm font-medium">
-        {row.original.branch?.name || "-"}
-      </span>
+      <span className="text-sm">{row.getValue("address") || "-"}</span>
     ),
   },
   {

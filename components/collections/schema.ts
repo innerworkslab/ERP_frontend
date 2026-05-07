@@ -7,11 +7,11 @@ export const collectionSchema = yup.object({
     .typeError("Must be a number")
     .required("Required"),
   purchase_currency_id: yup.number().required("Required"),
-  purchase_tax_id: yup.number().required("Required"),
+  purchase_tax_id: yup.number().nullable(),
   purchase_uom_id: yup.number().required("Required"),
   sale_price: yup.number().typeError("Must be a number").required("Required"),
   sale_currency_id: yup.number().required("Required"),
-  sale_tax_id: yup.number().required("Required"),
+  sale_tax_id: yup.number().nullable(),
   sale_uom_id: yup.number().required("Required"),
   status: yup.string().required("Required"),
 });

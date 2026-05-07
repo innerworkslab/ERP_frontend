@@ -287,13 +287,21 @@ export function ReadOnlyDetail({
               value={<Badge variant="secondary">{data.value_data_type}</Badge>}
             />
             <DetailItem
-              label="Last Modified By"
-              value={data.updated_by?.name || "N/A"}
-            />
-            <DetailItem
-              label="Created Date"
-              value={formatDate(data.created_at)}
+              label="Categories"
               fullWidth
+              value={
+                <div className="flex flex-wrap gap-1">
+                  {data.product_categories?.map((cat: any) => (
+                    <Badge
+                      key={cat.id}
+                      variant="outline"
+                      className="bg-primary/5 text-primary border-primary/20"
+                    >
+                      {cat.name}
+                    </Badge>
+                  )) || "N/A"}
+                </div>
+              }
             />
           </>
         )}
