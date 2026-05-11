@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useApi } from "@/hooks/useApi";
-import { Loader2 } from "lucide-react";
+import { Loader2, Eye, EyeOff } from "lucide-react";
 import { authService, LoginResponse } from "@/api/auth.service";
 import { setEncryptedCookie } from "@/lib/cookie.utils";
 import { COOKIES } from "@/constants/cookie.constant";
@@ -16,6 +16,7 @@ export default function Login() {
   const { request, loading, error } = useApi<LoginResponse>();
   const [phoneNumber, setPhoneNumber] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -23,7 +24,6 @@ export default function Login() {
       authService.login({ phone_number: phoneNumber, password }),
     );
     if (res) {
-      console.log("token:", res.token);
       setEncryptedCookie(
         COOKIES.AUTH_USER,
         {
@@ -58,13 +58,26 @@ export default function Login() {
             className="bg-background/50 border-none h-11 focus-visible:ring-primary/50"
           />
 
-          <Input
-            placeholder="Password"
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="bg-background/50 border-none h-11 focus-visible:ring-primary/50"
-          />
+          <div className="relative">
+            <Input
+              placeholder="Password"
+              type={showPassword ? "text" : "password"}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="bg-background/50 border-none h-11 focus-visible:ring-primary/50 pr-10"
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+            >
+              {showPassword ? (
+                <EyeOff className="h-4 w-4" />
+              ) : (
+                <Eye className="h-4 w-4" />
+              )}
+            </button>
+          </div>
         </div>
 
         {error && (

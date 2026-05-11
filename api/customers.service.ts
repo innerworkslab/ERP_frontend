@@ -36,6 +36,19 @@ export interface Customer {
     name: string;
     location: string;
   };
+  bank_accounts?: {
+    bank_name: string;
+    account_number: string;
+    holder_name: string;
+  }[];
+  customer_type?: {
+    id: number;
+    name: string;
+  };
+  city?: {
+    id: number;
+    name: string;
+  };
 }
 
 export interface CustomersListResponse {

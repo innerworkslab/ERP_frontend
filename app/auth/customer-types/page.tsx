@@ -1,107 +1,127 @@
 "use client";
 
 import { useEffect, useState, useCallback, useMemo } from "react";
-import { getColumns } from "@/components/customer-types/columns";
+import { getColumns } from "@/components/customers/columns";
 import { BaseFilter } from "@/components/common/BaseFilter";
 import { DataTable } from "@/components/data-table/DataTable";
+import { Pagination } from "@/components/common/Pagination";
+import { useRouter } from "next/navigation";
 import { useApi } from "@/hooks/useApi";
 import {
-  customerTypeService,
-  CustomerType,
-  CustomerTypeListResponse,
-} from "@/api/customerTypes.service";
+  customerService,
+  CustomersListResponse,
+  Customer,
+} from "@/api/customers.service";
 import { Loader2 } from "lucide-react";
-import { AppDialog } from "@/components/common/AppDialog";
-import CustomerTypeForm from "@/components/customer-types/CustomerTypeForm";
-import { ReadOnlyDetail } from "@/components/common/ReadOnlyDetail";
+import { Controller, useForm } from "react-hook-form";
+import { FormSelect } from "@/components/common/FormSelect";
 
-export default function CustomerTypePage() {
-  const [data, setData] = useState<CustomerType[]>([]);
-  const [search, setSearch] = useState("");
-  const [isOpen, setIsOpen] = useState(false);
-  const [isViewOpen, setIsViewOpen] = useState(false);
-  const [selected, setSelected] = useState<CustomerType | null>(null);
-  const [formLoading, setFormLoading] = useState(false);
+export default function CustomerPage() {
+  const router = useRouter();
+  const [customers, setCustomers] = useState<Customer[]>([]);
+  const [lastPage, setLastPage] = useState(1);
 
-  const { request, loading } = useApi<CustomerTypeListResponse>();
+  const { control, watch, setValue } = useForm({
+    defaultValues: {
+      search: "",
+      status: "all",
+      page: 1,
+    },
+  });
 
-  const loadData = useCallback(async () => {
-    const res = await request(() => customerTypeService.getAll({ search }));
-    if (res) setData(res.data || []);
-  }, [request, search]);
+  const search = watch("search");
+  const status = watch("status");
+  const page = watch("page");
+
+  const { request, loading, error } = useApi<CustomersListResponse>();
+
+  const loadCustomers = useCallback(async () => {
+    const res = await request(() =>
+      customerService.getAll({
+        search: search || undefined,
+        status: status === "all" ? undefined : status,
+        page,
+      }),
+    );
+    if (res) {
+      setCustomers(res.data || []);
+      setLastPage(res.meta?.total_pages || 1);
+    }
+  }, [request, search, status, page]);
 
   useEffect(() => {
-    const timer = setTimeout(loadData, 400);
+    const timer = setTimeout(() => {
+      loadCustomers();
+    }, 400);
     return () => clearTimeout(timer);
-  }, [loadData]);
+  }, [search, status, page, loadCustomers]);
 
-  const columns = useMemo(
-    () =>
-      getColumns(
-        (d) => {
-          setSelected(d);
-          setIsOpen(true);
-        },
-        (d) => {
-          setSelected(d);
-          setIsViewOpen(true);
-        },
-        () => {},
-      ),
-    [loadData],
-  );
+  const columns = useMemo(() => getColumns(loadCustomers), [loadCustomers]);
 
   return (
     <div className="space-y-6 relative min-h-[400px]">
       <BaseFilter
-        onSearch={setSearch}
         searchValue={search}
-        onAddClick={() => {
-          setSelected(null);
-          setIsOpen(true);
+        onSearch={(val) => {
+          setValue("page", 1);
+          setValue("search", val);
         }}
-        addLabel="Add Type"
-        placeholder="Search types..."
-      />
+        placeholder="Search customers..."
+        onAddClick={() => router.push("/auth/customers/add")}
+        addLabel="Add Customer"
+      >
+        <div className="flex gap-3">
+          <Controller
+            name="status"
+            control={control}
+            render={({ field }) => (
+              <div className="w-[140px]">
+                <FormSelect
+                  label=""
+                  options={[
+                    { name: "All Status", id: "all" },
+                    { name: "Active", id: "active" },
+                    { name: "Inactive", id: "inactive" },
+                  ]}
+                  value={field.value}
+                  onValueChange={(val) => {
+                    field.onChange(val);
+                    setValue("page", 1);
+                  }}
+                />
+              </div>
+            )}
+          />
+        </div>
+      </BaseFilter>
 
-      <div className="relative">
-        <DataTable columns={columns} data={data} />
+      {error && (
+        <div className="p-4 rounded-2xl bg-destructive/10 border border-destructive/20 text-destructive text-sm font-medium">
+          {error}
+        </div>
+      )}
+
+      <div className="relative space-y-2">
+        <DataTable columns={columns} data={customers} />
+
+        <Pagination
+          currentPage={page}
+          lastPage={lastPage}
+          onPageChange={(p) => setValue("page", p)}
+          loading={loading}
+        />
+
         {loading && (
-          <div className="absolute inset-0 flex items-center justify-center bg-background/10 backdrop-blur-[2px]">
-            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <div className="absolute inset-0 z-10 flex items-center justify-center bg-background/10 backdrop-blur-[2px] rounded-4xl transition-all">
+            <div className="bg-card/90 p-4 rounded-2xl border border-white/10 shadow-2xl flex items-center gap-3">
+              <Loader2 className="h-5 w-5 animate-spin text-primary" />
+              <span className="text-sm font-bold uppercase tracking-tighter">
+                Syncing...
+              </span>
+            </div>
           </div>
         )}
       </div>
-
-      <AppDialog
-        open={isOpen}
-        onOpenChange={setIsOpen}
-        title={selected ? "Edit Customer Type" : "New Customer Type"}
-        confirmText="Save Changes"
-        loading={formLoading}
-        onConfirm={() =>
-          document
-            .getElementById("customer-type-form")
-            ?.dispatchEvent(new Event("submit", { bubbles: true }))
-        }
-      >
-        <CustomerTypeForm
-          initialData={selected}
-          setLoading={setFormLoading}
-          onSuccess={() => {
-            setIsOpen(false);
-            loadData();
-          }}
-        />
-      </AppDialog>
-
-      <AppDialog
-        open={isViewOpen}
-        onOpenChange={setIsViewOpen}
-        title="Customer Type Detail"
-      >
-        <ReadOnlyDetail data={selected} type="customerType" />
-      </AppDialog>
     </div>
   );
 }

@@ -5,6 +5,7 @@ import { ReactNode } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { formatDate, formatPrice } from "@/utils/helper.utils";
+import { Label } from "../ui/label";
 
 const DetailItem = ({
   label,
@@ -55,7 +56,8 @@ export function ReadOnlyDetail({
     | "collection"
     | "openingStock"
     | "stockTransfer"
-    | "stockBalance";
+    | "stockBalance"
+    | "customer";
 }) {
   if (!data) return null;
 
@@ -811,6 +813,73 @@ export function ReadOnlyDetail({
                 Calculated at unit cost of {Number(data.unit_cost).toFixed(2)}
               </p>
             </div>
+          </>
+        )}
+
+        {/* CUSTOMER */}
+        {type === "customer" && (
+          <>
+            <DetailItem label="Customer Name" value={data.name} fullWidth />
+            <DetailItem
+              label="Company Name"
+              value={data.company_name}
+              fullWidth
+            />
+            <DetailItem label="Phone Number" value={data.phone_number} />
+            <DetailItem
+              label="Customer Type"
+              value={data.customer_type?.name}
+            />
+            <DetailItem label="Status" value={data.status} />
+            <DetailItem
+              label="Birthday"
+              value={data.birthday ? formatDate(data.birthday) : "N/A"}
+            />
+
+            <DetailItem label="Address" value={data.address} fullWidth />
+            <DetailItem label="City" value={data.city?.name} />
+            <DetailItem label="State" value={data.state?.name} />
+
+            <DetailItem
+              label="Branches"
+              value={data.branches?.map((b: any) => b.name).join(", ") || "N/A"}
+              fullWidth
+            />
+
+            <DetailItem
+              label="Credit Limit"
+              value={Number(data.credit_limit).toLocaleString()}
+            />
+            <DetailItem
+              label="Opening Balance"
+              value={Number(data.opening).toLocaleString()}
+            />
+
+            {data?.bank_accounts && data.bank_accounts.length > 0 && (
+              <div className="space-y-4">
+                <Label className="text-[10px] font-bold uppercase tracking-widest text-primary">
+                  Bank Account Details
+                </Label>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {data.bank_accounts.map((bank, index: number) => (
+                    <div
+                      key={index}
+                      className="p-4 rounded-xl bg-muted/30 border border-border/50 space-y-1"
+                    >
+                      <p className="text-xs text-muted-foreground uppercase font-medium">
+                        {bank.bank_name}
+                      </p>
+                      <p className="text-sm font-bold tracking-tight">
+                        {bank.account_number}
+                      </p>
+                      <p className="text-[10px] text-muted-foreground italic">
+                        {bank.holder_name}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </>
         )}
       </div>

@@ -25,7 +25,10 @@ export default function BranchPage() {
     defaultValues: { search: "", status: "all", page: 1 },
   });
 
-  const { search, status, page } = watch();
+  const search = watch("search");
+  const status = watch("status");
+  const page = watch("page");
+
   const { request, loading, error } = useApi<BranchesListResponse>();
 
   const loadBranches = useCallback(async () => {
@@ -61,6 +64,7 @@ export default function BranchPage() {
   return (
     <div className="space-y-6 relative min-h-[400px]">
       <BaseFilter
+        searchValue={search}
         onSearch={(val) => {
           setValue("page", 1);
           setValue("search", val);
@@ -94,17 +98,30 @@ export default function BranchPage() {
         </div>
       </BaseFilter>
 
+      {error && (
+        <div className="p-4 rounded-2xl bg-destructive/10 border border-destructive/20 text-destructive text-sm font-medium">
+          {error}
+        </div>
+      )}
+
       <div className="relative space-y-2">
         <DataTable columns={columns} data={branches} />
+
         <Pagination
           currentPage={page}
           lastPage={lastPage}
           onPageChange={(p) => setValue("page", p)}
           loading={loading}
         />
+
         {loading && (
-          <div className="absolute inset-0 z-10 flex items-center justify-center bg-background/10 backdrop-blur-[2px]">
-            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <div className="absolute inset-0 z-10 flex items-center justify-center bg-background/10 backdrop-blur-[2px] rounded-4xl transition-all">
+            <div className="bg-card/90 p-4 rounded-2xl border border-white/10 shadow-2xl flex items-center gap-3">
+              <Loader2 className="h-5 w-5 animate-spin text-primary" />
+              <span className="text-sm font-bold uppercase tracking-tighter">
+                Syncing...
+              </span>
+            </div>
           </div>
         )}
       </div>
