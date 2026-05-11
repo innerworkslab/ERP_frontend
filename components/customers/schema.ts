@@ -7,7 +7,11 @@ export const customerSchema = yup.object({
   state_id: yup.number().required("State is required"),
   city_id: yup.number().required("City is required"),
   address: yup.string().required("Address is required"),
-  branch_id: yup.number().required("Branch is required"),
+  branch_ids: yup
+    .array()
+    .of(yup.number())
+    .min(1, "At least one branch is required")
+    .required("Branch is required"),
   credit_limit: yup.number().required(),
   opening: yup.number().required(),
   customer_type_id: yup.number().required("Type is required"),

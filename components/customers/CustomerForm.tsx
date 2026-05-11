@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { useForm, useFieldArray } from "react-hook-form";
+import { useForm, useFieldArray, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { customerSchema } from "./schema";
 import { customerService } from "@/api/customers.service";
@@ -10,9 +10,10 @@ import { stateService, State } from "@/api/states.service";
 import { cityService, City } from "@/api/cities.service";
 import { FormInput } from "@/components/common/FormInput";
 import { FormSelect } from "@/components/common/FormSelect";
+import { FormMultiSelect } from "@/components/common/FormMultiSelect";
 import * as yup from "yup";
 import { Button } from "../ui/button";
-import { CheckCircle2, Loader2, Plus, Trash2 } from "lucide-react";
+import { Loader2, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { useParams, useRouter } from "next/navigation";
 import { Label } from "@/components/ui/label";
@@ -54,6 +55,7 @@ export default function CustomerForm() {
       customer_type_id: 1,
       credit_limit: 0,
       opening: 0,
+      branch_ids: [],
       bank_accounts: [{ bank_name: "", account_number: "", holder_name: "" }],
     },
   });
@@ -100,13 +102,17 @@ export default function CustomerForm() {
             ? new Date(res.data.birthday).toISOString().split("T")[0]
             : "";
 
+          const branchIds = Array.isArray(res.data.branches)
+            ? res.data.branches.map((b: any) => b.id)
+            : res.data.branch_ids || [];
+
           reset({
             ...res.data,
             birthday: formattedBirthday,
             state_id: res.data.state_id,
             city_id: res.data.city_id,
             customer_type_id: res.data.customer_type_id,
-            branch_id: res.data.branch_id,
+            branch_ids: branchIds,
             bank_accounts: res.data.bank_accounts?.length
               ? res.data.bank_accounts
               : [{ bank_name: "", account_number: "", holder_name: "" }],
@@ -305,12 +311,21 @@ export default function CustomerForm() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <FormSelect
-          label="Branch"
-          value={watch("branch_id")?.toString()}
-          onValueChange={(val) => setValue("branch_id", Number(val))}
-          options={branches.map((b) => ({ id: b.id.toString(), name: b.name }))}
-          error={errors.branch_id?.message}
+        <Controller
+          name="branch_ids"
+          control={control}
+          render={({ field }) => (
+            <FormMultiSelect
+              label="Branches"
+              options={branches.map((b) => ({
+                id: b.id.toString(),
+                name: b.name,
+              }))}
+              value={field.value?.map((v) => v.toString()) || []}
+              onValueChange={(vals) => field.onChange(vals.map(Number))}
+              error={errors.branch_ids?.message}
+            />
+          )}
         />
         <FormInput
           label="Birthday"

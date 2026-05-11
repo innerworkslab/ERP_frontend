@@ -35,7 +35,7 @@ export default function DepartmentPage() {
     defaultValues: {
       search: "",
       status: "all",
-      branchId: "all",
+      branchId: "", // Changed from "all" to "" so it shows placeholder first
       page: 1,
     },
   });
@@ -48,11 +48,15 @@ export default function DepartmentPage() {
   const { request, loading, error } = useApi<DepartmentsListResponse>();
 
   const loadDepartments = useCallback(async () => {
+    // If you want to prevent loading until a branch is selected,
+    // you could add: if (!branchId) return;
+
     const res = await request(() =>
       departmentService.getAll({
         search: search || undefined,
         status: status === "all" ? undefined : status,
-        branch_id: branchId === "all" ? undefined : Number(branchId),
+        branch_id:
+          branchId === "all" || branchId === "" ? undefined : Number(branchId),
         page: page,
       }),
     );
@@ -89,11 +93,6 @@ export default function DepartmentPage() {
     setIsViewOpen(true);
   }, []);
 
-  const handleAdd = () => {
-    setSelectedDept(null);
-    setIsDialogOpen(true);
-  };
-
   const columns = useMemo(
     () => getColumns(handleEdit, handleView, loadDepartments),
     [handleEdit, handleView, loadDepartments],
@@ -102,12 +101,16 @@ export default function DepartmentPage() {
   return (
     <div className="space-y-6 relative min-h-[400px]">
       <BaseFilter
+        searchValue={search} // Added to fix typing visibility
         onSearch={(val) => {
           setValue("page", 1);
           setValue("search", val);
         }}
         placeholder="Search departments..."
-        onAddClick={handleAdd}
+        onAddClick={() => {
+          setSelectedDept(null);
+          setIsDialogOpen(true);
+        }}
         addLabel="Add Department"
       >
         <div className="flex gap-3">
@@ -118,7 +121,7 @@ export default function DepartmentPage() {
               <div className="w-[180px]">
                 <FormSelect
                   label=""
-                  placeholder="All Branches"
+                  placeholder="Select Branch"
                   options={[{ name: "All Branches", id: "all" }, ...branches]}
                   value={field.value}
                   onValueChange={(val) => {
@@ -136,7 +139,6 @@ export default function DepartmentPage() {
               <div className="w-[140px]">
                 <FormSelect
                   label=""
-                  placeholder="Status"
                   options={[
                     { name: "All Status", id: "all" },
                     { name: "Active", id: "active" },
@@ -170,7 +172,7 @@ export default function DepartmentPage() {
         />
 
         {loading && (
-          <div className="absolute inset-0 z-10 flex items-center justify-center bg-background/10 backdrop-blur-[2px] rounded-[2rem]">
+          <div className="absolute inset-0 z-10 flex items-center justify-center bg-background/10 backdrop-blur-[2px] rounded-4xl transition-all">
             <div className="bg-card/90 p-4 rounded-2xl border border-white/10 shadow-2xl flex items-center gap-3">
               <Loader2 className="h-5 w-5 animate-spin text-primary" />
               <span className="text-sm font-bold uppercase tracking-tighter">
@@ -209,7 +211,6 @@ export default function DepartmentPage() {
         open={isViewOpen}
         onOpenChange={setIsViewOpen}
         title="Department Information"
-        description="Detailed overview of department configuration."
       >
         <ReadOnlyDetail data={viewData} type="department" />
       </AppDialog>
