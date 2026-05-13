@@ -4,7 +4,6 @@ export const supplierSchema = yup.object({
   name: yup.string().required("Name is required"),
   company_name: yup.string().required("Company name is required"),
   phone_number: yup.string().required("Phone number is required"),
-  country: yup.string().required(),
   state_id: yup.number().required("State is required"),
   city_id: yup.number().required("City is required"),
   address: yup.string().required("Address is required"),

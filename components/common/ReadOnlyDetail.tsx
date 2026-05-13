@@ -57,7 +57,8 @@ export function ReadOnlyDetail({
     | "openingStock"
     | "stockTransfer"
     | "stockBalance"
-    | "customer";
+    | "customer"
+    | "supplier";
 }) {
   if (!data) return null;
 
@@ -862,6 +863,67 @@ export function ReadOnlyDetail({
                 </Label>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {data.bank_accounts.map((bank, index: number) => (
+                    <div
+                      key={index}
+                      className="p-4 rounded-xl bg-muted/30 border border-border/50 space-y-1"
+                    >
+                      <p className="text-xs text-muted-foreground uppercase font-medium">
+                        {bank.bank_name}
+                      </p>
+                      <p className="text-sm font-bold tracking-tight">
+                        {bank.account_number}
+                      </p>
+                      <p className="text-[10px] text-muted-foreground italic">
+                        {bank.holder_name}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </>
+        )}
+
+        {/* SUPPLIER */}
+        {type === "supplier" && (
+          <>
+            <DetailItem label="Supplier Name" value={data.name} fullWidth />
+            <DetailItem
+              label="Company Name"
+              value={data.company_name}
+              fullWidth
+            />
+            <DetailItem label="Phone Number" value={data.phone_number} />
+            <DetailItem
+              label="Supplier Type"
+              value={data.supplier_type?.name}
+            />
+            <DetailItem label="Status" value={data.status} />
+            <DetailItem
+              label="Birthday"
+              value={data.birthday ? formatDate(data.birthday) : "N/A"}
+            />
+
+            <DetailItem label="Address" value={data.address} fullWidth />
+            <DetailItem label="City" value={data.city?.name} />
+            <DetailItem label="State" value={data.state?.name} />
+
+            <DetailItem
+              label="Credit Limit"
+              value={Number(data.credit_limit).toLocaleString()}
+            />
+            <DetailItem
+              label="Opening Balance"
+              value={Number(data.opening).toLocaleString()}
+            />
+
+            {data?.bank_accounts && data.bank_accounts.length > 0 && (
+              <div className="col-span-full space-y-4">
+                <Label className="text-[10px] font-bold uppercase tracking-widest text-primary">
+                  Supplier Bank Accounts
+                </Label>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {data.bank_accounts.map((bank: any, index: number) => (
                     <div
                       key={index}
                       className="p-4 rounded-xl bg-muted/30 border border-border/50 space-y-1"
