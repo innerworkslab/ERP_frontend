@@ -44,7 +44,6 @@ export default function SupplierForm() {
       name: "",
       company_name: "",
       phone_number: "",
-      country: "Myanmar",
       state_id: undefined,
       city_id: undefined,
       address: "",
@@ -85,9 +84,14 @@ export default function SupplierForm() {
   useEffect(() => {
     if (isUpdate && numericId) {
       supplierService.getById(numericId).then((res) => {
+        const formattedBirthday = res.data.birthday
+          ? res.data.birthday.split("T")[0]
+          : "";
+
         if (res && res.data) {
           reset({
             ...res.data,
+            birthday: formattedBirthday,
             supplier_type_id: Number(res.data.supplier_type_id),
             state_id: Number(res.data.state_id),
             city_id: Number(res.data.city_id),
@@ -101,17 +105,17 @@ export default function SupplierForm() {
   }, [numericId, isUpdate, reset]);
 
   const onSubmit = async (data: SupplierFormValues) => {
-    try {
-      const res = numericId
-        ? await supplierService.update(numericId, data)
-        : await supplierService.create(data);
-      toast.success(res.response?.message || "Success");
-      router.push("/auth/suppliers");
-      router.refresh();
-    } catch (error: any) {
-      toast.error(error.message || "Something went wrong");
-    }
+    const res = numericId
+      ? await supplierService.update(numericId, data)
+      : await supplierService.create(data);
+    toast.success(res.response?.message || "Success");
+    router.push("/auth/suppliers");
+    router.refresh();
   };
+
+  useEffect(() => {
+    console.log("Errors:", errors);
+  }, [errors]);
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 py-2">

@@ -35,6 +35,18 @@ export interface Supplier {
   updated_by?: User;
   created_at?: string;
   updated_at?: string;
+  supplier_type_id: number;
+  supplier_type?: {
+    id: number;
+    name: string;
+  };
+  state_id?: number;
+  city_id?: number;
+  bank_accounts?: {
+    bank_name: string;
+    account_number: string;
+    holder_name: string;
+  }[];
 }
 
 export interface SuppliersListResponse {
@@ -59,6 +71,7 @@ export interface CreateSupplierRequest {
   payment_terms: string;
   payment_due: string;
   status: string;
+  supplier_type_id: number;
 }
 
 export type UpdateSupplierRequest = CreateSupplierRequest;
