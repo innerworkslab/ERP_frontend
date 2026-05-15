@@ -19,7 +19,6 @@ import { getColumns } from "@/components/products/columns";
 export default function ProductListPage() {
   const router = useRouter();
 
-  // 1. Form state for Filters and Pagination
   const { control, watch, setValue } = useForm({
     defaultValues: {
       search: "",
@@ -28,12 +27,14 @@ export default function ProductListPage() {
     },
   });
 
-  const { search, status, page } = watch();
+  const search = watch("search");
+  const status = watch("status");
+  const page = watch("page");
+
   const [products, setProducts] = useState<Product[]>([]);
   const [lastPage, setLastPage] = useState(1);
-  const { request, loading } = useApi<ProductListResponse>();
+  const { request, loading, error } = useApi<ProductListResponse>();
 
-  // 2. Fetch Logic
   const fetchProducts = useCallback(async () => {
     const res = await request(() =>
       productService.getAll({
@@ -49,69 +50,61 @@ export default function ProductListPage() {
     }
   }, [request, search, status, page]);
 
-  // 3. Debounced Search & Effect
   useEffect(() => {
     const timer = setTimeout(() => {
       fetchProducts();
-    }, 400); // 400ms debounce
+    }, 400);
     return () => clearTimeout(timer);
-  }, [fetchProducts]);
+  }, [search, status, page, fetchProducts]);
 
-  // 4. Handlers for Columns
-  const handleEdit = (product: Product) => {
-    router.push(`/auth/products/${product.id}/edit`);
-  };
-
-  const handleView = (product: Product) => {
-    router.push(`/auth/products/${product.id}`);
-  };
-
-  // Memoize columns to prevent unnecessary re-renders
-  const columns = useMemo(
-    () => getColumns(handleEdit, handleView, fetchProducts),
-    [fetchProducts],
-  );
+  const columns = useMemo(() => getColumns(fetchProducts), [fetchProducts]);
 
   return (
-    <div className="space-y-6 relative min-h-[500px]">
-      {/* Filter Section */}
+    <div className="space-y-6 relative min-h-100">
       <BaseFilter
+        searchValue={search}
         onSearch={(val) => {
-          setValue("page", 1); // Reset to page 1 on new search
+          setValue("page", 1);
           setValue("search", val);
         }}
         placeholder="Search by SKU or Name..."
         onAddClick={() => router.push("/auth/products/add")}
         addLabel="New Product"
       >
-        <div className="w-[160px]">
+        <div className="flex gap-3">
           <Controller
             name="status"
             control={control}
             render={({ field }) => (
-              <FormSelect
-                label=""
-                options={[
-                  { name: "All Status", id: "all" },
-                  { name: "Active", id: "active" },
-                  { name: "Inactive", id: "inactive" },
-                ]}
-                value={field.value}
-                onValueChange={(val) => {
-                  field.onChange(val);
-                  setValue("page", 1); // Reset to page 1 on status change
-                }}
-              />
+              <div className="w-[140px]">
+                <FormSelect
+                  label=""
+                  options={[
+                    { name: "All Status", id: "all" },
+                    { name: "Active", id: "active" },
+                    { name: "Inactive", id: "inactive" },
+                  ]}
+                  value={field.value}
+                  onValueChange={(val) => {
+                    field.onChange(val);
+                    setValue("page", 1);
+                  }}
+                />
+              </div>
             )}
           />
         </div>
       </BaseFilter>
 
-      {/* Table Section */}
-      <div className="relative space-y-4">
+      {error && (
+        <div className="p-4 rounded-2xl bg-destructive/10 border border-destructive/20 text-destructive text-sm font-medium">
+          {error}
+        </div>
+      )}
+
+      <div className="relative space-y-2">
         <DataTable columns={columns} data={products} />
 
-        {/* Pagination Section */}
         <Pagination
           currentPage={page}
           lastPage={lastPage}
@@ -119,11 +112,13 @@ export default function ProductListPage() {
           loading={loading}
         />
 
-        {/* Loading Overlay */}
         {loading && (
-          <div className="absolute inset-0 flex items-center justify-center bg-background/10 backdrop-blur-[1px] z-10">
-            <div className="bg-background/80 p-4 rounded-full shadow-xl border">
-              <Loader2 className="animate-spin text-primary h-8 w-8" />
+          <div className="absolute inset-0 z-10 flex items-center justify-center bg-background/10 backdrop-blur-[2px] rounded-4xl transition-all">
+            <div className="bg-card/90 p-4 rounded-2xl border border-white/10 shadow-2xl flex items-center gap-3">
+              <Loader2 className="h-5 w-5 animate-spin text-primary" />
+              <span className="text-sm font-bold uppercase tracking-tighter">
+                Syncing...
+              </span>
             </div>
           </div>
         )}

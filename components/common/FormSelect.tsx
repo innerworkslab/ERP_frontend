@@ -46,17 +46,10 @@ export function FormSelect({
   const [isOpen, setIsOpen] = React.useState(false);
   const [searchTerm, setSearchTerm] = React.useState("");
   const [isModalOpen, setIsModalOpen] = React.useState(false);
-  const [hasInitialOptions, setHasInitialOptions] = React.useState(false);
 
   const containerRef = React.useRef<HTMLDivElement>(null);
   const previousOptionsRef = React.useRef<Option[]>(options);
-
-  React.useEffect(() => {
-    if (options.length > 0 && !hasInitialOptions) {
-      previousOptionsRef.current = options;
-      setHasInitialOptions(true);
-    }
-  }, [options, hasInitialOptions]);
+  const shouldAutoSelectNewItem = React.useRef(false);
 
   React.useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -73,8 +66,8 @@ export function FormSelect({
 
   React.useEffect(() => {
     if (
-      hasInitialOptions &&
-      previousOptionsRef.current.length < options.length
+      shouldAutoSelectNewItem.current &&
+      options.length > previousOptionsRef.current.length
     ) {
       const newOption = options.find(
         (opt) => !previousOptionsRef.current.some((prev) => prev.id === opt.id),
@@ -82,9 +75,10 @@ export function FormSelect({
       if (newOption) {
         onValueChange(newOption.id.toString());
       }
-      previousOptionsRef.current = options;
+      shouldAutoSelectNewItem.current = false;
     }
-  }, [options, onValueChange, hasInitialOptions]);
+    previousOptionsRef.current = options;
+  }, [options, onValueChange]);
 
   const filteredOptions = options.filter((option) =>
     option.name.toLowerCase().includes(searchTerm.toLowerCase()),
@@ -109,6 +103,7 @@ export function FormSelect({
   const handleOpenModal = (e: React.MouseEvent) => {
     e.stopPropagation();
     setIsOpen(false);
+    shouldAutoSelectNewItem.current = true;
     setIsModalOpen(true);
   };
 
@@ -119,9 +114,11 @@ export function FormSelect({
 
   return (
     <div className="flex flex-col gap-1.5 relative w-full" ref={containerRef}>
-      <Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/80 ml-1">
-        {label}
-      </Label>
+      {label && (
+        <Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/80 ml-1">
+          {label}
+        </Label>
+      )}
 
       <div
         onClick={() => !disabled && !loading && setIsOpen(!isOpen)}
@@ -181,16 +178,17 @@ export function FormSelect({
 
           <div className="max-h-60 overflow-y-auto p-1.5">
             {renderCreateForm && (
-              <div
-                onClick={handleOpenModal}
-                className="flex items-center gap-2 px-3 py-2 rounded-lg cursor-pointer text-sm font-medium text-primary hover:bg-primary/10 transition-colors mb-1"
-              >
-                <Plus className="h-4 w-4" />
-                Add New {label}
-              </div>
+              <>
+                <div
+                  onClick={handleOpenModal}
+                  className="flex items-center gap-2 px-3 py-2 rounded-lg cursor-pointer text-sm font-medium text-primary hover:bg-primary/10 transition-colors mb-1"
+                >
+                  <Plus className="h-4 w-4" />
+                  Add New {label}
+                </div>
+                <div className="h-px bg-border my-1 mx-1" />
+              </>
             )}
-
-            {renderCreateForm && <div className="h-px bg-border my-1 mx-1" />}
 
             {filteredOptions.length > 0 ? (
               filteredOptions.map((opt) => {

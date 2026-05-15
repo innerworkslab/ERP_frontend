@@ -9,13 +9,9 @@ import { PriceGroup, priceGroupService } from "@/api/priceGroups.service";
 
 const ActionCell = ({
   priceGroup,
-  onEdit,
-  onView,
   refresh,
 }: {
   priceGroup: PriceGroup;
-  onEdit: (data: PriceGroup) => void;
-  onView: (data: PriceGroup) => void;
   refresh: () => void;
 }) => {
   const [isToggling, setIsToggling] = useState(false);
@@ -23,9 +19,15 @@ const ActionCell = ({
   const handleToggleStatus = async () => {
     try {
       setIsToggling(true);
-      await priceGroupService.toggle(priceGroup.id);
+      const res = await priceGroupService.toggle(priceGroup.id);
+      const newStatus =
+        priceGroup.status.toLowerCase() === "active" ? "inactive" : "active";
       refresh();
-      toast.success("Status updated successfully");
+      toast.success(
+        res.response?.message || `Price Group marked as ${newStatus}`,
+      );
+    } catch (error: any) {
+      toast.error(error.message || "Failed to update status");
     } finally {
       setIsToggling(false);
     }
@@ -36,23 +38,25 @@ const ActionCell = ({
       <Button
         variant="ghost"
         className="h-8 w-8 p-0 text-blue-500 hover:bg-blue-500/10 [&_svg]:!h-4 [&_svg]:!w-4"
-        onClick={() => onView(priceGroup)}
+        onClick={() => {}}
         disabled={isToggling}
       >
         <Eye />
       </Button>
+
       <Button
         variant="ghost"
         className="h-8 w-8 p-0 [&_svg]:!h-4 [&_svg]:!w-4"
-        onClick={() => onEdit(priceGroup)}
+        onClick={() => {}}
         disabled={isToggling}
       >
         <Edit />
       </Button>
+
       <Button
         variant="ghost"
         className={`h-8 w-8 p-0 [&_svg]:!h-5 [&_svg]:!w-5 ${
-          priceGroup.status === "active"
+          priceGroup.status.toLowerCase() === "active"
             ? "text-emerald-500 hover:bg-emerald-500/10"
             : "text-slate-400 hover:bg-slate-500/10"
         }`}
@@ -61,7 +65,7 @@ const ActionCell = ({
       >
         {isToggling ? (
           <Loader2 className="animate-spin !h-4 !w-4" />
-        ) : priceGroup.status === "active" ? (
+        ) : priceGroup.status.toLowerCase() === "active" ? (
           <ToggleRight />
         ) : (
           <ToggleLeft />
@@ -71,40 +75,60 @@ const ActionCell = ({
   );
 };
 
-export const getColumns = (
-  onEdit: (data: PriceGroup) => void,
-  onView: (data: PriceGroup) => void,
-  refresh: () => void,
-): ColumnDef<PriceGroup>[] => [
+export const getColumns = (refresh: () => void): ColumnDef<PriceGroup>[] => [
+  {
+    accessorKey: "id",
+    header: () => <div className="text-center">No</div>,
+    cell: ({ row }) => (
+      <span className="flex justify-center font-mono text-[10px] font-bold uppercase opacity-60 tracking-widest">
+        {row.original.id}
+      </span>
+    ),
+  },
   {
     accessorKey: "name",
     header: "Group Name",
-    cell: ({ row }) => <span className="font-bold">{row.original.name}</span>,
+    cell: ({ row }) => (
+      <div className="flex flex-col">
+        <span className="font-bold text-foreground leading-none">
+          {row.original.name}
+        </span>
+      </div>
+    ),
   },
   {
-    accessorKey: "customer_type.name",
+    id: "customer_type",
     header: "Customer Type",
-    cell: ({ row }) => <span>{row.original.customer_type?.name || "-"}</span>,
+    accessorFn: (row) => row.customer_type?.name,
+    cell: ({ row }) => (
+      <span className="text-xs font-medium">
+        {row.original.customer_type?.name || "-"}
+      </span>
+    ),
   },
   {
-    accessorKey: "branch.name",
+    id: "branch",
     header: "Branch",
-    cell: ({ row }) => <span>{row.original.branch?.name || "-"}</span>,
+    accessorFn: (row) => row.branch?.name,
+    cell: ({ row }) => (
+      <span className="text-xs">{row.original.branch?.name || "-"}</span>
+    ),
   },
   {
     accessorKey: "status",
     header: "Status",
     cell: ({ row }) => {
-      const active = row.original.status === "active";
+      const status = row.original.status.toLowerCase();
+      const isActive = status === "active";
       return (
         <span
-          className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase border ${
-            active
+          className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border ${
+            isActive
               ? "bg-green-500/10 text-green-500 border-green-500/20"
               : "bg-slate-500/10 text-slate-400 border-slate-500/20"
           }`}
         >
-          {active ? "Active" : "Inactive"}
+          {status}
         </span>
       );
     },
@@ -113,12 +137,7 @@ export const getColumns = (
     id: "actions",
     header: () => <div className="text-center">Actions</div>,
     cell: ({ row }) => (
-      <ActionCell
-        priceGroup={row.original}
-        onEdit={onEdit}
-        onView={onView}
-        refresh={refresh}
-      />
+      <ActionCell priceGroup={row.original} refresh={refresh} />
     ),
   },
 ];
