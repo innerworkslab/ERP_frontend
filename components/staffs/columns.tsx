@@ -1,14 +1,20 @@
 "use client";
 
 import { ColumnDef } from "@tanstack/react-table";
-import { Edit, Loader2, ToggleRight, ToggleLeft } from "lucide-react";
+import { Edit, Loader2, ToggleLeft, ToggleRight, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Staff, staffService } from "@/api/staffs.service";
 import { toast } from "sonner";
-import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { staffService, Staff } from "@/api/staffs.service";
+import { useRouter } from "next/navigation";
 
-const ActionCell = ({ staff }: { staff: Staff }) => {
+const ActionCell = ({
+  staff,
+  refresh,
+}: {
+  staff: Staff;
+  refresh: () => void;
+}) => {
   const router = useRouter();
   const [isToggling, setIsToggling] = useState(false);
 
@@ -16,32 +22,39 @@ const ActionCell = ({ staff }: { staff: Staff }) => {
     try {
       setIsToggling(true);
       const res = await staffService.toggle(staff.id);
-
-      const newStatus = staff.status === "active" ? "inactive" : "active";
+      const newStatus =
+        staff.status.toLowerCase() === "active" ? "inactive" : "active";
+      refresh();
       toast.success(res.response?.message || `Staff marked as ${newStatus}`);
-      router.refresh();
     } finally {
       setIsToggling(false);
     }
   };
 
   return (
-    <div className="flex items-center justify-center gap-4">
+    <div className="flex items-center justify-center gap-1">
       <Button
         variant="ghost"
-        className="h-8 w-8 p-0 flex items-center justify-center [&_svg]:h-5! [&_svg]:w-5!"
-        onClick={() => router.push(`/auth/staffs/${staff.id}/edit`)}
+        className="h-8 w-8 p-0 text-blue-500 hover:bg-blue-500/10 [&_svg]:!h-4 [&_svg]:!w-4"
+        onClick={() => router.push(`/auth/staffs/${staff.id}`)}
         disabled={isToggling}
       >
-        <Edit />
-        <span className="sr-only">Edit</span>
+        <Eye />
       </Button>
 
       <Button
         variant="ghost"
-        aria-disabled
-        className={`h-8 w-8 p-0 flex items-center justify-center [&_svg]:h-5! [&_svg]:w-5! ${
-          staff.status === "active"
+        className="h-8 w-8 p-0 [&_svg]:!h-4 [&_svg]:!w-4"
+        onClick={() => router.push(`/auth/staffs/${staff.id}/edit`)}
+        disabled={isToggling}
+      >
+        <Edit />
+      </Button>
+
+      <Button
+        variant="ghost"
+        className={`h-8 w-8 p-0 [&_svg]:!h-5 [&_svg]:!w-5 ${
+          staff.status.toLowerCase() === "active"
             ? "text-emerald-500 hover:bg-emerald-500/10"
             : "text-slate-400 hover:bg-slate-500/10"
         }`}
@@ -49,25 +62,24 @@ const ActionCell = ({ staff }: { staff: Staff }) => {
         disabled={isToggling}
       >
         {isToggling ? (
-          <Loader2 className="animate-spin" />
-        ) : staff.status === "active" ? (
+          <Loader2 className="animate-spin !h-4 !w-4" />
+        ) : staff.status.toLowerCase() === "active" ? (
           <ToggleRight />
         ) : (
           <ToggleLeft />
         )}
-        <span className="sr-only">Toggle Status</span>
       </Button>
     </div>
   );
 };
 
-export const columns: ColumnDef<Staff>[] = [
+export const getColumns = (refresh: () => void): ColumnDef<Staff>[] => [
   {
     accessorKey: "id",
     header: () => <div className="text-center">No</div>,
     cell: ({ row }) => (
-      <span className="flex justify-center font-mono text-xs uppercase opacity-70">
-        {row.getValue("id") || "-"}
+      <span className="flex justify-center font-mono text-[10px] font-bold uppercase opacity-60 tracking-widest">
+        {row.original.id}
       </span>
     ),
   },
@@ -75,18 +87,20 @@ export const columns: ColumnDef<Staff>[] = [
     accessorKey: "name",
     header: "Staff Name",
     cell: ({ row }) => (
-      <span className="font-semibold text-foreground">
-        {row.getValue("name")}
-      </span>
+      <div className="flex flex-col">
+        <span className="font-bold text-foreground leading-none">
+          {row.original.name}
+        </span>
+      </div>
     ),
   },
   {
     accessorKey: "phone_number",
     header: "Phone",
     cell: ({ row }) => (
-      <span className="text-sm text-muted-foreground">
-        {row.getValue("phone_number") || "-"}
-      </span>
+      <div className="text-xs">
+        <span>{row.original.phone_number || "-"}</span>
+      </div>
     ),
   },
   {
@@ -94,9 +108,9 @@ export const columns: ColumnDef<Staff>[] = [
     header: "Role",
     accessorFn: (row) => row.role?.name,
     cell: ({ row }) => (
-      <span className="text-sm font-medium">
-        {row.original.role?.name || "-"}
-      </span>
+      <div className="text-xs font-medium">
+        <span>{row.original.role?.name || "-"}</span>
+      </div>
     ),
   },
   {
@@ -104,7 +118,7 @@ export const columns: ColumnDef<Staff>[] = [
     header: "Department",
     accessorFn: (row) => row.department?.name,
     cell: ({ row }) => (
-      <span className="text-sm">{row.original.department?.name || "-"}</span>
+      <span className="text-xs">{row.original.department?.name || "-"}</span>
     ),
   },
   {
@@ -112,28 +126,16 @@ export const columns: ColumnDef<Staff>[] = [
     header: "Branch",
     accessorFn: (row) => row.branch?.name,
     cell: ({ row }) => (
-      <span className="text-sm font-medium">
+      <span className="text-xs font-medium">
         {row.original.branch?.name || "-"}
       </span>
-    ),
-  },
-  {
-    id: "location",
-    header: "Location",
-    accessorFn: (row) => row.branch?.location,
-    cell: ({ row }) => (
-      <div className="flex items-center gap-2 text-muted-foreground">
-        <span className="text-sm truncate max-w-37.5">
-          {row.original.branch?.location || "-"}
-        </span>
-      </div>
     ),
   },
   {
     accessorKey: "status",
     header: "Status",
     cell: ({ row }) => {
-      const status = row.getValue("status") as string;
+      const status = row.original.status.toLowerCase();
       const isActive = status === "active";
       return (
         <span
@@ -151,6 +153,6 @@ export const columns: ColumnDef<Staff>[] = [
   {
     id: "actions",
     header: () => <div className="text-center">Actions</div>,
-    cell: ({ row }) => <ActionCell staff={row.original} />,
+    cell: ({ row }) => <ActionCell staff={row.original} refresh={refresh} />,
   },
 ];

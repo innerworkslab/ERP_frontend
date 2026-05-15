@@ -114,14 +114,12 @@ export default function PriceGroupPage() {
     setIsDialogOpen(true);
   };
 
-  const columns = useMemo(
-    () => getColumns(handleEdit, handleView, loadPriceGroups),
-    [handleEdit, handleView, loadPriceGroups],
-  );
+  const columns = useMemo(() => getColumns(loadPriceGroups), [loadPriceGroups]);
 
   return (
-    <div className="space-y-6 relative min-h-[400px]">
+    <div className="space-y-6 relative min-h-100">
       <BaseFilter
+        searchValue={search}
         onSearch={(val) => {
           setValue("page", 1);
           setValue("search", val);
@@ -135,12 +133,11 @@ export default function PriceGroupPage() {
             name="branchId"
             control={control}
             render={({ field }) => (
-              <div className="w-[180px]">
+              <div className="w-[160px]">
                 <FormSelect
                   label=""
-                  placeholder="All Branches"
                   options={[{ name: "All Branches", id: "all" }, ...branches]}
-                  value={field.value}
+                  value={field.value || "all"}
                   onValueChange={(val) => {
                     field.onChange(val);
                     setValue("page", 1);
@@ -153,12 +150,11 @@ export default function PriceGroupPage() {
             name="customerTypeId"
             control={control}
             render={({ field }) => (
-              <div className="w-[180px]">
+              <div className="w-[160px]">
                 <FormSelect
                   label=""
-                  placeholder="All Customer Types"
                   options={[{ name: "All Types", id: "all" }, ...customerTypes]}
-                  value={field.value}
+                  value={field.value || "all"}
                   onValueChange={(val) => {
                     field.onChange(val);
                     setValue("page", 1);
@@ -186,7 +182,7 @@ export default function PriceGroupPage() {
         />
 
         {loading && (
-          <div className="absolute inset-0 z-10 flex items-center justify-center bg-background/10 backdrop-blur-[2px] rounded-[2rem]">
+          <div className="absolute inset-0 z-10 flex items-center justify-center bg-background/10 backdrop-blur-[2px] rounded-4xl transition-all">
             <div className="bg-card/90 p-4 rounded-2xl border border-white/10 shadow-2xl flex items-center gap-3">
               <Loader2 className="h-5 w-5 animate-spin text-primary" />
               <span className="text-sm font-bold uppercase tracking-tighter">
@@ -227,7 +223,6 @@ export default function PriceGroupPage() {
         open={isViewOpen}
         onOpenChange={setIsViewOpen}
         title="Price Group Information"
-        description="Detailed overview of price group configuration."
       >
         <ReadOnlyDetail data={viewData} type="priceGroup" />
       </AppDialog>
