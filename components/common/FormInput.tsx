@@ -16,6 +16,7 @@ interface FormInputProps {
   className?: string;
   rows?: number;
   step?: string | number;
+  disabled?: boolean;
 }
 
 export function FormInput({
@@ -27,6 +28,7 @@ export function FormInput({
   className,
   rows = 3,
   step,
+  disabled = false,
 }: FormInputProps) {
   const [showPassword, setShowPassword] = useState(false);
   const isPassword = type === "password";
@@ -45,6 +47,7 @@ export function FormInput({
           <Textarea
             placeholder={placeholder}
             rows={rows}
+            disabled={disabled}
             {...registration}
             className={`bg-background/50 border-none rounded-2xl focus-visible:ring-primary/20 resize-none min-h-[100px] transition-all ${
               error ? "ring-1 ring-destructive/50" : ""
@@ -57,6 +60,7 @@ export function FormInput({
               step={step}
               placeholder={placeholder}
               min={type === "number" ? 0 : undefined}
+              disabled={disabled}
               onFocus={
                 type === "date"
                   ? (e) => (e.currentTarget.type = "date")

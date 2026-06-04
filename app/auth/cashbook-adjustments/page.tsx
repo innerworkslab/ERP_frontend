@@ -1,0 +1,146 @@
+"use client";
+
+import { useEffect, useState, useCallback, useMemo } from "react";
+import { useForm, Controller } from "react-hook-form";
+import { useRouter } from "next/navigation";
+import { BaseFilter } from "@/components/common/BaseFilter";
+import { DataTable } from "@/components/data-table/DataTable";
+import { Pagination } from "@/components/common/Pagination";
+import { useApi } from "@/hooks/useApi";
+import { Loader2 } from "lucide-react";
+import { FormSelect } from "@/components/common/FormSelect";
+import {
+  CashbookAdjustment,
+  cashbookService,
+  CashbookAdjustmentsListResponse,
+} from "@/api/cashbooks.service";
+import { getColumns } from "@/components/cashbook-adjustments/columns";
+
+export default function CashbookAdjustmentsListPage() {
+  const router = useRouter();
+  const [adjustments, setAdjustments] = useState<CashbookAdjustment[]>([]);
+  const [lastPage, setLastPage] = useState(1);
+
+  const { control, watch, setValue } = useForm({
+    defaultValues: {
+      search: "",
+      status: "all",
+      page: 1,
+    },
+  });
+
+  const search = watch("search");
+  const status = watch("status");
+  const page = watch("page");
+
+  const { request, loading, error } = useApi<CashbookAdjustmentsListResponse>();
+
+  const loadAdjustments = useCallback(async () => {
+    const res = await request(() =>
+      cashbookService.getAdjustments({
+        search: search || undefined,
+        status: status === "all" ? undefined : status,
+        page: page,
+      }),
+    );
+    if (res) {
+      setAdjustments(res.data || []);
+      setLastPage(res.meta?.total_pages || 1);
+    }
+  }, [request, search, status, page]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      loadAdjustments();
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [search, status, page, loadAdjustments]);
+
+  const handleRefresh = useCallback(() => {
+    loadAdjustments();
+  }, [loadAdjustments]);
+
+  const handleAdd = () => {
+    router.push("/auth/cashbook-adjustments/add");
+  };
+
+  const handleView = (adjustment: CashbookAdjustment) => {
+    router.push(`/auth/cashbook-adjustments/${adjustment.id}`);
+  };
+
+  const handleEdit = (adjustment: CashbookAdjustment) => {
+    router.push(`/auth/cashbook-adjustments/${adjustment.id}/edit`);
+  };
+
+  const columns = useMemo(
+    () => getColumns(handleView, handleEdit, handleRefresh),
+    [handleView, handleEdit, handleRefresh],
+  );
+
+  return (
+    <div className="space-y-6 relative min-h-[400px]">
+      <BaseFilter
+        searchValue={search}
+        onSearch={(val) => {
+          setValue("page", 1);
+          setValue("search", val);
+        }}
+        placeholder="Search adjustment references..."
+        onAddClick={handleAdd}
+        addLabel="New Adjustment"
+      >
+        <div className="flex gap-3">
+          <Controller
+            name="status"
+            control={control}
+            render={({ field }) => (
+              <div className="w-[160px]">
+                <FormSelect
+                  label=""
+                  options={[
+                    { name: "All States", id: "all" },
+                    { name: "Approved", id: "approved" },
+                    { name: "Rejected", id: "rejected" },
+                    { name: "Pending", id: "pending" },
+                  ]}
+                  value={field.value || "all"}
+                  onValueChange={(val) => {
+                    field.onChange(val);
+                    setValue("page", 1);
+                  }}
+                />
+              </div>
+            )}
+          />
+        </div>
+      </BaseFilter>
+
+      {error && (
+        <div className="p-4 rounded-2xl bg-destructive/10 border border-destructive/20 text-destructive text-sm font-medium">
+          {error}
+        </div>
+      )}
+
+      <div className="relative space-y-2">
+        <DataTable columns={columns} data={adjustments} />
+        <Pagination
+          currentPage={page}
+          lastPage={lastPage}
+          onPageChange={(p) => setValue("page", p)}
+          loading={loading}
+        />
+
+        {loading && (
+          <div className="absolute inset-0 z-10 flex items-center justify-center bg-background/10 backdrop-blur-[2px] rounded-4xl transition-all">
+            <div className="bg-card/90 p-4 rounded-2xl border border-white/10 shadow-2xl flex items-center gap-3">
+              <Loader2 className="h-5 w-5 animate-spin text-primary" />
+              <span className="text-sm font-bold uppercase tracking-tighter">
+                Syncing Adjustments...
+              </span>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
