@@ -20,6 +20,10 @@ import {
   MoveHorizontal,
   History,
   BarChart,
+  Wallet,
+  ShoppingCart,
+  ArrowRightLeft,
+  Sliders,
 } from "lucide-react";
 
 export const routeConfig: Record<
@@ -276,6 +280,126 @@ export const routeConfig: Record<
     desc: "View records of stock balances",
     breadcrumb: "Stock Balances",
   },
+  "/auth/cashbooks": {
+    title: "Cashbook Management",
+    desc: "View and modify cashbook entries",
+    breadcrumb: "Cashbooks",
+  },
+  "/auth/cashbooks/add": {
+    title: "Add Cashbook Entry",
+    desc: "Create a new cashbook entry.",
+    breadcrumb: "cashbooks/add",
+  },
+  "/auth/cashbooks/:id": {
+    title: "Cashbook Details",
+    desc: "View and modify cashbook details.",
+    breadcrumb: "Details",
+  },
+  "/auth/cashbooks/:id/edit": {
+    title: "Edit Cashbook Entry",
+    desc: "Modify existing cashbook entry details.",
+    breadcrumb: "Edit",
+  },
+  "/auth/cashbook-transactions": {
+    title: "Cashbook Transactions",
+    desc: "View and modify cashbook transactions",
+    breadcrumb: "Cashbook Transactions",
+  },
+  "/auth/cashbook-transactions/create": {
+    title: "Add Transaction",
+    desc: "Create a new cashbook transaction.",
+    breadcrumb: "Cashbook Transactions/Add",
+  },
+  "/auth/cashbook-transactions/:id": {
+    title: "Transaction Details",
+    desc: "View and modify cashbook transaction details.",
+    breadcrumb: "Cashbook Transactions/Details",
+  },
+  "/auth/cashbook-transactions/:id/edit": {
+    title: "Edit Transaction",
+    desc: "Modify existing cashbook transaction details.",
+    breadcrumb: "Cashbook Transactions/Edit",
+  },
+  "/auth/purchase-orders": {
+    title: "Purchase Orders",
+    desc: "View and manage purchase orders.",
+    breadcrumb: "Purchase Orders",
+  },
+  "/auth/purchase-orders/add": {
+    title: "Add Purchase Order",
+    desc: "Create a new purchase order.",
+    breadcrumb: "Purchase Orders/Add",
+  },
+  "/auth/purchase-orders/:id": {
+    title: "Purchase Order Details",
+    desc: "View and modify purchase order details.",
+    breadcrumb: "Purchase Orders/Details",
+  },
+  "/auth/purchase-orders/:id/edit": {
+    title: "Edit Purchase Order",
+    desc: "Modify existing purchase order details.",
+    breadcrumb: "Purchase Orders/Edit",
+  },
+  "/auth/cashbook-transfers": {
+    title: "Cashbook Transfers",
+    desc: "View and manage inter-cashbook asset transfers.",
+    breadcrumb: "Cashbook Transfers",
+  },
+  "/auth/cashbook-transfers/create": {
+    title: "Create Transfer",
+    desc: "Initiate a new inter-cashbook asset transfer sequence.",
+    breadcrumb: "Cashbook Transfers/Create",
+  },
+  "/auth/cashbook-transfers/:id": {
+    title: "Transfer Details",
+    desc: "View validation metadata and routing profiles for this transfer.",
+    breadcrumb: "Cashbook Transfers/Details",
+  },
+  "/auth/cashbook-transfers/:id/edit": {
+    title: "Edit Transfer",
+    desc: "Modify pending inter-cashbook transfer records.",
+    breadcrumb: "Cashbook Transfers/Edit",
+  },
+  "/auth/cashbook-adjustments": {
+    title: "Cashbook Adjustments",
+    desc: "View and manage manual cashbook balance adjustments.",
+    breadcrumb: "Cashbook Adjustments",
+  },
+  "/auth/cashbook-adjustments/create": {
+    title: "Create Adjustment",
+    desc: "Execute a structural balance reconciliation adjustment entry.",
+    breadcrumb: "Cashbook Adjustments/Create",
+  },
+  "/auth/cashbook-adjustments/:id": {
+    title: "Adjustment Details",
+    desc: "View ledger correction values and reconciliation audit logging.",
+    breadcrumb: "Cashbook Adjustments/Details",
+  },
+  "/auth/cashbook-adjustments/:id/edit": {
+    title: "Edit Adjustment",
+    desc: "Modify historical balance adjustment entries.",
+    breadcrumb: "Cashbook Adjustments/Edit",
+  },
+  "/auth/goods-receive-notes": {
+    title: "Goods Receive Notes",
+    desc: "View and manage goods receive notes.",
+    breadcrumb: "Goods Receive Notes",
+  },
+  "/auth/goods-receive-notes/add": {
+    title: "Add Goods Receive Note",
+    desc: "Create a new goods receive note.",
+    breadcrumb: "Goods Receive Notes/Add",
+  },
+  "/auth/goods-receive-notes/:id": {
+    title: "Goods Receive Note Details",
+    desc: "View and modify goods receive note details.",
+    breadcrumb: "Goods Receive Notes/Details",
+  },
+  "/auth/goods-receive-notes/:id/edit": {
+    title: "Edit Goods Receive Note",
+    desc: "Modify existing goods receive note details.",
+    breadcrumb: "Goods Receive Notes/Edit",
+  },
 };
 
 export const menu = [
@@ -313,6 +437,8 @@ export const menu = [
     section: "Inventory Management",
     items: [
       { name: "Inventory", path: "/auth/inventories", icon: Warehouse },
+      { name: "Purchase Orders", path: "/auth/purchase-orders", icon: ShoppingCart },
+      { name: "Goods Receive Notes", path: "/auth/goods-receive-notes", icon: Package },
       { name: "Opening Stocks", path: "/auth/opening-stocks", icon: Package },
       {
         name: "Stock Transfers",
@@ -331,7 +457,27 @@ export const menu = [
       },
     ],
   },
-
+  {
+    section: "Finance & Accounts",
+    items: [
+      { name: "Cashbooks", path: "/auth/cashbooks", icon: Wallet },
+      {
+        name: "Cashbook Transactions",
+        path: "/auth/cashbook-transactions",
+        icon: History,
+      },
+      {
+        name: "Cashbook Transfers",
+        path: "/auth/cashbook-transfers",
+        icon: ArrowRightLeft,
+      },
+      {
+        name: "Cashbook Adjustments",
+        path: "/auth/cashbook-adjustments",
+        icon: Sliders,
+      },
+    ],
+  },
   {
     section: "Setup",
     items: [

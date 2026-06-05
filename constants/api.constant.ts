@@ -33,4 +33,10 @@ export const API_CONSTANT = {
   COLLECTION: "collections",
   STOCK_BALANCE: "stock-balances",
   NRC: "nrc",
+  CASHBOOK: "cashbooks",
+  CASHBOOK_TRANSACTION: "cashbook-transactions",
+  CASHBOOK_TRANSFER: "cashbook-transfers",
+  CASHBOOK_ADJUSTMENT: "cashbook-adjustments",
+  PURCHASE_ORDER: "purchase-orders",
+  GOODS_RECEIVE_NOTE: "goods-receive-notes",
 } as const;

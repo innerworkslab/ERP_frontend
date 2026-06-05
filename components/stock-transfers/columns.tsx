@@ -45,8 +45,6 @@ const ActionCell = ({ transfer, onEdit, onView, refresh }) => {
         setShowRejectDialog(false);
       }
       refresh();
-    } catch (err) {
-      toast.error(`Failed to ${type} transfer`);
     } finally {
       setIsProcessing(false);
     }
@@ -54,19 +52,16 @@ const ActionCell = ({ transfer, onEdit, onView, refresh }) => {
 
   return (
     <div className="flex items-center justify-center gap-1">
-      {/* View is always visible */}
       <Button variant="ghost" size="icon" onClick={() => onView(transfer)}>
         <Eye className="h-4 w-4 text-muted-foreground" />
       </Button>
 
       {isPending ? (
         <>
-          {/* Edit only shows if pending */}
           <Button variant="ghost" size="icon" onClick={() => onEdit(transfer)}>
             <Edit className="h-4 w-4 text-primary" />
           </Button>
 
-          {/* Confirm Action */}
           <Button
             variant="ghost"
             size="icon"
@@ -76,7 +71,6 @@ const ActionCell = ({ transfer, onEdit, onView, refresh }) => {
             <CheckCircle2 className="h-5 w-5 text-muted-foreground hover:text-emerald-500 transition-colors" />
           </Button>
 
-          {/* Reject Action */}
           <Button
             variant="ghost"
             size="icon"
@@ -86,7 +80,6 @@ const ActionCell = ({ transfer, onEdit, onView, refresh }) => {
             <XCircle className="h-5 w-5 text-muted-foreground hover:text-destructive transition-colors" />
           </Button>
 
-          {/* Confirmation Dialog */}
           <AppDialog
             open={showConfirmDialog}
             onOpenChange={setShowConfirmDialog}
@@ -113,7 +106,6 @@ const ActionCell = ({ transfer, onEdit, onView, refresh }) => {
             </div>
           </AppDialog>
 
-          {/* Rejection Dialog */}
           <AppDialog
             open={showRejectDialog}
             onOpenChange={setShowRejectDialog}
@@ -141,7 +133,6 @@ const ActionCell = ({ transfer, onEdit, onView, refresh }) => {
           </AppDialog>
         </>
       ) : (
-        /* Finalized Status Indicators */
         <div className="flex items-center justify-center w-10 h-10">
           {isConfirmed ? (
             <div className="bg-emerald-500/10 p-1.5 rounded-full">

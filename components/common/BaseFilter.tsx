@@ -42,7 +42,7 @@ export function BaseFilter({
           />
         </div>
 
-        <div className="flex items-center gap-2">{children}</div>
+        <div className="mt-2 flex items-center gap-2">{children}</div>
       </div>
 
       {onAddClick && (
