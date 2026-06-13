@@ -400,6 +400,26 @@ export const routeConfig: Record<
     desc: "Modify existing goods receive note details.",
     breadcrumb: "Goods Receive Notes/Edit",
   },
+  "/auth/purchase-returns": {
+    title: "Purchase Returns",
+    desc: "View and manage purchase returns.",
+    breadcrumb: "Purchase Returns",
+  },
+  "/auth/purchase-returns/add": {
+    title: "Add Purchase Return",
+    desc: "Create a new purchase return.",
+    breadcrumb: "Purchase Returns/Add",
+  },
+  "/auth/purchase-returns/:id": {
+    title: "Purchase Return Details",
+    desc: "View and modify purchase return details.",
+    breadcrumb: "Purchase Returns/Details",
+  },
+  "/auth/purchase-returns/:id/edit": {
+    title: "Edit Purchase Return",
+    desc: "Modify existing purchase return details.",
+    breadcrumb: "Purchase Returns/Edit",
+  },
 };
 
 export const menu = [
@@ -438,6 +458,7 @@ export const menu = [
     items: [
       { name: "Inventory", path: "/auth/inventories", icon: Warehouse },
       { name: "Purchase Orders", path: "/auth/purchase-orders", icon: ShoppingCart },
+      { name: "Purchase Returns", path: "/auth/purchase-returns", icon: ShoppingCart },
       { name: "Goods Receive Notes", path: "/auth/goods-receive-notes", icon: Package },
       { name: "Opening Stocks", path: "/auth/opening-stocks", icon: Package },
       {

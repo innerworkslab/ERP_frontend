@@ -2,31 +2,37 @@
 
 import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
-import PurchaseForm from "@/components/purchase-orders/PurchaseForm";
+import PurchaseReturnForm from "@/components/purchase-returns/PurchaseReturnForm";
 import { Loader2 } from "lucide-react";
-import { PurchaseOrder, purchaseService } from "@/api/purchaseOrders.service";
+import {
+  purchaseReturnService,
+  PurchaseReturnDetail,
+} from "@/api/purchaseReturn.service";
 
-export default function EditPurchaseOrderPage() {
+export default function EditPurchaseReturnPage() {
   const { id } = useParams();
   const router = useRouter();
-  const [purchase, setPurchase] = useState<PurchaseOrder | null>(null);
+  const [purchaseReturn, setPurchaseReturn] =
+    useState<PurchaseReturnDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [submitLoading, setSubmitLoading] = useState(false);
 
   useEffect(() => {
-    const fetchPurchaseOrder = async () => {
+    const fetchPurchaseReturn = async () => {
       try {
-        const res = await purchaseService.getById(Number(id));
+        const res = await purchaseReturnService.getById(Number(id));
         if (res?.data) {
-          setPurchase(res.data);
+          setPurchaseReturn(res.data);
         }
+      } catch (err) {
+        console.error(err);
       } finally {
         setLoading(false);
       }
     };
 
     if (id) {
-      fetchPurchaseOrder();
+      fetchPurchaseReturn();
     }
   }, [id]);
 
@@ -39,9 +45,9 @@ export default function EditPurchaseOrderPage() {
   }
 
   return (
-    <PurchaseForm
-      purchaseData={purchase}
-      onSuccess={() => router.back()}
+    <PurchaseReturnForm
+      returnData={purchaseReturn}
+      onSuccess={() => router.push("/auth/purchase-returns")}
       setLoading={setSubmitLoading}
     />
   );
