@@ -7,7 +7,7 @@ import {
   GoodsReceiveNote,
   CreateGrnPayload,
 } from "@/api/goodsReceiveNotes.service";
-import { purchaseService } from "@/api/purchases-orders.service";
+import { purchaseService } from "@/api/purchaseOrders.service";
 import { supplierService } from "@/api/suppliers.service";
 import { branchService } from "@/api/branches.service";
 import { inventoryService } from "@/api/inventories.service";

@@ -7,12 +7,15 @@ import { BaseFilter } from "@/components/common/BaseFilter";
 import { DataTable } from "@/components/data-table/DataTable";
 import { Pagination } from "@/components/common/Pagination";
 import { Loader2 } from "lucide-react";
-import { purchaseService, PurchaseOrder } from "@/api/purchaseOrders.service";
-import { getColumns } from "@/components/purchase-orders/columns";
+import {
+  purchaseReturnService,
+  PurchaseReturnSummary,
+} from "@/api/purchaseReturn.service";
+import { getColumns } from "@/components/purchase-returns/columns";
 
-export default function PurchaseOrdersListPage() {
+export default function PurchaseReturnsListPage() {
   const router = useRouter();
-  const [orders, setOrders] = useState<PurchaseOrder[]>([]);
+  const [returns, setReturns] = useState<PurchaseReturnSummary[]>([]);
   const [lastPage, setLastPage] = useState(1);
   const [loading, setLoading] = useState(false);
 
@@ -23,36 +26,36 @@ export default function PurchaseOrdersListPage() {
   const search = watch("search");
   const page = watch("page");
 
-  const loadOrders = useCallback(async () => {
+  const loadReturns = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await purchaseService.getAll({
+      const res = await purchaseReturnService.getAll({
         search: search || undefined,
         page: page,
       });
-      setOrders(res.data || []);
+      setReturns(res.data || []);
       if (res.meta) {
         setLastPage(res.meta.total_pages || 1);
       }
     } catch (error) {
       console.error(error);
-      setOrders([]);
+      setReturns([]);
     } finally {
       setLoading(false);
     }
   }, [search, page]);
 
   useEffect(() => {
-    loadOrders();
-  }, [loadOrders]);
+    loadReturns();
+  }, [loadReturns]);
 
   const columns = useMemo(() => {
     return getColumns(
-      (purchase) => router.push(`/auth/purchase-orders/${purchase.id}`),
-      (purchase) => router.push(`/auth/purchase-orders/${purchase.id}/edit`),
-      loadOrders,
+      (row) => router.push(`/auth/purchase-returns/${row.id}`),
+      (row) => router.push(`/auth/purchase-returns/${row.id}/edit`),
+      loadReturns,
     );
-  }, [router, loadOrders]);
+  }, [router, loadReturns]);
 
   return (
     <div className="space-y-6">
@@ -62,9 +65,9 @@ export default function PurchaseOrdersListPage() {
           setValue("search", v);
           setValue("page", 1);
         }}
-        placeholder="Find purchase numbers..."
-        onAddClick={() => router.push("/auth/purchase-orders/add")}
-        addLabel="Create PO"
+        placeholder="Find return vouchers..."
+        onAddClick={() => router.push("/auth/purchase-returns/add")}
+        addLabel="Create Return"
       />
 
       {loading ? (
@@ -72,7 +75,7 @@ export default function PurchaseOrdersListPage() {
           <Loader2 className="w-8 h-8 animate-spin text-primary" />
         </div>
       ) : (
-        <DataTable columns={columns} data={orders} />
+        <DataTable columns={columns} data={returns} />
       )}
 
       <Pagination

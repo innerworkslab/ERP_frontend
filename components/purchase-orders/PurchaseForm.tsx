@@ -9,7 +9,7 @@ import { FormSelect, Option } from "@/components/common/FormSelect";
 import { Button } from "@/components/ui/button";
 import { Loader2, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
-import { purchaseService } from "@/api/purchases-orders.service";
+import { purchaseService } from "@/api/purchaseOrders.service";
 import { supplierService } from "@/api/suppliers.service";
 import { branchService } from "@/api/branches.service";
 import { inventoryService } from "@/api/inventories.service";

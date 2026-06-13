@@ -66,7 +66,8 @@ export function ReadOnlyDetail({
     | "purchaseOrder"
     | "cashbookTransfer"
     | "cashbookAdjustment"
-    | "goodsReceiveNote";
+    | "goodsReceiveNote"
+    | "purchaseReturn";
 }) {
   if (!data) return null;
 
@@ -1611,6 +1612,168 @@ export function ReadOnlyDetail({
                   Voucher Attachments
                 </p>
                 <CustomGallery attachments={data.attachments} />
+              </div>
+            )}
+          </div>
+        )}
+
+        {type === "purchaseReturn" && data && (
+          <div className="grid grid-cols-2 gap-4 col-span-2 space-y-2">
+            <div className="grid grid-cols-2 gap-4 col-span-2">
+              <DetailItem label="Return Voucher No" value={data.return_no} />
+              <DetailItem
+                label="Return Execution Date"
+                value={
+                  data.return_date
+                    ? new Date(data.return_date).toLocaleDateString()
+                    : "—"
+                }
+              />
+              <DetailItem
+                label="Source GRN Reference"
+                value={data.goods_receive_note?.grn_no || "—"}
+              />
+              <DetailItem
+                label="Original PO Reference"
+                value={data.purchase_order?.po_number || "—"}
+              />
+              <DetailItem
+                label="Target Supplier"
+                value={data.supplier?.name || "—"}
+              />
+              <DetailItem
+                label="Origin Unit Branch"
+                value={data.branch?.name || "—"}
+              />
+              <DetailItem
+                label="Target Warehouse / Storage"
+                value={data.inventory?.name || "—"}
+              />
+              <DetailItem
+                label="Return Classification Block"
+                value={
+                  data.return_type
+                    ? data.return_type.replace("_", " ").toUpperCase()
+                    : "—"
+                }
+              />
+              <DetailItem
+                label="Document Status"
+                value={data.status?.toUpperCase() || "—"}
+              />
+              <DetailItem
+                label="Audit Operator / Created By"
+                value={data.created_by?.name || "—"}
+              />
+              <DetailItem
+                label="Internal Ledger Narrative / Remarks"
+                value={data.remarks || "—"}
+                fullWidth
+              />
+            </div>
+
+            <div className="col-span-2 border-t border-white/5 pt-4">
+              <h4 className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-3">
+                Financial Ledger Aggregates
+              </h4>
+              <div className="grid grid-cols-3 gap-4 font-mono text-sm">
+                <DetailItem
+                  label="Subtotal Base Value"
+                  value={
+                    data.subtotal_amount
+                      ? `${data.currency?.symbol || ""}${Number(data.subtotal_amount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                      : "0.00"
+                  }
+                />
+                <DetailItem
+                  label="Reversed Apportioned Taxes"
+                  value={
+                    data.tax_amount
+                      ? `${data.currency?.symbol || ""}${Number(data.tax_amount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                      : "0.00"
+                  }
+                />
+                <DetailItem
+                  label="Grand Total Credit Value"
+                  value={
+                    data.total_amount
+                      ? `${data.currency?.symbol || ""}${Number(data.total_amount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                      : "0.00"
+                  }
+                />
+              </div>
+            </div>
+
+            {data.lines && data.lines.length > 0 && (
+              <div className="col-span-2 border-t border-white/5 pt-4">
+                <h4 className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-3">
+                  Returned Lines Segment Allocation ({data.lines.length})
+                </h4>
+                <div className="space-y-3">
+                  {data.lines.map((line: any, idx: number) => (
+                    <div
+                      key={line.id || idx}
+                      className="grid grid-cols-6 gap-4 p-3 bg-muted/20 border border-white/5 rounded-xl text-xs font-mono items-center"
+                    >
+                      <div className="col-span-2">
+                        <span className="block text-[10px] font-sans text-muted-foreground uppercase tracking-wider">
+                          Item / SKU
+                        </span>
+                        <span className="font-sans font-medium text-foreground">
+                          {line.product?.name || "Unknown Product"}
+                        </span>
+                        <span className="block text-[10px] text-muted-foreground font-mono">
+                          {line.product?.sku || "—"}
+                        </span>
+                      </div>
+                      <div className="col-span-1">
+                        <span className="block text-[10px] font-sans text-muted-foreground uppercase tracking-wider">
+                          Return Qty
+                        </span>
+                        <span className="text-foreground font-bold">
+                          {Number(line.return_quantity)}{" "}
+                          {line.uom?.code || line.uom?.name || ""}
+                        </span>
+                      </div>
+                      <div className="col-span-1">
+                        <span className="block text-[10px] font-sans text-muted-foreground uppercase tracking-wider">
+                          Unit Cost Base
+                        </span>
+                        <span className="text-foreground">
+                          {Number(line.unit_price).toLocaleString(undefined, {
+                            minimumFractionDigits: 2,
+                          })}
+                        </span>
+                      </div>
+                      <div className="col-span-1">
+                        <span className="block text-[10px] font-sans text-muted-foreground uppercase tracking-wider">
+                          Rejection Reason
+                        </span>
+                        <span className="font-sans text-rose-400 capitalize">
+                          {line.reason?.replace("_", " ")}
+                        </span>
+                      </div>
+                      <div className="col-span-1 text-right">
+                        <span className="block text-[10px] font-sans text-muted-foreground uppercase tracking-wider">
+                          Computed Value
+                        </span>
+                        <span className="text-primary font-bold">
+                          {Number(line.line_total).toLocaleString(undefined, {
+                            minimumFractionDigits: 2,
+                          })}
+                        </span>
+                      </div>
+                      {line.remarks && (
+                        <div className="col-span-6 border-t border-white/5 pt-1.5 mt-0.5 text-muted-foreground font-sans text-[11px]">
+                          <strong className="text-foreground">
+                            Line Context Note:
+                          </strong>{" "}
+                          {line.remarks}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
           </div>

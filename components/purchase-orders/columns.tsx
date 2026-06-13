@@ -6,7 +6,7 @@ import { Edit, Loader2, Eye, CreditCard, Truck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { AppDialog } from "@/components/common/AppDialog";
-import { purchaseService, PurchaseOrder } from "@/api/purchases-orders.service";
+import { purchaseService, PurchaseOrder } from "@/api/purchaseOrders.service";
 import { cashbookService } from "@/api/cashbooks.service";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
