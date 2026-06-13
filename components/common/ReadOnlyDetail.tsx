@@ -473,8 +473,9 @@ export function ReadOnlyDetail({
           </>
         )}
 
+        {/* PRODUCT */}
         {type === "product" && (
-          <div className="space-y-6">
+          <div className="space-y-6 col-span-2">
             <div className="flex flex-col md:flex-row gap-6 mb-6">
               <div className="w-32 h-32 rounded-xl border bg-muted overflow-hidden flex-shrink-0">
                 {data.image_url ? (
@@ -514,6 +515,43 @@ export function ReadOnlyDetail({
                 value={data.origin_country?.name}
               />
               <DetailItem label="Alert Quantity" value={data.alert_quantity} />
+
+              {data.product_variations &&
+                data.product_variations.length > 0 && (
+                  <div className="col-span-2 border-t pt-4 mt-2 space-y-3">
+                    <h3 className="font-bold text-xs uppercase tracking-widest text-primary">
+                      Product Variations
+                    </h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      {data.product_variations.map((v: any, idx: number) => {
+                        const rawValues = v.variation_value || v.value || [];
+                        const displayValues = Array.isArray(rawValues)
+                          ? rawValues
+                          : [rawValues];
+
+                        return (
+                          <div key={idx} className="flex flex-col space-y-1">
+                            <span className="text-xs font-medium text-muted-foreground">
+                              {v.variation?.name || `Variation Set #${idx + 1}`}
+                            </span>
+                            <div className="flex flex-wrap gap-1.5">
+                              {displayValues.map(
+                                (val: string, valIdx: number) => (
+                                  <span
+                                    key={valIdx}
+                                    className="px-2 py-0.5 rounded-md text-xs font-semibold bg-secondary text-secondary-foreground border"
+                                  >
+                                    {val}
+                                  </span>
+                                ),
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
 
               <div className="col-span-2 border-t pt-4 mt-2">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

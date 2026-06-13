@@ -53,6 +53,12 @@ export const productSchema = yup
       .required("Status is required"),
 
     image: yup.mixed().optional(),
+    variations: yup.array().of(
+      yup.object().shape({
+        variation_id: yup.number().required(),
+        variation_value: yup.string().required(),
+      }),
+    ),
   })
   .required();
 

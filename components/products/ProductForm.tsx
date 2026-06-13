@@ -1,20 +1,20 @@
 "use client";
 
 import { useEffect, useState, useCallback, useMemo } from "react";
-import { useForm, Controller } from "react-hook-form";
+import { useForm, Controller, useFieldArray } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useRouter, useParams } from "next/navigation";
-import { productSchema, ProductFormValues } from "./schema";
 import { productService } from "@/api/products.service";
 import { categoryService } from "@/api/categories.service";
 import { brandService } from "@/api/brands.service";
 import { taxService } from "@/api/taxes.service";
 import { originCountryService } from "@/api/originCountries.service";
 import { currencyService } from "@/api/currencies.service";
+import { variationService } from "@/api/variations.service";
 import { FormInput } from "@/components/common/FormInput";
 import { FormSelect, Option } from "@/components/common/FormSelect";
 import { Button } from "@/components/ui/button";
-import { Loader2, Upload, Save } from "lucide-react";
+import { Loader2, Upload, Trash2, Plus } from "lucide-react";
 import { toast } from "sonner";
 
 import CategoryForm from "../categories/CategoryForm";
@@ -24,6 +24,7 @@ import {
   UOMConversion,
   uomConversionService,
 } from "@/api/uomConversions.service";
+import { productSchema } from "./schema";
 
 export default function ProductForm() {
   const router = useRouter();
@@ -39,6 +40,7 @@ export default function ProductForm() {
     currencies?: Option[];
     conversionOptions?: Option[];
     uomConversions?: UOMConversion[];
+    variationDefinitions?: Option[];
   }>({});
   const [fetching, setFetching] = useState(true);
 
@@ -50,21 +52,32 @@ export default function ProductForm() {
     reset,
     watch,
     formState: { errors, isSubmitting },
-  } = useForm<ProductFormValues>({
+  } = useForm<any>({
     resolver: yupResolver(productSchema),
-    defaultValues: { status: "active" },
+    context: { isEdit },
+    defaultValues: { status: "active", variations: [] },
+  });
+
+  const { fields, append, remove } = useFieldArray({
+    control,
+    name: "variations",
   });
 
   const loadData = useCallback(async () => {
     try {
-      const [cats, brds, txs, origins, uomCon, curs] = await Promise.all([
+      const [cats, brds, txs, origins, uomCon, curs, vars] = await Promise.all([
         categoryService.getAll(),
         brandService.getAll(),
         taxService.getAll(),
         originCountryService.getAll(),
         uomConversionService.getAll(),
         currencyService.getAll({}),
+        variationService.getAll().catch(() => ({ data: [] })),
       ]);
+
+      const activeVariations = (vars?.data || []).filter(
+        (v: any) => v.status === "active",
+      );
 
       setLookups({
         categories: cats.data.map((c) => ({
@@ -92,6 +105,10 @@ export default function ProductForm() {
           id: uc.id.toString(),
           name: `${uc.base_unit.name} to ${uc.conversion_unit.name}`,
         })),
+        variationDefinitions: activeVariations.map((v: any) => ({
+          id: v.id.toString(),
+          name: v.name,
+        })),
       });
 
       if (isEdit) {
@@ -102,6 +119,13 @@ export default function ProductForm() {
             alert_quantity: Number(res.data.alert_quantity),
             purchase_price: Number(res.data.purchase_price),
             sale_price: Number(res.data.sale_price),
+            variations:
+              (res.data.product_variations || res.data.variations)?.map(
+                (v: any) => ({
+                  variation_id: Number(v.variation_id),
+                  variation_value: v.variation_value,
+                }),
+              ) || [],
           });
           setImagePreview(res.data.image_url);
         }
@@ -150,15 +174,30 @@ export default function ProductForm() {
     ];
   }, [selectedConversionId, lookups.uomConversions]);
 
-  const onSubmit = async (data: ProductFormValues) => {
+  const onSubmit = async (data: any) => {
     const formData = new FormData();
 
     Object.entries(data).forEach(([key, value]) => {
       if (key === "image" && value instanceof File) {
         formData.append(key, value);
-      } else if (value !== undefined && value !== null) {
+      } else if (
+        key !== "variations" &&
+        value !== undefined &&
+        value !== null
+      ) {
         formData.append(key, String(value));
       }
+    });
+
+    data.variations?.forEach((item: any, index: number) => {
+      formData.append(
+        `variations[${index}][variation_id]`,
+        String(item.variation_id),
+      );
+      formData.append(
+        `variations[${index}][variation_value]`,
+        item.variation_value,
+      );
     });
 
     const res = isEdit
@@ -189,32 +228,39 @@ export default function ProductForm() {
             <h3 className="font-bold text-sm text-primary uppercase tracking-widest">
               Media
             </h3>
-            <div className="border-2 border-dashed rounded-xl aspect-square flex flex-col items-center justify-center relative overflow-hidden group hover:border-primary/50 transition-colors">
-              {imagePreview ? (
-                <img
-                  src={imagePreview}
-                  className="object-cover w-full h-full"
-                  alt="Preview"
+            <div className="space-y-2">
+              <div className="border-2 border-dashed rounded-xl aspect-square flex flex-col items-center justify-center relative overflow-hidden group hover:border-primary/50 transition-colors">
+                {imagePreview ? (
+                  <img
+                    src={imagePreview}
+                    className="object-cover w-full h-full"
+                    alt="Preview"
+                  />
+                ) : (
+                  <div className="text-center p-4">
+                    <Upload className="mx-auto text-muted-foreground mb-2" />
+                    <p className="text-xs text-muted-foreground">
+                      Click to upload product image
+                    </p>
+                  </div>
+                )}
+                <input
+                  type="file"
+                  className="absolute inset-0 opacity-0 cursor-pointer"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      setValue("image", file, { shouldValidate: true });
+                      setImagePreview(URL.createObjectURL(file));
+                    }
+                  }}
                 />
-              ) : (
-                <div className="text-center p-4">
-                  <Upload className="mx-auto text-muted-foreground mb-2" />
-                  <p className="text-xs text-muted-foreground">
-                    Click to upload product image
-                  </p>
-                </div>
+              </div>
+              {errors.image?.message && (
+                <p className="text-xs font-semibold text-destructive">
+                  {String(errors.image.message)}
+                </p>
               )}
-              <input
-                type="file"
-                className="absolute inset-0 opacity-0 cursor-pointer"
-                onChange={(e) => {
-                  const file = e.target.files?.[0];
-                  if (file) {
-                    setValue("image", file);
-                    setImagePreview(URL.createObjectURL(file));
-                  }
-                }}
-              />
             </div>
             <FormInput
               label="Alert Quantity"
@@ -262,6 +308,7 @@ export default function ProductForm() {
                   value={field.value?.toString()}
                   onValueChange={(val) => field.onChange(Number(val))}
                   onRefresh={loadData}
+                  error={errors.category_id?.message}
                   renderCreateForm={(close) => (
                     <div className="space-y-4">
                       <CategoryForm onSuccess={close} />
@@ -287,6 +334,7 @@ export default function ProductForm() {
                   value={field.value?.toString()}
                   onValueChange={(val) => field.onChange(Number(val))}
                   onRefresh={loadData}
+                  error={errors.brand_id?.message}
                   renderCreateForm={(close) => (
                     <div className="space-y-4">
                       <BrandForm onSuccess={close} />
@@ -312,6 +360,7 @@ export default function ProductForm() {
                   value={field.value?.toString()}
                   onValueChange={(val) => field.onChange(Number(val))}
                   onRefresh={loadData}
+                  error={errors.origin_country_id?.message}
                   renderCreateForm={(close) => (
                     <OriginCountryForm onSuccess={close} />
                   )}
@@ -348,6 +397,7 @@ export default function ProductForm() {
                   options={lookups.currencies || []}
                   value={field.value?.toString()}
                   onValueChange={(val) => field.onChange(Number(val))}
+                  error={errors.purchase_currency_id?.message}
                 />
               )}
             />
@@ -360,6 +410,7 @@ export default function ProductForm() {
                   options={filteredUoms}
                   value={field.value?.toString()}
                   onValueChange={(val) => field.onChange(Number(val))}
+                  error={errors.purchase_uom_id?.message}
                 />
               )}
             />
@@ -372,6 +423,7 @@ export default function ProductForm() {
                   options={lookups.taxes || []}
                   value={field.value?.toString()}
                   onValueChange={(val) => field.onChange(Number(val))}
+                  error={errors.purchase_tax_id?.message}
                 />
               )}
             />
@@ -384,6 +436,7 @@ export default function ProductForm() {
                   options={filteredUoms}
                   value={field.value?.toString()}
                   onValueChange={(val) => field.onChange(Number(val))}
+                  error={errors.stock_uom_id?.message}
                 />
               )}
             />
@@ -405,6 +458,7 @@ export default function ProductForm() {
                   options={lookups.currencies || []}
                   value={field.value?.toString()}
                   onValueChange={(val) => field.onChange(Number(val))}
+                  error={errors.sale_currency_id?.message}
                 />
               )}
             />
@@ -417,6 +471,7 @@ export default function ProductForm() {
                   options={filteredUoms}
                   value={field.value?.toString()}
                   onValueChange={(val) => field.onChange(Number(val))}
+                  error={errors.sale_uom_id?.message}
                 />
               )}
             />
@@ -429,9 +484,74 @@ export default function ProductForm() {
                   options={lookups.taxes || []}
                   value={field.value?.toString()}
                   onValueChange={(val) => field.onChange(Number(val))}
+                  error={errors.sale_tax_id?.message}
                 />
               )}
             />
+          </div>
+
+          <div className="p-4 space-y-4">
+            <div className="flex justify-between items-center">
+              <h3 className="font-bold text-xs uppercase tracking-widest text-primary">
+                Variations Setup
+              </h3>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="rounded-xl"
+                onClick={() =>
+                  append({ variation_id: "", variation_value: "" })
+                }
+              >
+                <Plus className="w-4 h-4 mr-1" /> Append Variation
+              </Button>
+            </div>
+
+            {fields.map((field, index) => (
+              <div
+                key={field.id}
+                className="grid grid-cols-12 gap-4 items-end bg-card p-3 rounded-2xl border border-white/5 relative"
+              >
+                <div className="col-span-5">
+                  <Controller
+                    name={`variations.${index}.variation_id`}
+                    control={control}
+                    render={({ field }) => (
+                      <FormSelect
+                        label="Variation Type"
+                        options={lookups.variationDefinitions || []}
+                        value={field.value?.toString()}
+                        onValueChange={(val) => field.onChange(Number(val))}
+                        error={
+                          errors.variations?.[index]?.variation_id?.message
+                        }
+                      />
+                    )}
+                  />
+                </div>
+                <div className="col-span-6">
+                  <FormInput
+                    label="Value"
+                    registration={register(
+                      `variations.${index}.variation_value`,
+                    )}
+                    error={errors.variations?.[index]?.variation_value?.message}
+                  />
+                </div>
+                <div className="col-span-1 flex justify-center pb-1">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="text-destructive hover:bg-destructive/10 h-10 w-10 rounded-xl"
+                    onClick={() => remove(index)}
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </Button>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
 
@@ -439,12 +559,12 @@ export default function ProductForm() {
           <Button
             type="submit"
             disabled={isSubmitting}
-            className="min-w-[120px] rounded-xl"
+            className="min-w-[140px] rounded-2xl"
           >
             {isSubmitting ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Saving...
+                Saving Changes...
               </>
             ) : (
               <>Save changes</>
