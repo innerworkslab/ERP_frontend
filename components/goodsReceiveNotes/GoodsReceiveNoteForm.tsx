@@ -449,7 +449,7 @@ export default function GrnForm({ grnData, onSuccess, setLoading }: Props) {
             onClick={() =>
               appendLine({
                 purchase_order_line_id: "",
-                product_id: 1,
+                product_id: "",
                 uom_id: "",
                 ordered_quantity: 0,
                 received_quantity: 0,
@@ -503,6 +503,22 @@ export default function GrnForm({ grnData, onSuccess, setLoading }: Props) {
                         `lines.${idx}.ordered_quantity`,
                         Number(matched.quantity || 0),
                       );
+                      setValue(
+                        `lines.${idx}.unit_price`,
+                        Number(matched.unit_price || 0),
+                      );
+                      if (matched.product_id) {
+                        setValue(
+                          `lines.${idx}.product_id`,
+                          Number(matched.product_id),
+                        );
+                      }
+                      if (matched.uom_id) {
+                        setValue(
+                          `lines.${idx}.uom_id`,
+                          matched.uom_id.toString(),
+                        );
+                      }
                     }
                   }}
                   error={errors.lines?.[idx]?.purchase_order_line_id?.message}

@@ -35,7 +35,8 @@ export default function ProductForm() {
   const [lookups, setLookups] = useState<{
     categories?: Option[];
     brands?: Option[];
-    taxes?: Option[];
+    purchaseTaxes?: Option[];
+    saleTaxes?: Option[];
     origins?: Option[];
     currencies?: Option[];
     conversionOptions?: Option[];
@@ -63,21 +64,36 @@ export default function ProductForm() {
     name: "variations",
   });
 
+  const selectedCategoryId = watch("category_id");
+
   const loadData = useCallback(async () => {
     try {
-      const [cats, brds, txs, origins, uomCon, curs, vars] = await Promise.all([
+      const [cats, brds, txs, origins, uomCon, curs] = await Promise.all([
         categoryService.getAll(),
         brandService.getAll(),
         taxService.getAll(),
         originCountryService.getAll(),
         uomConversionService.getAll(),
         currencyService.getAll({}),
-        variationService.getAll().catch(() => ({ data: [] })),
       ]);
 
-      const activeVariations = (vars?.data || []).filter(
-        (v: any) => v.status === "active",
-      );
+      const purchaseTaxes = txs.data
+        .filter((t: any) => t.type?.toLowerCase() === "purchase")
+        .map((t: any) => ({ id: t.id.toString(), name: t.category }));
+
+      const saleTaxes = txs.data
+        .filter((t: any) => t.type?.toLowerCase() === "sale")
+        .map((t: any) => ({ id: t.id.toString(), name: t.category }));
+
+      let activeVariations: any[] = [];
+      if (selectedCategoryId) {
+        const vars = await variationService
+          .getAll({ product_category_id: selectedCategoryId })
+          .catch(() => ({ data: [] }));
+        activeVariations = (vars?.data || []).filter(
+          (v: any) => v.status === "active",
+        );
+      }
 
       setLookups({
         categories: cats.data.map((c) => ({
@@ -88,10 +104,8 @@ export default function ProductForm() {
           id: b.id.toString(),
           name: b.name,
         })),
-        taxes: txs.data.map((t) => ({
-          id: t.id.toString(),
-          name: t.category,
-        })),
+        purchaseTaxes,
+        saleTaxes,
         origins: origins.data.map((o) => ({
           id: o.id.toString(),
           name: o.name,
@@ -103,7 +117,7 @@ export default function ProductForm() {
         uomConversions: uomCon.data,
         conversionOptions: uomCon.data.map((uc) => ({
           id: uc.id.toString(),
-          name: `${uc.base_unit.name} to ${uc.conversion_unit.name}`,
+          name: uc.conversions_name,
         })),
         variationDefinitions: activeVariations.map((v: any) => ({
           id: v.id.toString(),
@@ -111,7 +125,7 @@ export default function ProductForm() {
         })),
       });
 
-      if (isEdit) {
+      if (isEdit && fetching) {
         const res = await productService.getById(Number(params.id));
         if (res.data) {
           reset({
@@ -133,11 +147,11 @@ export default function ProductForm() {
     } finally {
       setFetching(false);
     }
-  }, [isEdit, params.id, reset]);
+  }, [isEdit, params.id, reset, selectedCategoryId, fetching]);
 
   useEffect(() => {
     loadData();
-  }, [loadData]);
+  }, [selectedCategoryId]);
 
   const selectedConversionId = watch("conversion_uom_id");
 
@@ -420,7 +434,7 @@ export default function ProductForm() {
               render={({ field }) => (
                 <FormSelect
                   label="Purchase Tax"
-                  options={lookups.taxes || []}
+                  options={lookups.purchaseTaxes || []}
                   value={field.value?.toString()}
                   onValueChange={(val) => field.onChange(Number(val))}
                   error={errors.purchase_tax_id?.message}
@@ -481,7 +495,7 @@ export default function ProductForm() {
               render={({ field }) => (
                 <FormSelect
                   label="Sale Tax"
-                  options={lookups.taxes || []}
+                  options={lookups.saleTaxes || []}
                   value={field.value?.toString()}
                   onValueChange={(val) => field.onChange(Number(val))}
                   error={errors.sale_tax_id?.message}

@@ -66,6 +66,15 @@ export const getColumns = (
   refresh: () => void,
 ): ColumnDef<UOMConversion>[] => [
   {
+    accessorKey: "conversion_name",
+    header: "Conversion Name",
+    cell: ({ row }) => (
+      <span className="text-xs font-medium">
+        {row.original.conversions_name || "-"}
+      </span>
+    ),
+  },
+  {
     accessorKey: "base_unit_id",
     header: "Base Unit",
     cell: ({ row }) => (

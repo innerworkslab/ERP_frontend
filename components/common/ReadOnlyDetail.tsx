@@ -352,6 +352,11 @@ export function ReadOnlyDetail({
               value={data.conversion_unit_id}
             />
             <DetailItem
+              label="Conversion Name"
+              value={data.conversions_name}
+              fullWidth
+            />
+            <DetailItem
               label="Conversion Rate"
               value={Number(data.conversion_rate).toFixed(2)}
               fullWidth
