@@ -2,6 +2,7 @@ import { z } from "zod";
 
 export const uomConversionSchema = z.object({
   base_unit_id: z.string().min(1, "Base unit is required"),
+  conversions_name: z.string().min(1, "Conversion name is required"),
   conversion_unit_id: z.string().min(1, "Conversion unit is required"),
   conversion_rate: z.coerce
     .number()

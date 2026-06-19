@@ -7,6 +7,7 @@ export interface UOMConversion {
   id: number;
   base_unit_id: number;
   conversion_unit_id: number;
+  conversions_name: string;
   conversion_rate: string | number;
   base_unit: UOM;
   conversion_unit: UOM;

@@ -34,13 +34,18 @@ export default function UOMConversionForm({
     watch,
   } = useForm<UOMConversionFormValues>({
     resolver: zodResolver(uomConversionSchema),
-    values: {
+    defaultValues: {
       base_unit_id: initialData?.base_unit_id?.toString() || "",
+      conversions_name: initialData?.conversions_name || "",
       conversion_unit_id: initialData?.conversion_unit_id?.toString() || "",
       conversion_rate: Number(initialData?.conversion_rate) || 0,
       status: initialData?.status || "active",
     },
   });
+
+  const baseUnitId = watch("base_unit_id");
+  const conversionUnitId = watch("conversion_unit_id");
+  const conversionName = watch("conversions_name");
 
   useEffect(() => {
     const fetchUoms = async () => {
@@ -49,6 +54,25 @@ export default function UOMConversionForm({
     };
     fetchUoms();
   }, []);
+
+  useEffect(() => {
+    if (baseUnitId && conversionUnitId && !initialData && !conversionName) {
+      const baseName = uoms.find((u) => u.id === baseUnitId)?.name || "";
+      const convName = uoms.find((u) => u.id === conversionUnitId)?.name || "";
+      if (baseName && convName) {
+        setValue("conversions_name", `${baseName} to ${convName}`, {
+          shouldValidate: true,
+        });
+      }
+    }
+  }, [
+    baseUnitId,
+    conversionUnitId,
+    uoms,
+    setValue,
+    initialData,
+    conversionName,
+  ]);
 
   useEffect(() => {
     setLoading(isSubmitting);
@@ -77,22 +101,32 @@ export default function UOMConversionForm({
       className="space-y-5 py-2"
     >
       <div className="grid grid-cols-1 gap-4">
+        <FormInput
+          label="Conversion Name"
+          type="text"
+          registration={register("conversions_name")}
+          error={errors.conversions_name?.message}
+        />
         <FormSelect
           label="Base Unit"
           options={uoms}
-          value={watch("base_unit_id")}
-          onValueChange={(val) => setValue("base_unit_id", val)}
+          value={baseUnitId}
+          onValueChange={(val) =>
+            setValue("base_unit_id", val, { shouldValidate: true })
+          }
         />
         <FormSelect
           label="Conversion Unit"
           options={uoms}
-          value={watch("conversion_unit_id")}
-          onValueChange={(val) => setValue("conversion_unit_id", val)}
+          value={conversionUnitId}
+          onValueChange={(val) =>
+            setValue("conversion_unit_id", val, { shouldValidate: true })
+          }
         />
         <FormInput
           label="Conversion Rate"
           type="number"
-          registration={register("conversion_rate")}
+          registration={register("conversion_rate", { valueAsNumber: true })}
           error={errors.conversion_rate?.message}
         />
         <FormSelect
@@ -103,7 +137,9 @@ export default function UOMConversionForm({
           ]}
           value={watch("status")}
           onValueChange={(val) =>
-            setValue("status", val as "active" | "inactive")
+            setValue("status", val as "active" | "inactive", {
+              shouldValidate: true,
+            })
           }
         />
       </div>

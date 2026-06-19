@@ -3,6 +3,12 @@ import { api } from "@/lib/axios";
 import { Filters } from "@/types/api.type";
 import { Category } from "./categories.service";
 
+export type VariationFilters = Filters & {
+  status?: string;
+  search?: string;
+  product_category_id?: number | string;
+};
+
 export interface Variation {
   id: number;
   name: string;
@@ -25,7 +31,7 @@ const version = "v1";
 const baseUrl = `/${version}/${API_CONSTANT.VARIATION}`;
 
 export const variationService = {
-  getAll: (params?: Filters): Promise<VariationListResponse> =>
+  getAll: (params?: VariationFilters): Promise<VariationListResponse> =>
     api.get(`${baseUrl}/${API_CONSTANT.ALL}`, { params }),
 
   getById: (id: string | number): Promise<{ data: Variation }> =>
