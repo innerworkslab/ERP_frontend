@@ -11,6 +11,13 @@ export type AccountFilters = Filters & {
   search?: string;
 };
 
+export type LedgerFilters = Filters & {
+  cashbook_id?: number;
+  from_date?: string;
+  to_date?: string;
+  page?: number;
+};
+
 export type CashbookType = "cash" | "bank" | "mobile_wallet" | "petty_cash";
 
 export type TransactionType = "in" | "out";
@@ -46,9 +53,9 @@ export interface Cashbook {
   created_at: string;
   updated_at: string;
   deleted_at: string | null;
-  branch: Branch;
-  currency: Currency;
-  account: AccountInfo;
+  branch?: Branch;
+  currency?: Currency;
+  account?: AccountInfo;
 }
 
 export interface CashbookAttachment {
@@ -72,16 +79,23 @@ export interface CashbookTransaction {
   destination_account_id: number;
   transaction_type: TransactionType;
   category: string;
+  transaction_datetime: string;
   currency_id: number;
   amount: string;
+  base_currency_amount: string;
+  reference_no: string;
   remark: string | null;
   description: string | null;
   status: string;
+  created_by: User;
+  updated_by: User | null;
   created_at: string;
   updated_at: string;
   deleted_at: string | null;
   cashbook: Cashbook;
   currency: Currency;
+  source_account: AccountInfo;
+  destination_account: AccountInfo;
   attachments: CashbookAttachment[];
 }
 
@@ -197,6 +211,56 @@ export interface CashbookAdjustment {
   updated_at: string;
 }
 
+export interface LedgerTransaction {
+  id: number;
+  cashbook_id: number;
+  cashbook_transaction_id: number;
+  cashbook: {
+    name: string;
+  };
+  cashbook_transaction: {
+    id: number;
+    cashbook_id: number;
+    reference_no: string;
+    transaction_type: "in" | "out";
+    transaction_datetime: string;
+    currency_id: number;
+    amount: string;
+    remark: string;
+    description: string;
+    status: string;
+  };
+  transaction_datetime: string;
+  description: string;
+  remark: string;
+  transaction_type: "in" | "out";
+  amount: number;
+  balance: number;
+}
+
+export interface LedgerResponse {
+  response: {
+    status: string;
+    message: string;
+  };
+  data: {
+    date: string;
+    from_date: string;
+    to_date: string;
+    cashbook_id: number | null;
+    opening_balance: number;
+    closing_balance: number;
+    data: LedgerTransaction[];
+    meta: {
+      total_transactions: number;
+      total: number;
+      per_page: number;
+      current_page: number;
+      total_pages: number;
+    };
+  };
+}
+
 export interface CreateCashbookAdjustmentPayload {
   cashbook_id: number;
   type: "increase" | "decrease";
@@ -224,6 +288,7 @@ const cashbookUrl = `/${version}/${API_CONSTANT.CASHBOOK}`;
 const cashbookTransactionUrl = `/${version}/${API_CONSTANT.CASHBOOK_TRANSACTION}`;
 const cashbookTransferUrl = `/${version}/${API_CONSTANT.CASHBOOK_TRANSFER}`;
 const cashbookAdjustmentUrl = `/${version}/${API_CONSTANT.CASHBOOK_ADJUSTMENT}`;
+const cashbookLedgerUrl = `/${version}/${API_CONSTANT.CASHBOOK_LEDGER}`;
 
 export const cashbookService = {
   getAll: async (params?: AccountFilters): Promise<CashbooksListResponse> => {
@@ -261,7 +326,9 @@ export const cashbookService = {
 
   getTransactionById: async (
     id: number,
-  ): Promise<ApiResponse<CashbookTransaction>> => {
+  ): Promise<
+    CashbookTransactionsListResponse["response"] & { data: CashbookTransaction }
+  > => {
     return await api.get(`${cashbookTransactionUrl}/${id}`);
   },
 
@@ -304,21 +371,23 @@ export const cashbookService = {
   ): Promise<ApiResponse<CashbookTransaction>> => {
     const formData = new FormData();
 
-    if (payload.cashbook_id)
+    if (payload.cashbook_id !== undefined)
       formData.append("cashbook_id", String(payload.cashbook_id));
-    if (payload.source_account_id)
+    if (payload.source_account_id !== undefined)
       formData.append("source_account_id", String(payload.source_account_id));
-    if (payload.destination_account_id)
+    if (payload.destination_account_id !== undefined)
       formData.append(
         "destination_account_id",
         String(payload.destination_account_id),
       );
-    if (payload.transaction_type)
+    if (payload.transaction_type !== undefined)
       formData.append("transaction_type", payload.transaction_type);
-    if (payload.category) formData.append("category", payload.category);
-    if (payload.currency_id)
+    if (payload.category !== undefined)
+      formData.append("category", payload.category);
+    if (payload.currency_id !== undefined)
       formData.append("currency_id", String(payload.currency_id));
-    if (payload.amount) formData.append("amount", String(payload.amount));
+    if (payload.amount !== undefined)
+      formData.append("amount", String(payload.amount));
     if (payload.remark !== undefined)
       formData.append("remark", payload.remark || "");
     if (payload.description !== undefined)
@@ -333,7 +402,7 @@ export const cashbookService = {
         "existing_attachment",
         JSON.stringify(payload.existing_attachment),
       );
-    } else {
+    } else if (payload.existing_attachment !== undefined) {
       formData.append("existing_attachment", "[]");
     }
 
@@ -424,5 +493,19 @@ export const cashbookService = {
     id: number,
   ): Promise<ApiResponse<CashbookAdjustment>> => {
     return await api.patch(`${cashbookAdjustmentUrl}/${id}/reject`);
+  },
+
+  getStatement: async (
+    filters: LedgerFilters = {},
+  ): Promise<LedgerResponse> => {
+    const params = new URLSearchParams();
+    if (filters.cashbook_id)
+      params.append("cashbook_id", filters.cashbook_id.toString());
+    if (filters.from_date) params.append("from_date", filters.from_date);
+    if (filters.to_date) params.append("to_date", filters.to_date);
+    if (filters.page) params.append("page", filters.page.toString());
+    if (filters.search) params.append("search", filters.search);
+
+    return await api.get(`${cashbookLedgerUrl}`, { params });
   },
 };

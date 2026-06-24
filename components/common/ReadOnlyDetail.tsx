@@ -67,7 +67,8 @@ export function ReadOnlyDetail({
     | "cashbookTransfer"
     | "cashbookAdjustment"
     | "goodsReceiveNote"
-    | "purchaseReturn";
+    | "purchaseReturn"
+    | "cashbookLedger";
 }) {
   if (!data) return null;
 
@@ -1095,7 +1096,7 @@ export function ReadOnlyDetail({
                   label="Local Face Amount"
                   value={
                     data.amount
-                      ? `${data.currency?.symbol || ""}${Number(data.amount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ${data.currency?.code || ""}`
+                      ? `${Number(data.amount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ${data.currency?.code || ""}`
                       : "0.00"
                   }
                 />
@@ -1103,8 +1104,8 @@ export function ReadOnlyDetail({
                   label="Standard Base Treasury Value"
                   value={
                     data.base_currency_amount
-                      ? `$${Number(data.base_currency_amount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USD`
-                      : `$${Number(data.amount || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USD`
+                      ? `${Number(data.base_currency_amount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USD`
+                      : `${Number(data.amount || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USD`
                   }
                 />
               </div>
@@ -1819,6 +1820,183 @@ export function ReadOnlyDetail({
                 </div>
               </div>
             )}
+          </div>
+        )}
+
+        {type === "cashbookLedger" && data && (
+          <div className="grid grid-cols-2 gap-4 col-span-2 space-y-2">
+            <div className="grid grid-cols-2 gap-4 col-span-2">
+              <DetailItem
+                label="Transaction Reference"
+                value={data.cashbook_transaction?.reference_no}
+              />
+              <DetailItem
+                label="Target Cashbook"
+                value={data.cashbook?.name || "—"}
+              />
+              <DetailItem
+                label="Ledger Entry Timestamp"
+                value={
+                  data.transaction_datetime
+                    ? new Date(data.transaction_datetime).toLocaleString()
+                    : "—"
+                }
+              />
+              <DetailItem
+                label="Current Lifecycle Status"
+                value={data.cashbook_transaction?.status || "—"}
+              />
+              <DetailItem
+                label="System Audited Flow Direction"
+                value={
+                  data.transaction_type === "in"
+                    ? "Debit (Inflow / Receipt)"
+                    : "Credit (Outflow / Payment)"
+                }
+              />
+              <DetailItem
+                label="Transactional Context / Entry Description"
+                value={data.description || "—"}
+                fullWidth
+              />
+              {data.remark && (
+                <DetailItem
+                  label="Internal System Log Audit Remark"
+                  value={data.remark}
+                  fullWidth
+                />
+              )}
+            </div>
+
+            <div className="col-span-2 border-t border-white/5 pt-4">
+              <h4 className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-3">
+                Financial Ledger Aggregates
+              </h4>
+              <div className="grid grid-cols-2 gap-4 font-mono text-sm">
+                <DetailItem
+                  label="Activity Mutation Amount"
+                  value={
+                    data.amount
+                      ? `${data.transaction_type === "in" ? "+" : "-"} ${Number(data.amount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                      : "0.00"
+                  }
+                />
+                <DetailItem
+                  label="Calculated Running Statement Balance"
+                  value={
+                    data.balance !== undefined
+                      ? `${Number(data.balance).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                      : "0.00"
+                  }
+                />
+              </div>
+            </div>
+          </div>
+        )}
+
+        {type === "stockBalance" && data && (
+          <div className="grid grid-cols-2 gap-4 col-span-2 space-y-2">
+            <div className="grid grid-cols-2 gap-4 col-span-2">
+              <DetailItem
+                label="Product Identification Code (SKU)"
+                value={data.sku}
+              />
+              <DetailItem
+                label="Universal Barcode Structure"
+                value={data.barcode || "—"}
+              />
+              <DetailItem
+                label="Assigned Merchandise Category"
+                value={data.category_name || "—"}
+              />
+              <DetailItem
+                label="Producer Brand Registry"
+                value={data.brand_name || "—"}
+              />
+              <DetailItem
+                label="Warehouse / Inventory Destination"
+                value={`${data.inventory_name} (${data.branch_names})`}
+              />
+              <DetailItem
+                label="Assigned Internal Tracking Lot"
+                value={data.lot_no || "—"}
+              />
+              <DetailItem
+                label="Audit Date Flag (Last Mutation)"
+                value={data.last_movement_date || "—"}
+              />
+              <DetailItem label="System Lifecycle Flag" value={data.status} />
+            </div>
+
+            {/* Quantities Mutation Breakdown Grid */}
+            <div className="col-span-2 border-t border-white/5 pt-4">
+              <h4 className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-3">
+                Inventory Quantity Allocations ({data.stock_uom})
+              </h4>
+              <div className="grid grid-cols-4 gap-4 font-mono text-sm">
+                <DetailItem
+                  label="Opening Quantity"
+                  value={Number(data.opening_quantity || 0).toLocaleString()}
+                />
+                <DetailItem
+                  label="Period Movements"
+                  value={Number(data.movement_quantity || 0).toLocaleString()}
+                />
+                <DetailItem
+                  label="Closing Quantity"
+                  value={Number(data.closing_quantity || 0).toLocaleString()}
+                />
+                <DetailItem
+                  label="Running Quantity"
+                  value={Number(data.running_quantity || 0).toLocaleString()}
+                />
+              </div>
+
+              <div className="grid grid-cols-3 gap-4 font-mono text-sm mt-4 pt-4 border-t border-dashed border-white/5">
+                <DetailItem
+                  label="Physical On Hand"
+                  value={Number(data.on_hand_quantity || 0).toLocaleString()}
+                />
+                <DetailItem
+                  label="Committed/Reserved"
+                  value={Number(data.reserved_quantity || 0).toLocaleString()}
+                />
+                <DetailItem
+                  label="Net Available Stock"
+                  value={Number(data.available_quantity || 0).toLocaleString()}
+                />
+              </div>
+            </div>
+
+            {/* Fiscal Portfolio Appraisals */}
+            <div className="col-span-2 border-t border-white/5 pt-4">
+              <h4 className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-3">
+                Fiscal Appraisals & Material Asset Valuations
+              </h4>
+              <div className="grid grid-cols-2 gap-4 font-mono text-sm">
+                <DetailItem
+                  label="Unit Calculated Cost Value"
+                  value={Number(data.unit_cost || 0).toLocaleString(undefined, {
+                    minimumFractionDigits: 4,
+                  })}
+                />
+                <DetailItem
+                  label="Total Aggregated Inventory Value"
+                  value={Number(data.total_stock_value || 0).toLocaleString(
+                    undefined,
+                    { minimumFractionDigits: 2 },
+                  )}
+                />
+                <DetailItem
+                  label="Treasury Base Currency Evaluation"
+                  value={Number(data.base_currency_value || 0).toLocaleString(
+                    undefined,
+                    { minimumFractionDigits: 2 },
+                  )}
+                  fullWidth
+                />
+              </div>
+            </div>
           </div>
         )}
       </div>

@@ -43,15 +43,14 @@ export default function StockBalancePage() {
     return () => clearTimeout(timer);
   }, [search, page, loadBalances]);
 
-  // View handler for stock balance (e.g., to see ledger history for this specific SKU/Batch)
-  const handleView = useCallback(
-    (balance: StockBalance) => {
-      router.push(`/inventory/stock-ledger?search=${balance.sku}`);
-    },
-    [router],
-  );
+  // const handleView = useCallback(
+  //   (balance: StockBalance) => {
+  //     router.push(`/inventory/stock-ledger/${balance.product_id}`);
+  //   },
+  //   [router],
+  // );
 
-  const columns = useMemo(() => getColumns(handleView), [handleView]);
+  const columns = useMemo(() => getColumns(), []);
 
   return (
     <div className="space-y-6 relative min-h-[400px]">
