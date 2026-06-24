@@ -37,6 +37,7 @@ export const API_CONSTANT = {
   CASHBOOK_TRANSACTION: "cashbook-transactions",
   CASHBOOK_TRANSFER: "cashbook-transfers",
   CASHBOOK_ADJUSTMENT: "cashbook-adjustments",
+  CASHBOOK_LEDGER: "cashbook-ledgers",
   PURCHASE_ORDER: "purchase-orders",
   GOODS_RECEIVE_NOTE: "goods-receive-notes",
 } as const;

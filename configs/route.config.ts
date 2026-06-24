@@ -24,6 +24,7 @@ import {
   ShoppingCart,
   ArrowRightLeft,
   Sliders,
+  BookOpen,
 } from "lucide-react";
 
 export const routeConfig: Record<
@@ -420,6 +421,16 @@ export const routeConfig: Record<
     desc: "Modify existing purchase return details.",
     breadcrumb: "Purchase Returns/Edit",
   },
+  "/auth/cashbook-ledgers": {
+    title: "Cashbook Ledgers",
+    desc: "View and manage cashbook ledger entries.",
+    breadcrumb: "Cashbook Ledgers",
+  },
+  "/auth/cashbook-ledgers/:id": {
+    title: "Cashbook Ledger Details",
+    desc: "View and analyze cashbook ledger entry details.",
+    breadcrumb: "Cashbook Ledgers/Details",
+  },
 };
 
 export const menu = [
@@ -457,9 +468,21 @@ export const menu = [
     section: "Inventory Management",
     items: [
       { name: "Inventory", path: "/auth/inventories", icon: Warehouse },
-      { name: "Purchase Orders", path: "/auth/purchase-orders", icon: ShoppingCart },
-      { name: "Purchase Returns", path: "/auth/purchase-returns", icon: ShoppingCart },
-      { name: "Goods Receive Notes", path: "/auth/goods-receive-notes", icon: Package },
+      {
+        name: "Purchase Orders",
+        path: "/auth/purchase-orders",
+        icon: ShoppingCart,
+      },
+      {
+        name: "Purchase Returns",
+        path: "/auth/purchase-returns",
+        icon: ShoppingCart,
+      },
+      {
+        name: "Goods Receive Notes",
+        path: "/auth/goods-receive-notes",
+        icon: Package,
+      },
       { name: "Opening Stocks", path: "/auth/opening-stocks", icon: Package },
       {
         name: "Stock Transfers",
@@ -496,6 +519,11 @@ export const menu = [
         name: "Cashbook Adjustments",
         path: "/auth/cashbook-adjustments",
         icon: Sliders,
+      },
+      {
+        name: "Cashbook Ledgers",
+        path: "/auth/cashbook-ledgers",
+        icon: BookOpen,
       },
     ],
   },

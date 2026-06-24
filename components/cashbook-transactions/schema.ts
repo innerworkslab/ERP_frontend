@@ -1,4 +1,3 @@
-import { renderToStaticMarkup } from "react-dom/server";
 import * as yup from "yup";
 
 export const transactionSchema = yup
@@ -15,12 +14,8 @@ export const transactionSchema = yup
       .transform((value, originalValue) =>
         originalValue === "" ? undefined : value,
       )
-      .required("The destination account id field is required.")
-      .positive()
-      .notOneOf(
-        [yup.ref("source_account_id")],
-        "Source and destination accounts cannot be identical",
-      ),
+      .nullable()
+      .notRequired(),
     currency_id: yup
       .number()
       .transform((value, originalValue) =>
@@ -28,7 +23,15 @@ export const transactionSchema = yup
       )
       .required("Currency selection is required")
       .positive(),
-    category: yup.string().required("The selected category is invalid."),
+    transaction_type: yup
+      .string()
+      .oneOf(
+        ["in", "out"],
+        "Transaction direction must be either 'in' or 'out'",
+      )
+      .nullable()
+      .notRequired(),
+    category: yup.string().required("The selected category is required."),
     amount: yup
       .number()
       .transform((value, originalValue) =>
@@ -37,6 +40,7 @@ export const transactionSchema = yup
       .required("Transfer amount is required")
       .positive("Amount must be greater than zero"),
     description: yup.string().nullable().notRequired(),
+    remark: yup.string().ensure().notRequired(),
     attachments: yup
       .mixed()
       .transform((value, originalValue) => {

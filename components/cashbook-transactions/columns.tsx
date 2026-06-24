@@ -123,6 +123,34 @@ export const getColumns = (
     ),
   },
   {
+    accessorKey: "created_at",
+    header: "Date Time",
+    cell: ({ row }) => (
+      <span className="text-xs font-mono text-muted-foreground">
+        {row.original.created_at
+          ? new Date(row.original.created_at).toLocaleString(undefined, {
+              day: "2-digit",
+              month: "short",
+              year: "numeric",
+              hour: "2-digit",
+              minute: "2-digit",
+              hour12: true,
+            })
+          : "—"}
+      </span>
+    ),
+  },
+  {
+    id: "cashbook",
+    header: "Cashbook Name",
+    accessorFn: (row) => row.cashbook?.name,
+    cell: ({ row }) => (
+      <span className="text-xs font-medium text-muted-foreground">
+        {row.original.cashbook?.name || "—"}
+      </span>
+    ),
+  },
+  {
     accessorKey: "transaction_type",
     header: "Transaction Type",
     cell: ({ row }) => {
@@ -151,16 +179,6 @@ export const getColumns = (
     ),
   },
   {
-    id: "cashbook",
-    header: "Cashbook Name",
-    accessorFn: (row) => row.cashbook?.name,
-    cell: ({ row }) => (
-      <span className="text-xs font-medium text-muted-foreground">
-        {row.original.cashbook?.name || "—"}
-      </span>
-    ),
-  },
-  {
     accessorKey: "amount",
     header: "Amount",
     cell: ({ row }) => {
@@ -179,7 +197,7 @@ export const getColumns = (
         <span
           className={`text-sm font-mono font-bold ${isInflow ? "text-emerald-400" : "text-rose-400"}`}
         >
-          {isInflow ? "+" : "-"} {symbol}
+          {isInflow ? "+" : "-"}
           {formattedAmount} {code}
         </span>
       );
@@ -203,7 +221,7 @@ export const getColumns = (
 
       return (
         <span className="text-xs font-mono text-muted-foreground">
-          ${formattedBase} USD
+          {formattedBase} USD
         </span>
       );
     },
@@ -227,24 +245,6 @@ export const getColumns = (
         </span>
       );
     },
-  },
-  {
-    accessorKey: "created_at",
-    header: "Created At",
-    cell: ({ row }) => (
-      <span className="text-xs font-mono text-muted-foreground">
-        {row.original.created_at
-          ? new Date(row.original.created_at).toLocaleString(undefined, {
-              day: "2-digit",
-              month: "short",
-              year: "numeric",
-              hour: "2-digit",
-              minute: "2-digit",
-              hour12: true,
-            })
-          : "—"}
-      </span>
-    ),
   },
   {
     id: "actions",

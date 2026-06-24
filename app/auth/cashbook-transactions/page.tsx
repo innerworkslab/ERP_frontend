@@ -66,7 +66,7 @@ export default function TransactionsListPage() {
 
   const handleEdit = useCallback(
     (tx: CashbookTransaction) => {
-      router.push(`/auth/cashbook-transactions/${tx.id}?edit=true`);
+      router.push(`/auth/cashbook-transactions/${tx.id}/edit`);
     },
     [router],
   );

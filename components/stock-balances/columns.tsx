@@ -1,122 +1,111 @@
 "use client";
 
 import { ColumnDef } from "@tanstack/react-table";
-import { StockBalance } from "@/api/stockBalances.service";
-import { Badge } from "@/components/ui/badge";
-import { cn } from "@/lib/utils";
 import { Package } from "lucide-react";
-import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { StockBalance } from "@/api/stockBalances.service";
 
-export const getColumns = (
-  onView: (balance: StockBalance) => void,
-): ColumnDef<StockBalance>[] => [
+export const getColumns = (): ColumnDef<StockBalance>[] => [
   {
-    accessorKey: "product_image",
-    header: "Image",
-    size: 60,
+    accessorKey: "product_name",
+    header: "Product Name",
     cell: ({ row }) => (
-      <Avatar className="h-9 w-9 rounded-xl border">
-        <AvatarImage
-          src={row.original.product_image}
-          className="object-cover"
-        />
-        <AvatarFallback>
-          <Package className="h-4 w-4 opacity-40" />
-        </AvatarFallback>
-      </Avatar>
+      <div className="flex items-center gap-3">
+        <Avatar className="h-7 w-7 rounded-lg border border-white/15 bg-muted flex-shrink-0">
+          {row.original.product_image ? (
+            <AvatarImage
+              src={row.original.product_image}
+              alt={row.original.product_name}
+              className="object-cover h-full w-full"
+            />
+          ) : null}
+          <AvatarFallback className="rounded-lg bg-muted/40">
+            <Package className="h-3.5 w-3.5 opacity-40" />
+          </AvatarFallback>
+        </Avatar>
+        <span className="font-bold text-sm tracking-tight text-foreground truncate max-w-[220px]">
+          {row.original.product_name}
+        </span>
+      </div>
     ),
   },
-  { accessorKey: "product_name", header: "Product Name", size: 200 },
-  { accessorKey: "sku", header: "SKU", size: 120 },
   {
-    accessorKey: "barcode",
-    header: "Barcode",
-    size: 150,
-    cell: ({ row }) => row.original.barcode || "-",
-  },
-  { accessorKey: "category_name", header: "Category", size: 140 },
-  { accessorKey: "brand_name", header: "Brand", size: 140 },
-  { accessorKey: "branch_names", header: "Branch", size: 160 },
-  { accessorKey: "inventory_name", header: "Warehouse", size: 180 },
-  { accessorKey: "stock_uom", header: "UOM", size: 100 },
-  {
-    accessorKey: "on_hand_quantity",
-    header: "On Hand",
-    size: 110,
+    accessorKey: "sku",
+    header: "SKU",
     cell: ({ row }) => (
-      <span className="font-bold text-sm">{row.original.on_hand_quantity}</span>
-    ),
-  },
-  { accessorKey: "reserved_quantity", header: "Reserved", size: 110 },
-  {
-    accessorKey: "available_quantity",
-    header: "Available",
-    size: 110,
-    cell: ({ row }) => (
-      <span className="font-bold text-sm text-emerald-500">
-        {row.original.available_quantity}
+      <span className="font-mono text-xs font-semibold text-muted-foreground">
+        {row.original.sku}
       </span>
     ),
   },
-  { accessorKey: "reorder_level", header: "Alert Qty", size: 110 },
   {
-    accessorKey: "unit_cost",
-    header: "Unit Cost",
-    size: 130,
-    cell: ({ row }) => Number(row.original.unit_cost).toLocaleString(),
+    accessorKey: "inventory_name",
+    header: "Warehouse",
+    cell: ({ row }) => (
+      <span className="text-xs font-semibold text-foreground">
+        {row.original.inventory_name}
+      </span>
+    ),
+  },
+  {
+    accessorKey: "stock_uom",
+    header: "UOM",
+    cell: ({ row }) => (
+      <span className="text-xs font-medium text-muted-foreground">
+        {row.original.stock_uom}
+      </span>
+    ),
+  },
+  {
+    accessorKey: "on_hand_quantity",
+    header: () => <div className="text-right">On Hand Qty</div>,
+    cell: ({ row }) => (
+      <div className="text-right">
+        <span className="font-semibold text-sm text-foreground">
+          {Number(row.original.on_hand_quantity || 0).toLocaleString()}
+        </span>
+      </div>
+    ),
+  },
+  {
+    accessorKey: "reserved_quantity",
+    header: () => <div className="text-right">Reserved Qty</div>,
+    cell: ({ row }) => (
+      <div className="text-right">
+        <span className="font-semibold text-sm text-amber-500/90">
+          {Number(row.original.reserved_quantity || 0).toLocaleString()}
+        </span>
+      </div>
+    ),
+  },
+  {
+    accessorKey: "available_quantity",
+    header: () => <div className="text-right">Available Qty</div>,
+    cell: ({ row }) => {
+      const qty = Number(row.original.available_quantity || 0);
+      const reorder = Number(row.original.reorder_level || 0);
+      const isCritical = qty <= reorder;
+
+      return (
+        <div className="text-right">
+          <span
+            className={`font-black text-sm ${isCritical ? "text-rose-400" : "text-emerald-400"}`}
+          >
+            {qty.toLocaleString()}
+          </span>
+        </div>
+      );
+    },
   },
   {
     accessorKey: "total_stock_value",
-    header: "Total Value",
-    size: 150,
+    header: () => <div className="text-right">Valuation</div>,
     cell: ({ row }) => (
-      <span className="font-black text-sm">
-        {Number(row.original.total_stock_value).toLocaleString()}
-      </span>
+      <div className="text-right font-mono font-bold text-xs text-emerald-400">
+        {Number(row.original.total_stock_value || 0).toLocaleString(undefined, {
+          minimumFractionDigits: 2,
+        })}
+      </div>
     ),
-  },
-  { accessorKey: "base_currency_value", header: "Base Value", size: 130 },
-  {
-    accessorKey: "lot_no",
-    header: "Lot No",
-    size: 160,
-    cell: ({ row }) => row.original.lot_no || "-",
-  },
-  {
-    accessorKey: "serial_no",
-    header: "Serial No",
-    size: 160,
-    cell: ({ row }) => row.original.serial_no || "-",
-  },
-  {
-    accessorKey: "expired_date",
-    header: "Expiry Date",
-    size: 130,
-    cell: ({ row }) => row.original.expired_date || "-",
-  },
-  { accessorKey: "last_movement_date", header: "Last Movement", size: 140 },
-  {
-    accessorKey: "status",
-    header: "Status",
-    size: 100,
-    cell: ({ row }) => (
-      <Badge
-        variant="outline"
-        className={cn(
-          "text-[10px] uppercase font-bold",
-          row.original.status === "active"
-            ? "border-emerald-500/50 text-emerald-500"
-            : "",
-        )}
-      >
-        {row.original.status}
-      </Badge>
-    ),
-  },
-  {
-    accessorKey: "expiry_remark",
-    header: "Expiry Remark",
-    size: 200,
-    cell: ({ row }) => row.original.expiry_remark || "-",
   },
 ];

@@ -8,7 +8,7 @@ export type StockBalanceFilters = Filters & {
 };
 
 export interface StockBalance {
-  product_image: string;
+  product_image: string | null;
   product_name: string;
   sku: string;
   barcode: string | null;
@@ -17,17 +17,27 @@ export interface StockBalance {
   branch_names: string;
   inventory_name: string;
   stock_uom: string;
+  opening_quantity: string;
+  movement_quantity: string;
+  closing_quantity: string;
+  running_quantity: string;
+  opening_stock_value: string;
+  movement_stock_value: string;
+  closing_stock_value: string;
   on_hand_quantity: string;
   reserved_quantity: number;
   available_quantity: string;
   reorder_level: string;
   unit_cost: string;
   total_stock_value: string;
+  base_currency_value: string;
   lot_no: string | null;
   expired_date: string | null;
   serial_no: string | null;
   last_movement_date: string;
   status: string;
+  expiry_remark: string | null;
+  collection_names: string | null;
 }
 
 export interface StockBalanceListResponse {
@@ -63,9 +73,6 @@ export const stockBalanceService = {
     params?: StockBalanceFilters,
   ): Promise<StockBalanceListResponse> => {
     return await api.get(baseUrl, { params });
-  },
-  getBalanceById: async (id: number): Promise<ApiResponse<StockBalance>> => {
-    return await api.get(`${baseUrl}/${id}`);
   },
   getProductLots: async (
     productId: number,

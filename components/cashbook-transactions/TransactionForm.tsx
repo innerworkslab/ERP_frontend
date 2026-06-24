@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
@@ -36,14 +37,13 @@ export default function TransactionForm({
     reset,
     watch,
     formState: { errors, isSubmitting },
-  } = useForm<
-    TransactionFormValues & { transaction_type: "in" | "out"; remark: string }
-  >({
+  } = useForm<TransactionFormValues>({
     resolver: yupResolver(transactionSchema) as any,
     defaultValues: {
-      category: "transfer",
-      transaction_type: "out",
+      category: "income",
+      transaction_type: "in",
       remark: "",
+      description: "",
     },
   });
 
@@ -88,12 +88,12 @@ export default function TransactionForm({
       reset({
         source_account_id:
           transactionData.source_account_id || transactionData.cashbook_id,
-        destination_account_id: transactionData.destination_account_id || 0,
+        destination_account_id: transactionData.destination_account_id || null,
         currency_id: transactionData.currency_id,
         transaction_type:
-          (transactionData.transaction_type as "in" | "out") || "out",
+          (transactionData.transaction_type as "in" | "out") || "in",
         amount: Number(transactionData.amount || 0),
-        category: transactionData.category || "transfer",
+        category: transactionData.category || "income",
         description: transactionData.description || "",
         remark: transactionData.remark || "",
       });
@@ -108,12 +108,7 @@ export default function TransactionForm({
     setExistingFiles((prev) => prev.filter((file) => file.id !== fileId));
   };
 
-  const onSubmit = async (
-    data: TransactionFormValues & {
-      transaction_type: "in" | "out";
-      remark: string;
-    },
-  ) => {
+  const onSubmit = async (data: TransactionFormValues) => {
     const filesArray = data.attachments
       ? data.attachments instanceof FileList
         ? Array.from(data.attachments)
@@ -122,34 +117,47 @@ export default function TransactionForm({
           : [data.attachments]
       : [];
 
-    const payload = {
+    const payload: any = {
       cashbook_id: data.source_account_id,
       source_account_id: data.source_account_id,
-      destination_account_id: data.destination_account_id,
-      transaction_type: data.transaction_type,
       category: data.category,
       currency_id: data.currency_id,
       amount: data.amount,
-      remark: data.remark,
+      remark: data.remark || "",
       description: data.description || "",
       attachments: filesArray as File[],
       existing_attachment: existingFiles,
     };
 
-    const result = transactionData
-      ? await cashbookService.updateTransaction(transactionData.id, payload)
-      : await cashbookService.createTransaction(payload);
-
-    if (result?.response?.status === "error") {
-      toast.error(result.response.message || "Validation Error");
-      return;
+    if (data.destination_account_id) {
+      payload.destination_account_id = data.destination_account_id;
+    }
+    if (data.transaction_type) {
+      payload.transaction_type = data.transaction_type;
     }
 
-    toast.success(
-      result?.response?.message ||
-        `Transaction ${transactionData ? "updated" : "posted"} successfully`,
-    );
-    onSuccess();
+    try {
+      const result = transactionData
+        ? await cashbookService.updateTransaction(transactionData.id, payload)
+        : await cashbookService.createTransaction(payload);
+
+      const status = result?.response?.status || (result as any)?.status;
+      const message = result?.response?.message || (result as any)?.message;
+
+      if (status === "error") {
+        toast.error(message || "Validation Error");
+        return;
+      }
+
+      toast.success(
+        message ||
+          `Transaction ${transactionData ? "updated" : "posted"} successfully`,
+      );
+      onSuccess();
+    } catch (err) {
+      console.error(err);
+      toast.error("An unexpected error occurred while saving the transaction.");
+    }
   };
 
   return (
@@ -177,10 +185,10 @@ export default function TransactionForm({
           control={control}
           render={({ field }) => (
             <FormSelect
-              label="Destination Cashbook (To)"
+              label="Destination Cashbook (To) - Optional"
               options={cashbooks}
-              value={field.value?.toString()}
-              onValueChange={(val) => field.onChange(Number(val))}
+              value={field.value?.toString() || ""}
+              onValueChange={(val) => field.onChange(val ? Number(val) : null)}
               error={errors.destination_account_id?.message}
             />
           )}
@@ -205,11 +213,11 @@ export default function TransactionForm({
             <FormSelect
               label="Transaction Direction"
               options={[
-                { id: "out", name: "Out (Debit Account)" },
                 { id: "in", name: "In (Credit Account)" },
+                { id: "out", name: "Out (Debit Account)" },
               ]}
-              value={field.value}
-              onValueChange={(val) => field.onChange(val)}
+              value={field.value || ""}
+              onValueChange={(val) => field.onChange(val || null)}
               error={errors.transaction_type?.message}
             />
           )}
@@ -226,16 +234,11 @@ export default function TransactionForm({
         <div className="col-span-2">
           <FormSelect
             label="Category"
-            value={watch("category") || "transfer"}
+            value={watch("category") || "income"}
             onValueChange={(val) => setValue("category", val)}
             options={[
-              { id: "expense", name: "expense" },
               { id: "income", name: "income" },
-              { id: "transfer", name: "transfer" },
-              { id: "adjustment", name: "adjustment" },
-              { id: "deposit", name: "deposit" },
-              { id: "withdraw", name: "withdraw" },
-              { id: "others", name: "others" },
+              { id: "expense", name: "expense" },
             ]}
             error={errors.category?.message}
           />
