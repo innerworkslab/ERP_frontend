@@ -3,116 +3,98 @@
 import { ColumnDef } from "@tanstack/react-table";
 import { Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import Image from "next/image";
-import { StockLedger } from "@/api/stockBalances.service";
+import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
+import { LedgerTransaction } from "@/api/cashbooks.service";
 
 export const getColumns = (
-  onView: (item: StockLedger) => void,
-): ColumnDef<StockLedger>[] => [
+  onView: (item: LedgerTransaction) => void,
+): ColumnDef<LedgerTransaction>[] => [
   {
-    accessorKey: "product_name",
-    header: "Product Detail",
-    cell: ({ row }) => {
-      const img = row.original.product_image;
-      return (
-        <div className="flex items-center gap-3">
-          <div className="relative h-9 w-9 overflow-hidden rounded-xl border border-white/15 bg-muted flex-shrink-0">
-            {img ? (
-              <Image
-                src={img}
-                alt={row.original.product_name}
-                fill
-                sizes="36px"
-                className="object-cover"
-              />
-            ) : (
-              <div className="h-full w-full bg-muted/40" />
-            )}
-          </div>
-          <div className="flex flex-col">
-            <span className="font-bold text-sm leading-tight">
-              {row.original.product_name}
-            </span>
-            <span className="text-[10px] font-mono text-muted-foreground mt-0.5">
-              SKU: {row.original.sku}
-            </span>
-          </div>
-        </div>
-      );
-    },
+    accessorKey: "transaction_datetime",
+    header: "Date & Time",
+    cell: ({ row }) => (
+      <span className="text-xs font-medium text-foreground whitespace-nowrap">
+        {row.original.transaction_datetime}
+      </span>
+    ),
   },
   {
-    accessorKey: "inventory_name",
-    header: "Warehouse Location",
+    accessorKey: "cashbook_transaction.reference_no",
+    header: "Reference No",
     cell: ({ row }) => (
-      <div className="flex flex-col">
-        <span className="text-xs font-semibold text-foreground">
-          {row.original.inventory_name}
+      <span className="font-mono text-xs font-bold text-primary">
+        {row.original.cashbook_transaction?.reference_no || "—"}
+      </span>
+    ),
+  },
+  {
+    accessorKey: "description",
+    header: "Transaction Details",
+    cell: ({ row }) => (
+      <div className="flex flex-col max-w-[280px]">
+        <span className="text-xs font-semibold text-foreground truncate">
+          {row.original.remark}
         </span>
-        <span className="text-[10px] text-muted-foreground">
-          {row.original.branch_names}
+        <span className="text-[10px] text-muted-foreground mt-0.5 line-clamp-1">
+          {row.original.description}
         </span>
       </div>
     ),
   },
   {
-    accessorKey: "available_quantity",
-    header: () => <div className="text-right">Available Qty</div>,
+    accessorKey: "amount",
+    header: () => <div className="text-right">Transaction Amount</div>,
     cell: ({ row }) => {
-      const qty = Number(row.original.available_quantity || 0);
-      const reorder = Number(row.original.reorder_level || 0);
-      const isCritical = qty <= reorder;
+      const isOutflow = row.original.transaction_type === "out";
+      const amount = Number(row.original.amount || 0);
 
       return (
-        <div className="text-right flex flex-col items-end">
-          <span
-            className={`font-black text-sm ${isCritical ? "text-amber-400" : "text-foreground"}`}
-          >
-            {qty.toLocaleString()}
-          </span>
-          <span className="text-[10px] text-muted-foreground">
-            {row.original.stock_uom}
-          </span>
+        <div
+          className={cn(
+            "text-right font-mono font-bold text-xs",
+            isOutflow ? "text-rose-500" : "text-emerald-500",
+          )}
+        >
+          {isOutflow ? "-" : "+"}
+          {amount.toLocaleString(undefined, {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+          })}
         </div>
       );
     },
   },
   {
-    accessorKey: "on_hand_quantity",
-    header: () => <div className="text-right">Physical On Hand</div>,
+    accessorKey: "balance",
+    header: () => <div className="text-right">Running Balance</div>,
     cell: ({ row }) => (
-      <div className="text-right">
-        <span className="font-semibold text-xs text-muted-foreground">
-          {Number(row.original.on_hand_quantity || 0).toLocaleString()}
-        </span>
-      </div>
-    ),
-  },
-  {
-    accessorKey: "total_stock_value",
-    header: () => <div className="text-right">Valuation</div>,
-    cell: ({ row }) => (
-      <div className="text-right font-mono font-bold text-xs text-emerald-400">
-        {Number(row.original.total_stock_value || 0).toLocaleString(undefined, {
+      <div className="text-right font-mono font-bold text-xs text-foreground">
+        {Number(row.original.balance || 0).toLocaleString(undefined, {
           minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
         })}
       </div>
     ),
   },
   {
-    id: "actions",
-    header: () => <div className="text-center">View</div>,
-    cell: ({ row }) => (
-      <div className="flex items-center justify-center">
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-8 w-8 text-blue-500 hover:bg-blue-500/10"
-          onClick={() => onView(row.original)}
+    accessorKey: "cashbook_transaction.status",
+    header: "Status",
+    cell: ({ row }) => {
+      const status = row.original.cashbook_transaction?.status;
+      return (
+        <Badge
+          className={cn(
+            "text-[10px] uppercase font-black px-2 py-0.5 rounded-full border border-transparent whitespace-nowrap",
+            status === "confirmed" &&
+              "bg-emerald-500/10 text-emerald-500 border-emerald-500/20",
+            status === "pending" &&
+              "bg-amber-500/10 text-amber-500 border-amber-500/20",
+          )}
         >
-          <Eye className="h-4 w-4" />
-        </Button>
-      </div>
-    ),
+          {status || "unknown"}
+        </Badge>
+      );
+    },
   },
 ];
