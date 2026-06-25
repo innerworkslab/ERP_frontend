@@ -1326,13 +1326,13 @@ export function ReadOnlyDetail({
                             {line.uom?.code || ""}
                           </td>
                           <td className="p-3 text-right">
-                            {data.currency?.symbol || "$"}
+                            {data.currency?.symbol || "$"}{" "}
                             {Number(line.unit_price).toLocaleString(undefined, {
                               minimumFractionDigits: 2,
                             })}
                           </td>
                           <td className="p-3 text-right">
-                            {data.currency?.symbol || "$"}
+                            {data.currency?.symbol || "$"}{" "}
                             {Number(line.gross_amount).toLocaleString(
                               undefined,
                               { minimumFractionDigits: 2 },
@@ -1340,12 +1340,12 @@ export function ReadOnlyDetail({
                           </td>
                           <td className="p-3 text-right text-rose-500">
                             {Number(line.discount_amount) > 0
-                              ? `-${data.currency?.symbol || "$"}${Number(line.discount_amount).toLocaleString(undefined, { minimumFractionDigits: 2 })}`
+                              ? `-${data.currency?.symbol || "$"}{" "}${Number(line.discount_amount).toLocaleString(undefined, { minimumFractionDigits: 2 })}`
                               : "—"}
                           </td>
                           <td className="p-3 text-right text-amber-500">
                             {Number(line.tax_amount) > 0
-                              ? `${data.currency?.symbol || "$"}${Number(line.tax_amount).toLocaleString(undefined, { minimumFractionDigits: 2 })}`
+                              ? `${data.currency?.symbol || "$"}{" "}${Number(line.tax_amount).toLocaleString(undefined, { minimumFractionDigits: 2 })}`
                               : "—"}
                           </td>
                           <td className="p-3 text-right font-bold text-primary">
@@ -1399,7 +1399,7 @@ export function ReadOnlyDetail({
                     label="Grand Valuation Total"
                     value={
                       data.total_amount
-                        ? `${data.currency?.symbol || "$"}${Number(data.total_amount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ${data.currency?.code || ""}`
+                        ? `${Number(data.total_amount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ${data.currency?.code || ""}`
                         : "0.00"
                     }
                   />
@@ -1407,7 +1407,7 @@ export function ReadOnlyDetail({
                     label="Total Settled / Paid Amount"
                     value={
                       data.paid_amount
-                        ? `${data.currency?.symbol || "$"}${Number(data.paid_amount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                        ? `${Number(data.paid_amount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}${data.currency?.code || ""}`
                         : "$0.00"
                     }
                   />
@@ -1470,8 +1470,8 @@ export function ReadOnlyDetail({
                   <DetailItem
                     label="Settled Paid Amount"
                     value={
-                      data.paid_amount
-                        ? `${data.currency?.symbol || "$"}${Number(data.paid_amount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                      data.purchase_order?.paid_amount
+                        ? `${Number(data.purchase_order.paid_amount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ${data.currency?.code || ""}`
                         : "$0.00"
                     }
                   />
@@ -1534,16 +1534,16 @@ export function ReadOnlyDetail({
                             {Number(line.short_quantity).toLocaleString()}
                           </td>
                           <td className="p-3 text-right">
-                            {data.currency?.symbol || "$"}
                             {Number(line.unit_price).toLocaleString(undefined, {
                               minimumFractionDigits: 2,
-                            })}
+                            })}{" "}
+                            {data.currency?.code || ""}
                           </td>
                           <td className="p-3 text-right font-bold text-foreground">
-                            {data.currency?.symbol || "$"}
                             {Number(line.line_total).toLocaleString(undefined, {
                               minimumFractionDigits: 2,
-                            })}
+                            })}{" "}
+                            {data.currency?.code || ""}
                           </td>
                         </tr>
                       ))}
@@ -1582,12 +1582,10 @@ export function ReadOnlyDetail({
                             {charge.charge_type || "—"}
                           </td>
                           <td className="p-3 text-right font-bold text-foreground">
-                            {charge.currency?.symbol ||
-                              data.currency?.symbol ||
-                              "$"}
                             {Number(charge.amount).toLocaleString(undefined, {
                               minimumFractionDigits: 2,
-                            })}
+                            })}{" "}
+                            {data.currency?.code || ""}
                           </td>
                         </tr>
                       ))}
@@ -1621,31 +1619,44 @@ export function ReadOnlyDetail({
                   </div>
                 </div>
 
-                <div className="space-y-2 col-span-1 border-l border-white/5 pl-4">
-                  <DetailItem
-                    label="Landed Surcharge Taxes"
-                    value={
-                      data.cargo_tax_amount
-                        ? `${data.currency?.symbol || "$"}${Number(data.cargo_tax_amount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-                        : "$0.00"
-                    }
-                  />
-                  <DetailItem
-                    label="Global Contract Discounts"
-                    value={
-                      data.discount_amount
-                        ? `-$${data.currency?.symbol || "$"}${Number(data.discount_amount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-                        : "$0.00"
-                    }
-                  />
-                  <DetailItem
-                    label="Grand Valuation Total"
-                    value={
-                      data.total_amount
-                        ? `${data.currency?.symbol || "$"}${Number(data.total_amount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ${data.currency?.code || data.currency || ""}`
-                        : "0.00"
-                    }
-                  />
+                <div className="space-y-3 col-span-1 border-l border-white/10 pl-6 text-xs font-sans">
+                  <div className="flex justify-between items-center pb-1">
+                    <span className="text-muted-foreground">
+                      Landed Surcharge Taxes
+                    </span>
+                    <span className="font-mono font-semibold text-foreground">
+                      {Number(data.cargo_tax_amount || 0).toLocaleString(
+                        undefined,
+                        { minimumFractionDigits: 2 },
+                      )}{" "}
+                      {data.currency?.code || ""}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center pb-1">
+                    <span className="text-muted-foreground">
+                      Global Contract Discounts
+                    </span>
+                    <span className="font-mono font-semibold text-rose-400">
+                      -
+                      {Number(data.discount_amount || 0).toLocaleString(
+                        undefined,
+                        { minimumFractionDigits: 2 },
+                      )}{" "}
+                      {data.currency?.code || ""}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center pt-2 border-t border-white/10 text-sm">
+                    <span className="font-bold text-foreground">
+                      Grand Valuation Total
+                    </span>
+                    <span className="font-mono font-black text-emerald-400">
+                      {Number(data.total_amount || 0).toLocaleString(
+                        undefined,
+                        { minimumFractionDigits: 2 },
+                      )}{" "}
+                      {data.currency?.code || ""}
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>

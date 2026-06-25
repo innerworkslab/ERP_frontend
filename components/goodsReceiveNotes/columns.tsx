@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { ColumnDef } from "@tanstack/react-table";
-import { Edit, Eye, Check, X, Loader2 } from "lucide-react";
+import { Edit, Eye, Check, X, Loader2, CornerDownLeft } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { AppDialog } from "@/components/common/AppDialog";
@@ -35,6 +36,7 @@ interface ActionCellProps {
 }
 
 const ActionCell = ({ grn, onView, onEdit, refresh }: ActionCellProps) => {
+  const router = useRouter();
   const [isProcessing, setIsProcessing] = useState(false);
   const [isLoadingCashbooks, setIsLoadingCashbooks] = useState(false);
   const [showApproveDialog, setShowApproveDialog] = useState(false);
@@ -119,6 +121,18 @@ const ActionCell = ({ grn, onView, onEdit, refresh }: ActionCellProps) => {
       <Button variant="ghost" size="icon" onClick={() => onEdit(grn)}>
         <Edit className="h-4 w-4 text-muted-foreground" />
       </Button>
+
+      {grn.status === "approved" && (
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() =>
+            router.push(`/auth/goods-receive-notes/${grn.id}/returnable-lines`)
+          }
+        >
+          <CornerDownLeft className="h-4 w-4 text-amber-500 hover:text-amber-600 transition-colors" />
+        </Button>
+      )}
 
       {grn.status === "pending" && (
         <>
@@ -290,11 +304,11 @@ export const getColumns = (
     header: "Total Value",
     cell: ({ row }) => (
       <span className="font-mono font-bold text-foreground">
-        {row.original.currency || "$"}{" "}
         {Number(row.original.total_amount).toLocaleString(undefined, {
           minimumFractionDigits: 2,
           maximumFractionDigits: 2,
-        })}
+        })}{" "}
+        {row.original.currency || ""}
       </span>
     ),
   },
