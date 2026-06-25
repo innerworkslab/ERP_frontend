@@ -217,13 +217,15 @@ export default function GrnForm({ grnData, onSuccess, setLoading }: Props) {
           purchase_order_line_id: l.purchase_order_line_id?.toString() || "",
           product_id: Number(l.product_id),
           uom_id: l.uom_id?.toString() || "",
-          ordered_quantity: Number(l.ordered_quantity),
-          received_quantity: Number(l.received_quantity),
-          good_quantity: Number(l.good_quantity),
-          unit_price: Number(l.unit_price),
+          ordered_quantity: Number(l.ordered_quantity || 0),
+          received_quantity: Number(l.received_quantity || 0),
+          good_quantity: Number(l.good_quantity || 0),
+          unit_price: Number(l.unit_price || 0),
           line_weight: Number(l.line_weight || 0),
-          manual_tax_amount: Number(l.allocated_tax_amount || 0),
-          discrepancy_reason: l.discrepancy_reason,
+          manual_tax_amount: Number(
+            l.manual_tax_amount || l.allocated_tax_amount || 0,
+          ),
+          discrepancy_reason: l.discrepancy_reason || "none",
           defect_responsibility: l.defect_responsibility || "none",
           remarks: l.remarks || "",
         })) as any,
@@ -255,17 +257,17 @@ export default function GrnForm({ grnData, onSuccess, setLoading }: Props) {
         purchase_order_line_id: Number(l.purchase_order_line_id),
         product_id: Number(l.product_id),
         uom_id: Number(l.uom_id),
-        ordered_quantity: Number(l.ordered_quantity),
-        received_quantity: Number(l.received_quantity),
-        good_quantity: Number(l.good_quantity),
-        unit_price: Number(l.unit_price),
+        ordered_quantity: Number(l.ordered_quantity || 0),
+        received_quantity: Number(l.received_quantity || 0),
+        good_quantity: Number(l.good_quantity || 0),
+        unit_price: Number(l.unit_price || 0),
         line_weight: Number(l.line_weight || 0),
         manual_tax_amount: Number(l.manual_tax_amount || 0),
-        discrepancy_reason: l.discrepancy_reason,
+        discrepancy_reason: l.discrepancy_reason || "none",
         defect_responsibility: l.defect_responsibility || "none",
         remarks: l.remarks || "",
       })),
-    };
+    } as any;
 
     try {
       const result = grnData
@@ -622,7 +624,7 @@ export default function GrnForm({ grnData, onSuccess, setLoading }: Props) {
                     { id: "defect", name: "Defect" },
                     { id: "shortage", name: "Shortage" },
                   ]}
-                  value={selectField.value}
+                  value={selectField.value || "none"}
                   onValueChange={selectField.onChange}
                   error={errors.lines?.[idx]?.discrepancy_reason?.message}
                 />
@@ -640,7 +642,7 @@ export default function GrnForm({ grnData, onSuccess, setLoading }: Props) {
                     { id: "supplier_side", name: "Supplier Side" },
                     { id: "carrier_side", name: "Carrier Unit" },
                   ]}
-                  value={selectField.value}
+                  value={selectField.value || "none"}
                   onValueChange={selectField.onChange}
                   error={errors.lines?.[idx]?.defect_responsibility?.message}
                 />
@@ -674,7 +676,7 @@ export default function GrnForm({ grnData, onSuccess, setLoading }: Props) {
                 currency_id: "",
                 amount: 0,
                 description: "",
-              })
+              } as any)
             }
           >
             <Plus className="w-3.5 h-3.5" /> Add Charge Entry

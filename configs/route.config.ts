@@ -401,6 +401,11 @@ export const routeConfig: Record<
     desc: "Modify existing goods receive note details.",
     breadcrumb: "Goods Receive Notes/Edit",
   },
+  "/auth/goods-receive-notes/:id/returnable-lines": {
+    title: "Returnable Items Matrix",
+    desc: "View items available for balance adjustment from this document.",
+    breadcrumb: "Goods Receive Notes/Returnable Lines",
+  },
   "/auth/purchase-returns": {
     title: "Purchase Returns",
     desc: "View and manage purchase returns.",

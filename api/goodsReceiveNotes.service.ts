@@ -127,8 +127,82 @@ export interface GrnSingleResponse {
   data: GoodsReceiveNote;
 }
 
+export interface ReturnableGrnLineItem {
+  goods_receive_note_line_id: number;
+  purchase_order_line_id: number;
+  product_id: number;
+  product_name: string;
+  sku: string;
+  uom_id: number;
+  uom_name: string;
+  unit_price: number;
+  final_unit_cost: number;
+  tax_id: number;
+  tax_amount: number;
+  grn_good_quantity: number;
+  already_returned_quantity: number;
+  returnable_quantity: number;
+}
+
+export interface ReturnableGrnLinesResponse {
+  response: {
+    status: string;
+    message: string;
+  };
+  data: {
+    goods_receive_note_id: number;
+    grn_no: string;
+    purchase_order_id: number;
+    purchase_order_no: string;
+    supplier_id: number;
+    supplier_name: string;
+    branch_id: number;
+    branch_name: string;
+    inventory_id: number;
+    inventory_name: string;
+    currency_id: number;
+    currency_code: string;
+    lines: ReturnableGrnLineItem[];
+  };
+}
+
+export interface PoTemplateLineItem {
+  purchase_order_line_id: number;
+  product_id: number;
+  product_name: string;
+  sku: string;
+  uom_id: number;
+  uom_name: string;
+  ordered_quantity: number;
+  previously_received_quantity: number;
+  remaining_quantity: number;
+  unit_price: number;
+}
+
+export interface PoTemplateResponse {
+  response: {
+    status: string;
+    message: string;
+  };
+  data: {
+    purchase_order_id: number;
+    po_no: string;
+    po_date: string;
+    supplier_id: number;
+    supplier_name: string;
+    branch_id: number;
+    branch_name: string;
+    inventory_id: number;
+    inventory_name: string;
+    currency_id: number;
+    currency_code: string;
+    currency_rate: number;
+    delivery_status: GrnDeliveryStatus;
+    lines: PoTemplateLineItem[];
+  };
+}
+
 const version = "v1";
-// Fallback safely to explicit route string if token is unassigned inside the structural constant mapping
 const endpointToken = API_CONSTANT.GOODS_RECEIVE_NOTE || "goods-receive-notes";
 const grnUrl = `/${version}/${endpointToken}`;
 
@@ -165,5 +239,17 @@ export const goodReceiptNotesService = {
 
   reject: async (id: number): Promise<ApiResponse<GoodsReceiveNote>> => {
     return await api.patch(`${grnUrl}/${id}/reject`);
+  },
+
+  getReturnableLines: async (
+    id: number,
+  ): Promise<ReturnableGrnLinesResponse> => {
+    return await api.get(`${grnUrl}/${id}/returnable-lines`);
+  },
+
+  getPoTemplate: async (
+    purchaseOrderId: number,
+  ): Promise<PoTemplateResponse> => {
+    return await api.get(`${grnUrl}/purchase-orders/${purchaseOrderId}`);
   },
 };
