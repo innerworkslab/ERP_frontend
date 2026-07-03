@@ -1,7 +1,14 @@
 "use client";
 
 import { ColumnDef } from "@tanstack/react-table";
-import { Edit, Loader2, ToggleLeft, ToggleRight, Eye } from "lucide-react";
+import {
+  Edit,
+  Loader2,
+  ToggleLeft,
+  ToggleRight,
+  Eye,
+  PlusCircle,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { useState } from "react";
@@ -12,11 +19,13 @@ const ActionCell = ({
   cashbook,
   onEdit,
   onView,
+  onPostTransaction,
   refresh,
 }: {
   cashbook: Cashbook;
   onEdit: (data: Cashbook) => void;
   onView: (data: Cashbook) => void;
+  onPostTransaction: (cashbookId: number) => void;
   refresh: () => void;
 }) => {
   const [isToggling, setIsToggling] = useState(false);
@@ -36,6 +45,16 @@ const ActionCell = ({
 
   return (
     <div className="flex items-center justify-center gap-1">
+      <Button
+        variant="ghost"
+        className="h-8 w-8 p-0 text-sky-500 hover:bg-sky-500/10 [&_svg]:!h-4 [&_svg]:!w-4"
+        onClick={() => onPostTransaction(cashbook.id)}
+        disabled={isToggling || cashbook.status.toLowerCase() !== "active"}
+        title="Post Transaction"
+      >
+        <PlusCircle />
+      </Button>
+
       <Button
         variant="ghost"
         className="h-8 w-8 p-0 text-blue-500 hover:bg-blue-500/10 [&_svg]:!h-4 [&_svg]:!w-4"
@@ -79,6 +98,7 @@ const ActionCell = ({
 export const getColumns = (
   onEdit: (data: Cashbook) => void,
   onView: (data: Cashbook) => void,
+  onPostTransaction: (cashbookId: number) => void,
   refresh: () => void,
 ): ColumnDef<Cashbook>[] => [
   {
@@ -162,6 +182,7 @@ export const getColumns = (
         cashbook={row.original}
         onEdit={onEdit}
         onView={onView}
+        onPostTransaction={onPostTransaction}
         refresh={refresh}
       />
     ),

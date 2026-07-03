@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useEffect, useState, Dispatch, SetStateAction } from "react";
@@ -8,9 +9,6 @@ import {
   CreateGrnPayload,
 } from "@/api/goodsReceiveNotes.service";
 import { purchaseService } from "@/api/purchaseOrders.service";
-import { supplierService } from "@/api/suppliers.service";
-import { branchService } from "@/api/branches.service";
-import { inventoryService } from "@/api/inventories.service";
 import { currencyService } from "@/api/currencies.service";
 import { uomService } from "@/api/uom.service";
 import { productService } from "@/api/products.service";
@@ -21,6 +19,7 @@ import { Loader2, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { GrnFormValues, grnSchema } from "./schema";
+import { purchaseReturnService } from "@/api/purchaseReturn.service";
 
 interface Props {
   grnData?: GoodsReceiveNote | null;
@@ -29,15 +28,14 @@ interface Props {
 }
 
 export default function GrnForm({ grnData, onSuccess, setLoading }: Props) {
-  const [purchaseOrders, setPurchaseOrders] = useState<Option[]>([]);
-  const [poLines, setPoLines] = useState<Option[]>([]);
-  const [rawPoLines, setRawPoLines] = useState<any[]>([]);
-  const [suppliers, setSuppliers] = useState<Option[]>([]);
-  const [branches, setBranches] = useState<Option[]>([]);
-  const [inventories, setInventories] = useState<Option[]>([]);
+  const [documents, setDocuments] = useState<Option[]>([]);
+  const [docLines, setDocLines] = useState<Option[]>([]);
+  const [rawDocLines, setRawDocLines] = useState<any[]>([]);
   const [currencies, setCurrencies] = useState<Option[]>([]);
   const [uoms, setUoms] = useState<Option[]>([]);
   const [products, setProducts] = useState<Option[]>([]);
+
+  const [usePurchaseReturn, setUsePurchaseReturn] = useState<boolean>(false);
 
   const {
     register,
@@ -84,51 +82,39 @@ export default function GrnForm({ grnData, onSuccess, setLoading }: Props) {
     name: "charges",
   });
 
-  const selectedPurchaseOrderId = watch("purchase_order_id");
+  const selectedDocId = watch("purchase_order_id");
+  const taxAllocationMethod = watch("tax_allocation_method");
+  const cargoTaxAmount = watch("cargo_tax_amount");
+
+  const isByProductTax = taxAllocationMethod === "by_products";
+
+  useEffect(() => {
+    if (isByProductTax) {
+      lineFields.forEach((_, idx) => {
+        setValue(
+          `lines.${idx}.manual_tax_amount` as any,
+          Number(cargoTaxAmount || 0),
+        );
+      });
+    }
+  }, [cargoTaxAmount, isByProductTax, lineFields, setValue]);
 
   useEffect(() => {
     const fetchDropdownOptions = async () => {
       try {
-        const [
-          poRes,
-          supplierRes,
-          branchRes,
-          inventoryRes,
-          currencyRes,
-          uomRes,
-          productRes,
-        ] = await Promise.all([
-          purchaseService.getAll(),
-          supplierService.getAll(),
-          branchService.getAll(),
-          inventoryService.getAll(),
+        const [docRes, currencyRes, uomRes, productRes] = await Promise.all([
+          usePurchaseReturn
+            ? purchaseReturnService.getAll()
+            : purchaseService.getAll(),
           currencyService.getAll(),
           uomService.getAll(),
           productService.getAll(),
         ]);
 
-        setPurchaseOrders(
-          (poRes?.data || poRes || []).map((item) => ({
+        setDocuments(
+          (docRes?.data || docRes || []).map((item: any) => ({
             id: item.id.toString(),
-            name: item.po_number || `PO-${item.id}`,
-          })),
-        );
-        setSuppliers(
-          (supplierRes?.data || supplierRes || []).map((item) => ({
-            id: item.id.toString(),
-            name: item.company_name || item.name || `Supplier ${item.id}`,
-          })),
-        );
-        setBranches(
-          (branchRes?.data || branchRes || []).map((item) => ({
-            id: item.id.toString(),
-            name: item.name || `Branch ${item.id}`,
-          })),
-        );
-        setInventories(
-          (inventoryRes?.data || inventoryRes || []).map((item) => ({
-            id: item.id.toString(),
-            name: item.name || `Warehouse ${item.id}`,
+            name: item.po_number || item.pr_number || `DOC-${item.id}`,
           })),
         );
         setCurrencies(
@@ -154,24 +140,27 @@ export default function GrnForm({ grnData, onSuccess, setLoading }: Props) {
       }
     };
     fetchDropdownOptions();
-  }, []);
+  }, [usePurchaseReturn]);
 
   useEffect(() => {
-    if (!selectedPurchaseOrderId) {
-      setPoLines([]);
-      setRawPoLines([]);
+    if (!selectedDocId) {
+      setDocLines([]);
+      setRawDocLines([]);
       return;
     }
 
-    const fetchSelectedPoLines = async () => {
+    const fetchSelectedDocDetails = async () => {
       try {
-        const response = await purchaseService.getById(
-          Number(selectedPurchaseOrderId),
-        );
-        const activeLines = response?.data?.lines || response?.lines || [];
-        setRawPoLines(activeLines);
-        setPoLines(
-          activeLines.map((line) => ({
+        const response = usePurchaseReturn
+          ? await purchaseReturnService.getById(Number(selectedDocId))
+          : await purchaseService.getById(Number(selectedDocId));
+
+        const docData = response?.data || response;
+        const activeLines = docData?.lines || [];
+
+        setRawDocLines(activeLines);
+        setDocLines(
+          activeLines.map((line: any) => ({
             id: line.id.toString(),
             name: line.product?.name
               ? `Line #${line.id} - ${line.product.name}`
@@ -179,23 +168,33 @@ export default function GrnForm({ grnData, onSuccess, setLoading }: Props) {
           })),
         );
 
-        const poCurrencyId =
-          response?.data?.currency_id || response?.currency_id;
-        if (poCurrencyId) {
-          setValue("currency_id", poCurrencyId.toString());
-        }
+        if (docData?.branch_id)
+          setValue("branch_id", docData.branch_id.toString());
+        if (docData?.supplier_id)
+          setValue("supplier_id", docData.supplier_id.toString());
+        if (docData?.inventory_id)
+          setValue("inventory_id", docData.inventory_id.toString());
+        if (docData?.currency_id)
+          setValue("currency_id", docData.currency_id.toString());
       } catch (err) {
         console.error(err);
       }
     };
 
-    fetchSelectedPoLines();
-  }, [selectedPurchaseOrderId, setValue]);
+    fetchSelectedDocDetails();
+  }, [selectedDocId, usePurchaseReturn, setValue]);
 
   useEffect(() => {
     if (grnData) {
+      const isPrMode = !!(grnData as any).purchase_return_id;
+      setUsePurchaseReturn(isPrMode);
+
       reset({
-        purchase_order_id: grnData.purchase_order_id?.toString() || "",
+        purchase_order_id:
+          (isPrMode
+            ? (grnData as any).purchase_return_id
+            : grnData.purchase_order_id
+          )?.toString() || "",
         supplier_id: grnData.supplier_id?.toString() || "",
         branch_id: grnData.branch_id?.toString() || "",
         inventory_id: grnData.inventory_id?.toString() || "",
@@ -214,7 +213,10 @@ export default function GrnForm({ grnData, onSuccess, setLoading }: Props) {
             description: c.description || "",
           })) || [],
         lines: grnData.lines?.map((l) => ({
-          purchase_order_line_id: l.purchase_order_line_id?.toString() || "",
+          purchase_order_line_id:
+            (
+              l.purchase_order_line_id || (l as any).purchase_return_line_id
+            )?.toString() || "",
           product_id: Number(l.product_id),
           uom_id: l.uom_id?.toString() || "",
           ordered_quantity: Number(l.ordered_quantity || 0),
@@ -235,8 +237,8 @@ export default function GrnForm({ grnData, onSuccess, setLoading }: Props) {
 
   const onSubmit = async (data: GrnFormValues) => {
     setLoading(true);
-    const payload: CreateGrnPayload = {
-      purchase_order_id: Number(data.purchase_order_id),
+
+    const payload: any = {
       supplier_id: Number(data.supplier_id),
       branch_id: Number(data.branch_id),
       inventory_id: Number(data.inventory_id),
@@ -253,21 +255,35 @@ export default function GrnForm({ grnData, onSuccess, setLoading }: Props) {
         amount: Number(c.amount),
         description: c.description || "",
       })),
-      lines: (data.lines || []).map((l) => ({
-        purchase_order_line_id: Number(l.purchase_order_line_id),
-        product_id: Number(l.product_id),
-        uom_id: Number(l.uom_id),
-        ordered_quantity: Number(l.ordered_quantity || 0),
-        received_quantity: Number(l.received_quantity || 0),
-        good_quantity: Number(l.good_quantity || 0),
-        unit_price: Number(l.unit_price || 0),
-        line_weight: Number(l.line_weight || 0),
-        manual_tax_amount: Number(l.manual_tax_amount || 0),
-        discrepancy_reason: l.discrepancy_reason || "none",
-        defect_responsibility: l.defect_responsibility || "none",
-        remarks: l.remarks || "",
-      })),
-    } as any;
+      lines: (data.lines || []).map((l) => {
+        const lineItem: any = {
+          product_id: Number(l.product_id),
+          uom_id: Number(l.uom_id),
+          ordered_quantity: Number(l.ordered_quantity || 0),
+          received_quantity: Number(l.received_quantity || 0),
+          good_quantity: Number(l.good_quantity || 0),
+          unit_price: Number(l.unit_price || 0),
+          line_weight: Number(l.line_weight || 0),
+          manual_tax_amount: Number(l.manual_tax_amount || 0),
+          discrepancy_reason: l.discrepancy_reason || "none",
+          defect_responsibility: l.defect_responsibility || "none",
+          remarks: l.remarks || "",
+        };
+
+        if (usePurchaseReturn) {
+          lineItem.purchase_return_line_id = Number(l.purchase_order_line_id);
+        } else {
+          lineItem.purchase_order_line_id = Number(l.purchase_order_line_id);
+        }
+        return lineItem;
+      }),
+    };
+
+    if (usePurchaseReturn) {
+      payload.purchase_return_id = Number(data.purchase_order_id);
+    } else {
+      payload.purchase_order_id = Number(data.purchase_order_id);
+    }
 
     try {
       const result = grnData
@@ -292,34 +308,41 @@ export default function GrnForm({ grnData, onSuccess, setLoading }: Props) {
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-8 py-2">
       <div className="space-y-4">
-        <h3 className="text-xs font-bold uppercase tracking-widest text-primary flex items-center gap-1.5 border-b border-white/5 pb-2">
-          Receipt Note Configurations
-        </h3>
+        <div className="flex items-center justify-between border-b border-white/5 pb-2">
+          <h3 className="text-xs font-bold uppercase tracking-widest text-primary flex items-center gap-1.5">
+            Receipt Note Configurations
+          </h3>
+          <label className="flex items-center gap-2 text-xs font-medium cursor-pointer text-muted-foreground select-none">
+            <input
+              type="checkbox"
+              className="rounded border-white/10 accent-primary"
+              checked={usePurchaseReturn}
+              onChange={(e) => {
+                setUsePurchaseReturn(e.target.checked);
+                setValue("purchase_order_id", "");
+                setDocLines([]);
+                setRawDocLines([]);
+              }}
+            />
+            Process as Purchase Return (PR)
+          </label>
+        </div>
+
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           <Controller
             name="purchase_order_id"
             control={control}
             render={({ field }) => (
               <FormSelect
-                label="Target Purchase Order"
-                options={purchaseOrders}
+                label={
+                  usePurchaseReturn
+                    ? "Target Purchase Return"
+                    : "Target Purchase Order"
+                }
+                options={documents}
                 value={field.value}
                 onValueChange={field.onChange}
                 error={errors.purchase_order_id?.message}
-              />
-            )}
-          />
-
-          <Controller
-            name="supplier_id"
-            control={control}
-            render={({ field }) => (
-              <FormSelect
-                label="Select Supplier"
-                options={suppliers}
-                value={field.value}
-                onValueChange={field.onChange}
-                error={errors.supplier_id?.message}
               />
             )}
           />
@@ -329,34 +352,6 @@ export default function GrnForm({ grnData, onSuccess, setLoading }: Props) {
             label="GRN Execution Date"
             registration={register("grn_date")}
             error={errors.grn_date?.message}
-          />
-
-          <Controller
-            name="branch_id"
-            control={control}
-            render={({ field }) => (
-              <FormSelect
-                label="Origin Branch Unit"
-                options={branches}
-                value={field.value}
-                onValueChange={field.onChange}
-                error={errors.branch_id?.message}
-              />
-            )}
-          />
-
-          <Controller
-            name="inventory_id"
-            control={control}
-            render={({ field }) => (
-              <FormSelect
-                label="Target Warehouse Location"
-                options={inventories}
-                value={field.value}
-                onValueChange={field.onChange}
-                error={errors.inventory_id?.message}
-              />
-            )}
           />
 
           <Controller
@@ -398,7 +393,8 @@ export default function GrnForm({ grnData, onSuccess, setLoading }: Props) {
               <FormSelect
                 label="Tax Allocation Method"
                 options={[
-                  { id: "by_products", name: "By Products" },
+                  { id: "by_products", name: "By Product" },
+                  { id: "by_weight", name: "By Weight" },
                   { id: "manual", name: "Manual Override" },
                 ]}
                 value={field.value}
@@ -410,7 +406,7 @@ export default function GrnForm({ grnData, onSuccess, setLoading }: Props) {
 
           <FormInput
             type="number"
-            label="Landed Cargo Tax Surcharge"
+            label="Cargo Tax Amount"
             registration={register("cargo_tax_amount")}
             error={errors.cargo_tax_amount?.message}
             step="0.01"
@@ -461,7 +457,9 @@ export default function GrnForm({ grnData, onSuccess, setLoading }: Props) {
                 discrepancy_reason: "none",
                 defect_responsibility: "none",
                 remarks: "",
-                manual_tax_amount: 0,
+                manual_tax_amount: isByProductTax
+                  ? Number(cargoTaxAmount || 0)
+                  : 0,
               } as any)
             }
           >
@@ -489,15 +487,19 @@ export default function GrnForm({ grnData, onSuccess, setLoading }: Props) {
               control={control}
               render={({ field: selectField }) => (
                 <FormSelect
-                  label="PO Line Selection"
-                  placeholder={
-                    selectedPurchaseOrderId ? "Select line" : "Select PO first"
+                  label={
+                    usePurchaseReturn
+                      ? "PR Line Selection"
+                      : "PO Line Selection"
                   }
-                  options={poLines}
+                  placeholder={
+                    selectedDocId ? "Select line" : "Select source first"
+                  }
+                  options={docLines}
                   value={selectField.value?.toString() || ""}
                   onValueChange={(val) => {
                     selectField.onChange(val);
-                    const matched = rawPoLines.find(
+                    const matched = rawDocLines.find(
                       (l) => l.id.toString() === val,
                     );
                     if (matched) {
@@ -509,18 +511,16 @@ export default function GrnForm({ grnData, onSuccess, setLoading }: Props) {
                         `lines.${idx}.unit_price`,
                         Number(matched.unit_price || 0),
                       );
-                      if (matched.product_id) {
+                      if (matched.product_id)
                         setValue(
                           `lines.${idx}.product_id`,
                           Number(matched.product_id),
                         );
-                      }
-                      if (matched.uom_id) {
+                      if (matched.uom_id)
                         setValue(
                           `lines.${idx}.uom_id`,
                           matched.uom_id.toString(),
                         );
-                      }
                     }
                   }}
                   error={errors.lines?.[idx]?.purchase_order_line_id?.message}
@@ -606,6 +606,7 @@ export default function GrnForm({ grnData, onSuccess, setLoading }: Props) {
               type="number"
               step="0.01"
               label="Manual Line Tax"
+              disabled={isByProductTax}
               registration={register(
                 `lines.${idx}.manual_tax_amount` as const,
                 { valueAsNumber: true },

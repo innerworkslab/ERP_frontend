@@ -208,10 +208,10 @@ export const purchaseReturnService = {
   },
 
   approve: async (id: number): Promise<ApiResponse<any>> => {
-    return await api.put(`${purchaseReturnUrl}/${id}/approve`);
+    return await api.patch(`${purchaseReturnUrl}/${id}/approve`);
   },
 
   reject: async (id: number): Promise<ApiResponse<any>> => {
-    return await api.put(`${purchaseReturnUrl}/${id}/reject`);
+    return await api.patch(`${purchaseReturnUrl}/${id}/reject`);
   },
 };

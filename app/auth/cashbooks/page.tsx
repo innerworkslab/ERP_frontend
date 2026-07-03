@@ -10,6 +10,8 @@ import { useApi } from "@/hooks/useApi";
 import { branchService } from "@/api/branches.service";
 import { Loader2 } from "lucide-react";
 import { FormSelect, Option } from "@/components/common/FormSelect";
+import { AppDialog } from "@/components/common/AppDialog";
+import TransactionForm from "@/components/cashbook-transactions/TransactionForm";
 import {
   Cashbook,
   cashbookService,
@@ -22,6 +24,10 @@ export default function CashbookListPage() {
   const [cashbooks, setCashbooks] = useState<Cashbook[]>([]);
   const [branches, setBranches] = useState<Option[]>([]);
   const [lastPage, setLastPage] = useState(1);
+  const [isTransactionOpen, setIsTransactionOpen] = useState(false);
+  const [preselectedSourceId, setPreselectedSourceId] = useState<number | null>(
+    null,
+  );
 
   const { control, watch, setValue } = useForm({
     defaultValues: {
@@ -92,14 +98,28 @@ export default function CashbookListPage() {
     [router],
   );
 
+  const handlePostTransaction = useCallback((cashbookId: number) => {
+    setPreselectedSourceId(cashbookId);
+    setIsTransactionOpen(true);
+  }, []);
+
   const handleAdd = () => {
     router.push("/auth/cashbooks/add");
   };
 
   const columns = useMemo(
-    () => getColumns(handleEdit, handleView, loadCashbooks),
-    [handleEdit, handleView, loadCashbooks],
+    () =>
+      getColumns(handleEdit, handleView, handlePostTransaction, loadCashbooks),
+    [handleEdit, handleView, handlePostTransaction, loadCashbooks],
   );
+
+  const dummyTransactionData = useMemo(() => {
+    if (!preselectedSourceId) return null;
+    return {
+      source_account_id: preselectedSourceId,
+      cashbook_id: preselectedSourceId,
+    } as any;
+  }, [preselectedSourceId]);
 
   return (
     <div className="space-y-6 relative min-h-[400px]">
@@ -206,6 +226,22 @@ export default function CashbookListPage() {
           </div>
         )}
       </div>
+
+      <AppDialog
+        open={isTransactionOpen}
+        onOpenChange={setIsTransactionOpen}
+        title="Post New Transaction"
+      >
+        <div className="max-h-[75vh] overflow-y-auto px-1">
+          <TransactionForm
+            transactionData={dummyTransactionData}
+            onSuccess={() => {
+              setIsTransactionOpen(false);
+              loadCashbooks();
+            }}
+          />
+        </div>
+      </AppDialog>
     </div>
   );
 }

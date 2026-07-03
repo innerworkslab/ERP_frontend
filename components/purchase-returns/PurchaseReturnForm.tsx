@@ -22,7 +22,11 @@ interface Props {
 const returnTypeOptions: Option[] = [
   { id: "exchange", name: "Exchange / Substitution" },
   { id: "fully_returned", name: "Full Reversal Return" },
-  { id: "partially_returned", name: "Partial Reversal Return" },
+];
+
+const exchangeTypeOptions: Option[] = [
+  { id: "partial", name: "Partial Exchange" },
+  { id: "full", name: "Full Exchange" },
 ];
 
 const reasonOptions: Option[] = [
@@ -50,13 +54,14 @@ export default function PurchaseReturnForm({
     watch,
     setValue,
     formState: { errors, isSubmitting },
-  } = useForm<PurchaseReturnFormValues>({
+  } = useForm<any>({
     resolver: yupResolver(purchaseReturnSchema),
     defaultValues: returnData
       ? {
           goods_receive_note_id: returnData.goods_receive_note_id,
           return_date: returnData.return_date,
           return_type: returnData.return_type,
+          exchange_type: returnData.exchange_type || "partial",
           remarks: returnData.remarks || "",
           lines:
             returnData.lines?.map((line: any) => ({
@@ -72,6 +77,7 @@ export default function PurchaseReturnForm({
       : {
           return_date: new Date().toISOString().split("T")[0],
           return_type: "exchange",
+          exchange_type: "partial",
           remarks: "",
           lines: [
             {
@@ -91,8 +97,10 @@ export default function PurchaseReturnForm({
     control,
     name: "lines",
   });
+
   const watchedLines = useWatch({ control, name: "lines" });
   const selectedGrnId = watch("goods_receive_note_id");
+  const returnType = watch("return_type");
 
   useEffect(() => {
     setLoading?.(isSubmitting);
@@ -198,33 +206,42 @@ export default function PurchaseReturnForm({
     setValue("total_amount", totalGrand, { shouldDirty: false });
   }, [watchedLines, rawGrnLines, setValue]);
 
-  const onSubmit = async (data: PurchaseReturnFormValues) => {
-    const payload = {
+  const onSubmit = async (data: any) => {
+    const payload: any = {
       goods_receive_note_id: Number(data.goods_receive_note_id),
       return_date: data.return_date,
       return_type: data.return_type,
       remarks: data.remarks || "",
-      lines: data.lines.map((l) => ({
+      lines: data.lines.map((l: any) => ({
         goods_receive_note_line_id: Number(l.goods_receive_note_line_id),
         return_quantity: Number(l.return_quantity),
         reason: l.reason,
-        remarks: l.remarks || "",
       })),
     };
 
-    if (returnData?.id) {
-      await purchaseReturnService.update(returnData.id, payload);
-      toast.success("Purchase return document successfully modified.");
-    } else {
-      await purchaseReturnService.create(payload);
-      toast.success("Purchase return document successfully recorded.");
+    if (data.return_type === "exchange") {
+      payload.exchange_type = data.exchange_type || "partial";
     }
-    onSuccess();
+
+    try {
+      if (returnData?.id) {
+        await purchaseReturnService.update(returnData.id, payload);
+        toast.success("Purchase return document successfully modified.");
+      } else {
+        await purchaseReturnService.create(payload);
+        toast.success("Purchase return document successfully recorded.");
+      }
+      onSuccess();
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-      <div className="grid grid-cols-3 gap-4 bg-muted/20 p-6 rounded-3xl border border-white/5">
+      <div
+        className={`grid gap-4 bg-muted/20 p-6 rounded-3xl border border-white/5 ${returnType === "exchange" ? "grid-cols-4" : "grid-cols-3"}`}
+      >
         <Controller
           name="goods_receive_note_id"
           control={control}
@@ -272,6 +289,22 @@ export default function PurchaseReturnForm({
             />
           )}
         />
+
+        {returnType === "exchange" && (
+          <Controller
+            name="exchange_type"
+            control={control}
+            render={({ field }) => (
+              <FormSelect
+                label="Exchange Scope Type"
+                options={exchangeTypeOptions}
+                value={field.value}
+                onValueChange={field.onChange}
+                error={errors.exchange_type?.message}
+              />
+            )}
+          />
+        )}
       </div>
 
       <div className="space-y-4">
@@ -418,7 +451,8 @@ export default function PurchaseReturnForm({
           </div>
           <div className="flex justify-between text-emerald-400 items-center">
             <span>Accrued Taxes:</span>
-            <span className="w-24">
+            <span>{Number(watch("tax_amount") || 0).toLocaleString()}</span>
+            <span className="hidden">
               <FormInput
                 type="number"
                 registration={register("tax_amount", { valueAsNumber: true })}
