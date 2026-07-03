@@ -9,17 +9,22 @@ import { Pagination } from "@/components/common/Pagination";
 import { useApi } from "@/hooks/useApi";
 import { Loader2 } from "lucide-react";
 import { FormSelect } from "@/components/common/FormSelect";
+import { AppDialog } from "@/components/common/AppDialog";
 import {
   CashbookTransaction,
   cashbookService,
   CashbookTransactionsListResponse,
 } from "@/api/cashbooks.service";
 import { getColumns } from "@/components/cashbook-transactions/columns";
+import TransactionForm from "@/components/cashbook-transactions/TransactionForm";
 
 export default function TransactionsListPage() {
   const router = useRouter();
   const [transactions, setTransactions] = useState<CashbookTransaction[]>([]);
   const [lastPage, setLastPage] = useState(1);
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [selectedTransaction, setSelectedTransaction] =
+    useState<CashbookTransaction | null>(null);
 
   const { control, watch, setValue } = useForm({
     defaultValues: {
@@ -64,15 +69,14 @@ export default function TransactionsListPage() {
     [router],
   );
 
-  const handleEdit = useCallback(
-    (tx: CashbookTransaction) => {
-      router.push(`/auth/cashbook-transactions/${tx.id}/edit`);
-    },
-    [router],
-  );
+  const handleEdit = useCallback((tx: CashbookTransaction) => {
+    setSelectedTransaction(tx);
+    setIsFormOpen(true);
+  }, []);
 
   const handleAdd = () => {
-    router.push("/auth/cashbook-transactions/add");
+    setSelectedTransaction(null);
+    setIsFormOpen(true);
   };
 
   const columns = useMemo(
@@ -143,6 +147,27 @@ export default function TransactionsListPage() {
           </div>
         )}
       </div>
+
+      <AppDialog
+        open={isFormOpen}
+        onOpenChange={setIsFormOpen}
+        title={
+          selectedTransaction
+            ? "Edit Transaction Entry"
+            : "Post New Ledger Transaction"
+        }
+        description="Fill out the voucher details below. Destination accounts map directly to items configured within the Chart of Accounts directory."
+      >
+        <div className="max-h-[75vh] overflow-y-auto px-1">
+          <TransactionForm
+            transactionData={selectedTransaction}
+            onSuccess={() => {
+              setIsFormOpen(false);
+              loadTransactions();
+            }}
+          />
+        </div>
+      </AppDialog>
     </div>
   );
 }

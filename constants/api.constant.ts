@@ -40,4 +40,5 @@ export const API_CONSTANT = {
   CASHBOOK_LEDGER: "cashbook-ledgers",
   PURCHASE_ORDER: "purchase-orders",
   GOODS_RECEIVE_NOTE: "goods-receive-notes",
+  ACCOUNT: "accounts",
 } as const;

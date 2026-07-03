@@ -261,6 +261,21 @@ export interface LedgerResponse {
   };
 }
 
+export interface CashbookAccount {
+  id: number;
+  parent_account_id?: number | null;
+  code: string;
+  name: string;
+  type: string;
+  division: string;
+  description?: string | null;
+  is_active: true;
+}
+
+export type CashbookAccountsFilters = Filters & {
+  status?: string;
+};
+
 export interface CreateCashbookAdjustmentPayload {
   cashbook_id: number;
   type: "increase" | "decrease";
@@ -289,6 +304,7 @@ const cashbookTransactionUrl = `/${version}/${API_CONSTANT.CASHBOOK_TRANSACTION}
 const cashbookTransferUrl = `/${version}/${API_CONSTANT.CASHBOOK_TRANSFER}`;
 const cashbookAdjustmentUrl = `/${version}/${API_CONSTANT.CASHBOOK_ADJUSTMENT}`;
 const cashbookLedgerUrl = `/${version}/${API_CONSTANT.CASHBOOK_LEDGER}`;
+const accountUrl = `/${version}/${API_CONSTANT.ACCOUNT}`;
 
 export const cashbookService = {
   getAll: async (params?: AccountFilters): Promise<CashbooksListResponse> => {
@@ -507,5 +523,13 @@ export const cashbookService = {
     if (filters.search) params.append("search", filters.search);
 
     return await api.get(`${cashbookLedgerUrl}`, { params });
+  },
+
+  getCashbookAccounts: async (
+    filters?: CashbookAccountsFilters,
+  ): Promise<ApiResponse<CashbookAccount[]>> => {
+    return await api.get(`${accountUrl}/${API_CONSTANT.ALL}`, {
+      params: filters,
+    });
   },
 };
