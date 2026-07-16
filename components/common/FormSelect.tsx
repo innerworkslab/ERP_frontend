@@ -81,7 +81,7 @@ export function FormSelect({
   }, [options, onValueChange]);
 
   const filteredOptions = options.filter((option) =>
-    option.name.toLowerCase().includes(searchTerm.toLowerCase()),
+    option.name?.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
   const selectedOption = options.find(

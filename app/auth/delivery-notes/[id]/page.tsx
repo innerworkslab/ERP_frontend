@@ -2,20 +2,20 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { Customer, customerService } from "@/api/customers.service";
+import { DeliveryNote, deliveryNoteService } from "@/api/deliveryNotes.service";
 import { ReadOnlyDetail } from "@/components/common/ReadOnlyDetail";
 import { Button } from "@/components/ui/button";
 import { Edit, ArrowLeft } from "lucide-react";
 
-export default function ViewCustomerPage() {
+export default function ViewDeliveryNotePage() {
   const { id } = useParams();
   const router = useRouter();
-  const [customer, setCustomer] = useState<Customer | null>(null);
+  const [deliveryNote, setDeliveryNote] = useState<DeliveryNote | null>(null);
 
   useEffect(() => {
     if (id) {
-      customerService.getById(Number(id)).then((res) => {
-        if (res?.data) setCustomer(res.data);
+      deliveryNoteService.getById(Number(id)).then((res) => {
+        if (res?.data) setDeliveryNote(res.data);
       });
     }
   }, [id]);
@@ -25,19 +25,19 @@ export default function ViewCustomerPage() {
       <div className="flex items-center justify-between">
         <Button
           variant="ghost"
-          onClick={() => router.push("/auth/customers")}
+          onClick={() => router.push("/auth/delivery-notes")}
           className="hover:bg-white/5"
         >
           <ArrowLeft className="mr-2 h-4 w-4" /> Back to List
         </Button>
-        <Button onClick={() => router.push(`/auth/customers/${id}/edit`)}>
-          <Edit className="mr-2 h-4 w-4" /> Edit Customer
+        <Button onClick={() => router.push(`/auth/delivery-notes/${id}/edit`)}>
+          <Edit className="mr-2 h-4 w-4" /> Edit Delivery Note
         </Button>
       </div>
 
       <div className="grid grid-cols-1 gap-6">
         <div className="px-4">
-          <ReadOnlyDetail data={customer} type="customer" />
+          <ReadOnlyDetail data={deliveryNote} type="deliveryNote" />
         </div>
       </div>
     </div>

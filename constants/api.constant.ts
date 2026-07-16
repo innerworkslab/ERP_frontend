@@ -41,4 +41,7 @@ export const API_CONSTANT = {
   PURCHASE_ORDER: "purchase-orders",
   GOODS_RECEIVE_NOTE: "goods-receive-notes",
   ACCOUNT: "accounts",
+  DELIVERY_PROVIDER: "delivery-providers",
+  SALE_INVOICE: "sale-invoices",
+  DELIVERY_NOTES: "deliver-notes",
 } as const;

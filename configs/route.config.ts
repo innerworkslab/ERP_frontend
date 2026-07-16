@@ -25,6 +25,7 @@ import {
   ArrowRightLeft,
   Sliders,
   BookOpen,
+  Truck,
 } from "lucide-react";
 
 export const routeConfig: Record<
@@ -436,6 +437,51 @@ export const routeConfig: Record<
     desc: "View and analyze cashbook ledger entry details.",
     breadcrumb: "Cashbook Ledgers/Details",
   },
+  "/auth/delivery-providers": {
+    title: "Delivery Providers",
+    desc: "View and manage delivery service providers.",
+    breadcrumb: "Delivery Providers",
+  },
+  "/auth/sale-invoices": {
+    title: "Sale Invoices",
+    desc: "View and manage sale invoices.",
+    breadcrumb: "Sale Invoices",
+  },
+  "/auth/sale-invoices/add": {
+    title: "Add Sale Invoice",
+    desc: "Create a new sale invoice.",
+    breadcrumb: "Sale Invoices/Add",
+  },
+  "/auth/sale-invoices/:id": {
+    title: "Sale Invoice Details",
+    desc: "View and modify sale invoice details.",
+    breadcrumb: "Sale Invoices/Details",
+  },
+  "/auth/sale-invoices/:id/edit": {
+    title: "Edit Sale Invoice",
+    desc: "Modify existing sale invoice details.",
+    breadcrumb: "Sale Invoices/Edit",
+  },
+  "/auth/delivery-notes": {
+    title: "Delivery Notes",
+    desc: "View and manage delivery notes.",
+    breadcrumb: "Delivery Notes",
+  },
+  "/auth/delivery-notes/add": {
+    title: "Add Delivery Note",
+    desc: "Create a new delivery note.",
+    breadcrumb: "Delivery Notes/Add",
+  },
+  "/auth/delivery-notes/:id": {
+    title: "Delivery Note Details",
+    desc: "View and modify delivery note details.",
+    breadcrumb: "Delivery Notes/Details",
+  },
+  "/auth/delivery-notes/:id/edit": {
+    title: "Edit Delivery Note",
+    desc: "Modify existing delivery note details.",
+    breadcrumb: "Delivery Notes/Edit",
+  },
 };
 
 export const menu = [
@@ -457,6 +503,7 @@ export const menu = [
   {
     section: "Sales & Pricing",
     items: [
+      { name: "Sale Invoices", path: "/auth/sale-invoices", icon: Ticket },
       { name: "Products", path: "/auth/products", icon: Tag },
       { name: "Collections", path: "/auth/collections", icon: Package },
       { name: "Price Group", path: "/auth/price-groups", icon: DollarSign },
@@ -467,6 +514,12 @@ export const menu = [
       },
       { name: "Customer Types", path: "/auth/customer-types", icon: Layers },
       { name: "Taxes", path: "/auth/taxes", icon: Ticket },
+      {
+        name: "Delivery Providers",
+        path: "/auth/delivery-providers",
+        icon: Truck,
+      },
+      { name: "Delivery Notes", path: "/auth/delivery-notes", icon: Truck },
     ],
   },
   {
