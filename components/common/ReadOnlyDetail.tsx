@@ -6,7 +6,6 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { formatDate, formatPrice } from "@/utils/helper.utils";
 import { Label } from "../ui/label";
-import { FileText } from "lucide-react";
 import CustomGallery from "./CustomGallary";
 
 const DetailItem = ({
@@ -68,7 +67,10 @@ export function ReadOnlyDetail({
     | "cashbookAdjustment"
     | "goodsReceiveNote"
     | "purchaseReturn"
-    | "cashbookLedger";
+    | "cashbookLedger"
+    | "deliveryProvider"
+    | "saleInvoice"
+    | "deliveryNote";
 }) {
   if (!data) return null;
 
@@ -2008,6 +2010,314 @@ export function ReadOnlyDetail({
                 />
               </div>
             </div>
+          </div>
+        )}
+
+        {/* DELIVERY PROVIDER TYPE */}
+        {type === "deliveryProvider" && (
+          <>
+            <DetailItem label="Provider Name" value={data.name} fullWidth />
+            <DetailItem label="Status" value={StatusBadge} />
+            <DetailItem
+              label="Default Delivery Price"
+              value={Number(data.default_price || 0).toLocaleString(undefined, {
+                minimumFractionDigits: 2,
+              })}
+            />
+          </>
+        )}
+
+        {type === "saleInvoice" && (
+          <div className="grid grid-cols-2 gap-4 col-span-2 space-y-2">
+            <div className="grid grid-cols-2 gap-4 col-span-2">
+              <DetailItem
+                label="Invoice Voucher No"
+                value={data.invoice_number || "—"}
+              />
+              <DetailItem
+                label="Invoice Execution Date"
+                value={
+                  data.invoice_date
+                    ? new Date(data.invoice_date).toLocaleDateString()
+                    : "—"
+                }
+              />
+              <DetailItem
+                label="Payment Terms Allocation"
+                value={
+                  data.payment_terms
+                    ? data.payment_terms.replace("_", " ").toUpperCase()
+                    : "—"
+                }
+              />
+              <DetailItem
+                label="Payment Due Horizon"
+                value={
+                  data.payment_due_date
+                    ? new Date(data.payment_due_date).toLocaleDateString()
+                    : "—"
+                }
+              />
+              <DetailItem
+                label="Origin Unit Branch"
+                value={data.branch?.name || "—"}
+              />
+              <DetailItem
+                label="Target Warehouse / Storage"
+                value={data.inventory?.name || "—"}
+              />
+              <DetailItem
+                label="Inventory Tx Engine"
+                value={data.inventory_transaction_method || "—"}
+              />
+              <DetailItem
+                label="Active Settlement State"
+                value={data.payment_status?.toUpperCase() || "—"}
+              />
+              <DetailItem
+                label="Pipeline Tracking Status"
+                value={data.status?.toUpperCase() || "—"}
+              />
+              <DetailItem
+                label="Associated Currency"
+                value={data.currency?.name || "—"}
+              />
+              <DetailItem
+                label="Internal Ledger Narrative / Remarks"
+                value={data.remarks || "—"}
+                fullWidth
+              />
+            </div>
+
+            <div className="col-span-2 border-t border-white/5 pt-4">
+              <h4 className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-3">
+                Logistics & Client Distribution Details
+              </h4>
+              <div className="grid grid-cols-2 gap-4">
+                <DetailItem
+                  label="Receiver Name Reference"
+                  value={data.delivery?.receiver_name || "—"}
+                />
+                <DetailItem
+                  label="Receiver Contact Connection"
+                  value={data.delivery?.receiver_phone || "—"}
+                />
+                <DetailItem
+                  label="Receiver Physical Address"
+                  value={data.delivery?.receiver_address || "—"}
+                  fullWidth
+                />
+                <DetailItem
+                  label="Charge Responsible Party"
+                  value={
+                    data.delivery?.delivery_charge_paid?.toUpperCase() || "—"
+                  }
+                />
+                <DetailItem
+                  label="Delivery Freight Charge"
+                  value={
+                    data.delivery?.delivery_charge
+                      ? `${data.currency?.symbol || ""}${Number(data.delivery.delivery_charge).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                      : "0.00"
+                  }
+                />
+                <DetailItem
+                  label="Logistics Dispatch Directives"
+                  value={data.delivery?.receiver_note || "—"}
+                  fullWidth
+                />
+              </div>
+            </div>
+
+            <div className="col-span-2 border-t border-white/5 pt-4">
+              <h4 className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-3">
+                Financial Ledger Aggregates
+              </h4>
+              <div className="grid grid-cols-4 gap-4 font-mono text-sm">
+                <DetailItem
+                  label="Subtotal Base Value"
+                  value={
+                    data.sub_total || data.subtotal_amount
+                      ? `${data.currency?.symbol || ""}${Number(data.sub_total || data.subtotal_amount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                      : "0.00"
+                  }
+                />
+                <DetailItem
+                  label="Document Deductions"
+                  value={
+                    data.invoice_discount_amount
+                      ? `${data.currency?.symbol || ""}${Number(data.invoice_discount_amount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                      : "0.00"
+                  }
+                />
+                <DetailItem
+                  label="Accrued Assessment Taxes"
+                  value={
+                    data.tax_total || data.tax_amount
+                      ? `${data.currency?.symbol || ""}${Number(data.tax_total || data.tax_amount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                      : "0.00"
+                  }
+                />
+                <DetailItem
+                  label="Grand Total Debited Value"
+                  value={
+                    data.grand_total || data.total_amount
+                      ? `${data.currency?.symbol || ""}${Number(data.grand_total || data.total_amount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                      : "0.00"
+                  }
+                />
+              </div>
+            </div>
+
+            {data.items && data.items.length > 0 && (
+              <div className="col-span-2 border-t border-white/5 pt-4">
+                <h4 className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-3">
+                  Invoiced Items Segment Allocation ({data.items.length})
+                </h4>
+                <div className="space-y-3">
+                  {data.items.map((line: any, idx: number) => (
+                    <div
+                      key={line.id || idx}
+                      className="grid grid-cols-5 gap-4 p-3 bg-muted/20 border border-white/5 rounded-xl text-xs font-mono items-center"
+                    >
+                      <div className="col-span-2">
+                        <span className="block text-[10px] font-sans text-muted-foreground uppercase tracking-wider">
+                          Item / Asset SKU
+                        </span>
+                        <span className="font-sans font-medium text-foreground">
+                          {line.product?.name ||
+                            `Product ID Reference #${line.product_id}`}
+                        </span>
+                        <span className="block text-[10px] text-muted-foreground font-mono">
+                          {line.product?.sku || "—"}
+                        </span>
+                      </div>
+                      <div className="col-span-1">
+                        <span className="block text-[10px] font-sans text-muted-foreground uppercase tracking-wider">
+                          Dispatched Qty
+                        </span>
+                        <span className="text-foreground font-bold">
+                          {Number(line.quantity)}{" "}
+                          {line.uom?.code || line.uom?.name || ""}
+                        </span>
+                      </div>
+                      <div className="col-span-1">
+                        <span className="block text-[10px] font-sans text-muted-foreground uppercase tracking-wider">
+                          Unit Selling Value
+                        </span>
+                        <span className="text-foreground">
+                          {Number(line.unit_price).toLocaleString(undefined, {
+                            minimumFractionDigits: 2,
+                          })}
+                        </span>
+                      </div>
+                      <div className="col-span-1 text-right">
+                        <span className="block text-[10px] font-sans text-muted-foreground uppercase tracking-wider">
+                          Computed Line Gross
+                        </span>
+                        <span className="text-primary font-bold">
+                          {Number(
+                            line.total ||
+                              Number(line.quantity) * Number(line.unit_price),
+                          ).toLocaleString(undefined, {
+                            minimumFractionDigits: 2,
+                          })}
+                        </span>
+                      </div>
+                      {line.remarks && (
+                        <div className="col-span-5 border-t border-white/5 pt-1.5 mt-0.5 text-muted-foreground font-sans text-[11px]">
+                          <strong className="text-foreground">
+                            Line Context Note:
+                          </strong>{" "}
+                          {line.remarks}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {type === "deliveryNote" && (
+          <div className="grid grid-cols-2 gap-4 col-span-2 space-y-2">
+            <div className="grid grid-cols-2 gap-4 col-span-2">
+              <DetailItem
+                label="Delivery Note Number"
+                value={data.deliver_note_no || "—"}
+              />
+              <DetailItem
+                label="Delivery Date"
+                value={
+                  data.delivery_date
+                    ? new Date(data.delivery_date).toLocaleDateString()
+                    : "—"
+                }
+              />
+              <DetailItem
+                label="Receiver Name"
+                value={data.receiver_name || "—"}
+              />
+              <DetailItem
+                label="Receiver Phone"
+                value={data.receiver_phone || "—"}
+              />
+              <DetailItem
+                label="Address"
+                value={data.receiver_address || "—"}
+                fullWidth
+              />
+              <DetailItem
+                label="Delivery Provider"
+                value={data.delivery_provider?.name || "—"}
+              />
+              <DetailItem
+                label="Associated Invoice"
+                value={data.sale_invoice?.invoice_number || "—"}
+              />
+            </div>
+
+            {data.items && data.items.length > 0 && (
+              <div className="col-span-2 border-t border-white/5 pt-4">
+                <h4 className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-3">
+                  Delivered Items ({data.items.length})
+                </h4>
+                <div className="space-y-3">
+                  {data.items.map((line: any, idx: number) => (
+                    <div
+                      key={line.id || idx}
+                      className="grid grid-cols-4 gap-4 p-3 bg-muted/20 border border-white/5 rounded-xl text-xs font-mono items-center"
+                    >
+                      <div className="col-span-2">
+                        <span className="block text-[10px] font-sans text-muted-foreground uppercase tracking-wider">
+                          Product
+                        </span>
+                        <span className="font-sans font-medium text-foreground">
+                          {line.product?.name || "—"}
+                        </span>
+                      </div>
+                      <div className="col-span-1">
+                        <span className="block text-[10px] font-sans text-muted-foreground uppercase tracking-wider">
+                          Quantity
+                        </span>
+                        <span className="text-foreground font-bold">
+                          {Number(line.quantity)}
+                        </span>
+                      </div>
+                      <div className="col-span-1">
+                        <span className="block text-[10px] font-sans text-muted-foreground uppercase tracking-wider">
+                          Remark
+                        </span>
+                        <span className="text-foreground">
+                          {line.remark || "—"}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>
