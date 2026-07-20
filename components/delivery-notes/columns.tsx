@@ -1,7 +1,14 @@
 "use client";
 
 import { ColumnDef } from "@tanstack/react-table";
-import { Edit, Eye, CheckCircle2, XCircle, Loader2 } from "lucide-react";
+import {
+  Edit,
+  Eye,
+  CheckCircle2,
+  XCircle,
+  Loader2,
+  Clock3,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { useState } from "react";
@@ -20,10 +27,14 @@ const ActionCell = ({
 }) => {
   const [loadingAction, setLoadingAction] = useState<string | null>(null);
 
-  const handleUpdateStatus = async (status: "confirmed" | "rejected") => {
+  const handleUpdateStatus = async (
+    status: "pending" | "confirmed" | "rejected",
+  ) => {
     try {
       setLoadingAction(status);
+
       await deliveryNoteService.updateStatus(note.id, status);
+
       refresh();
       toast.success(`Status updated to ${status}`);
     } finally {
@@ -44,32 +55,51 @@ const ActionCell = ({
         <Edit className="h-4 w-4" />
       </Button>
       {note.status === "draft" && (
-        <>
-          <Button
-            variant="ghost"
-            className="h-8 w-8 p-0 text-emerald-500"
-            onClick={() => handleUpdateStatus("confirmed")}
-            disabled={!!loadingAction}
-          >
-            {loadingAction === "confirmed" ? (
-              <Loader2 className="animate-spin h-4 w-4" />
-            ) : (
-              <CheckCircle2 className="h-4 w-4" />
-            )}
-          </Button>
-          <Button
-            variant="ghost"
-            className="h-8 w-8 p-0 text-destructive"
-            onClick={() => handleUpdateStatus("rejected")}
-            disabled={!!loadingAction}
-          >
-            {loadingAction === "rejected" ? (
-              <Loader2 className="animate-spin h-4 w-4" />
-            ) : (
-              <XCircle className="h-4 w-4" />
-            )}
-          </Button>
-        </>
+        <Button
+          variant="ghost"
+          className="h-8 w-8 p-0 text-yellow-500"
+          onClick={() => handleUpdateStatus("pending")}
+          disabled={!!loadingAction}
+          title="Pending"
+        >
+          {loadingAction === "pending" ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <Clock3 className="h-4 w-4" />
+          )}
+        </Button>
+      )}
+
+      {note.status === "pending" && (
+        <Button
+          variant="ghost"
+          className="h-8 w-8 p-0 text-green-600"
+          onClick={() => handleUpdateStatus("confirmed")}
+          disabled={!!loadingAction}
+          title="Confirm"
+        >
+          {loadingAction === "confirmed" ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <CheckCircle2 className="h-4 w-4" />
+          )}
+        </Button>
+      )}
+
+      {(note.status === "draft" || note.status === "pending") && (
+        <Button
+          variant="ghost"
+          className="h-8 w-8 p-0 text-red-600"
+          onClick={() => handleUpdateStatus("rejected")}
+          disabled={!!loadingAction}
+          title="Reject"
+        >
+          {loadingAction === "rejected" ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <XCircle className="h-4 w-4" />
+          )}
+        </Button>
       )}
     </div>
   );

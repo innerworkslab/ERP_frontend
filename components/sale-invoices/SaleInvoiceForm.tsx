@@ -41,12 +41,15 @@ const deliveryChargePaidOptions: Option[] = [
 const txMethodOptions: Option[] = [
   { id: "FIFO", name: "First In, First Out (FIFO)" },
   { id: "LIFO", name: "Last In, First Out (LIFO)" },
+  { id: "custom_batch", name: "Custom" },
 ];
 
 const paymentTermsOptions: Option[] = [
   { id: "due_on_receipt", name: "Due on Receipt" },
   { id: "net_15", name: "Net 15" },
   { id: "net_30", name: "Net 30" },
+  { id: "advanced_payment", name: "Advanced Payment" },
+  { id: "cash_on_delivery", name: "COD" },
 ];
 
 const statusOptions: Option[] = [
@@ -218,6 +221,8 @@ export default function SaleInvoiceForm({ invoiceData }: Props) {
       }
     });
   }, []);
+
+  const deliveryChargePaid = watch("delivery.delivery_charge_paid");
 
   const onSubmit = async (data: SaleInvoiceFormValues) => {
     try {
@@ -611,14 +616,16 @@ export default function SaleInvoiceForm({ invoiceData }: Props) {
             )}
           />
 
-          <FormInput
-            type="number"
-            label="Delivery Charge"
-            registration={register("delivery.delivery_charge", {
-              valueAsNumber: true,
-            })}
-            error={errors.delivery?.delivery_charge?.message}
-          />
+          {deliveryChargePaid === "shipper" && (
+            <FormInput
+              type="number"
+              label="Delivery Charge"
+              registration={register("delivery.delivery_charge", {
+                valueAsNumber: true,
+              })}
+              error={errors.delivery?.delivery_charge?.message}
+            />
+          )}
 
           <FormInput
             type="text"
