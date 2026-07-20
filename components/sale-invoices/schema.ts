@@ -48,7 +48,6 @@ export const saleInvoiceSchema = yup.object().shape({
     .typeError("Paid amount must be a number")
     .min(0, "Paid amount cannot be negative")
     .required("Paid amount is required"),
-  cashbook_id: yup.number().nullable().optional(),
   items: yup
     .array()
     .of(
@@ -92,9 +91,17 @@ export const saleInvoiceSchema = yup.object().shape({
       .required("Delivery charge payment terms are required"),
     delivery_charge: yup
       .number()
-      .typeError("Delivery charge must be a number")
-      .min(0, "Delivery charge cannot be negative")
-      .required("Delivery charge is required"),
+      .transform((value, originalValue) =>
+        originalValue === "" ? undefined : value,
+      )
+      .when("delivery_charge_paid", {
+        is: "shipper",
+        then: (schema) =>
+          schema
+            .required("Delivery charge is required.")
+            .min(0, "Delivery charge cannot be negative."),
+        otherwise: (schema) => schema.notRequired().nullable(),
+      }),
     receiver_name: yup.string().required("Receiver name is required"),
     receiver_phone: yup.string().required("Receiver phone is required"),
     receiver_address: yup.string().required("Receiver address is required"),

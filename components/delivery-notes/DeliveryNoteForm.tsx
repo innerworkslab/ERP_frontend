@@ -62,7 +62,12 @@ export default function DeliveryNoteForm({
 
   useEffect(() => {
     if (initialData) {
-      reset(initialData);
+      reset({
+        ...initialData,
+        delivery_date: initialData.delivery_date
+          ? initialData.delivery_date.split("T")[0]
+          : "",
+      });
     } else if (forcedSaleId) {
       setValue("sale_invoice_id", forcedSaleId);
     }
@@ -94,10 +99,28 @@ export default function DeliveryNoteForm({
       saleInvoicesService
         .getById(Number(formValues.sale_invoice_id))
         .then((res) => {
-          setFullInvoiceItems(res.data?.items || []);
+          const invData = res.data;
+          if (invData) {
+            setFullInvoiceItems(invData.items || []);
+            if (!isUpdate) {
+              const rName =
+                invData.delivery?.receiver_name || invData.customer?.name || "";
+              const rPhone =
+                invData.delivery?.receiver_phone ||
+                invData.customer?.phone_number ||
+                "";
+              const rAddr =
+                invData.delivery?.receiver_address ||
+                invData.customer?.address ||
+                "";
+              setValue("receiver_name", rName);
+              setValue("receiver_phone", rPhone);
+              setValue("receiver_address", rAddr);
+            }
+          }
         });
     }
-  }, [formValues.sale_invoice_id]);
+  }, [formValues.sale_invoice_id, isUpdate, setValue]);
 
   const handleItemChange = (index: number, itemId: number) => {
     const selectedItem = fullInvoiceItems.find((i) => i.id === itemId);
@@ -107,14 +130,18 @@ export default function DeliveryNoteForm({
   };
 
   const onSubmit = async (data: FormValues) => {
-      if (isUpdate) {
-        await deliveryNoteService.update(initialData.id, data);
-        toast.success("Delivery Note updated successfully");
-      } else {
-        await deliveryNoteService.create(data);
-        toast.success("Delivery Note created successfully");
-      }
-      router.push(`/auth/delivery-notes${saleIdFromUrl ? `?sale_invoice_id=${saleIdFromUrl}` : ""}`);
+    if (isUpdate) {
+      await deliveryNoteService.update(initialData.id, data);
+      toast.success("Delivery Note updated successfully");
+    } else {
+      await deliveryNoteService.create(data);
+      toast.success("Delivery Note created successfully");
+    }
+    router.push(
+      `/auth/delivery-notes${
+        saleIdFromUrl ? `?sale_invoice_id=${saleIdFromUrl}` : ""
+      }`,
+    );
   };
 
   return (

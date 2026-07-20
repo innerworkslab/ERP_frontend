@@ -70,18 +70,20 @@ const ActionCell = ({
         <Eye />
       </Button>
 
-      <Button
-        variant="ghost"
-        className="h-8 w-8 p-0 [&_svg]:!h-4 [&_svg]:!w-4"
-        onClick={() => onEdit(invoice)}
-        disabled={isMutating}
-      >
-        <Edit />
-      </Button>
+      {["draft", "pending"].includes(invoice.status) && (
+        <Button
+          variant="ghost"
+          className="h-8 w-8 p-0 [&_svg]:!h-4 [&_svg]:!w-4"
+          onClick={() => onEdit(invoice)}
+          disabled={isMutating}
+        >
+          <Edit />
+        </Button>
+      )}
 
       <Button
         variant="ghost"
-        title="View Delivery Notes"
+        title="Delivery Notes"
         className="h-8 w-8 p-0 text-cyan-600 hover:bg-cyan-500/10 [&_svg]:!h-4 [&_svg]:!w-4"
         onClick={() =>
           router.push(`/auth/delivery-notes?sale_invoice_id=${invoice.id}`)
@@ -91,67 +93,52 @@ const ActionCell = ({
         <Truck />
       </Button>
 
-      <Button
-        variant="ghost"
-        title="Hold Reserve"
-        className="h-8 w-8 p-0 text-amber-500 hover:bg-amber-500/10 [&_svg]:!h-4 [&_svg]:!w-4"
-        onClick={() => setDialogState({ open: true, targetState: "reserved" })}
-        disabled={isMutating}
-      >
-        <CalendarClock />
-      </Button>
+      {invoice.status === "draft" && (
+        <Button
+          variant="ghost"
+          title="Reserve"
+          className="h-8 w-8 p-0 text-amber-500 hover:bg-amber-500/10 [&_svg]:!h-4 [&_svg]:!w-4"
+          onClick={() =>
+            setDialogState({ open: true, targetState: "reserved" })
+          }
+          disabled={isMutating}
+        >
+          <CalendarClock />
+        </Button>
+      )}
 
-      <Button
-        variant="ghost"
-        title="Flag Pending"
-        className="h-8 w-8 p-0 text-orange-400 hover:bg-orange-500/10 [&_svg]:!h-4 [&_svg]:!w-4"
-        onClick={() => setDialogState({ open: true, targetState: "pending" })}
-        disabled={isMutating}
-      >
-        <AlertCircle />
-      </Button>
+      {invoice.status === "reserved" && (
+        <Button
+          variant="ghost"
+          title="Pending"
+          className="h-8 w-8 p-0 text-orange-500 hover:bg-orange-500/10 [&_svg]:!h-4 [&_svg]:!w-4"
+          onClick={() => setDialogState({ open: true, targetState: "pending" })}
+          disabled={isMutating}
+        >
+          <AlertCircle />
+        </Button>
+      )}
 
-      <Button
-        variant="ghost"
-        title="Verify Ordered"
-        className="h-8 w-8 p-0 text-indigo-400 hover:bg-indigo-500/10 [&_svg]:!h-4 [&_svg]:!w-4"
-        onClick={() => setDialogState({ open: true, targetState: "ordered" })}
-        disabled={isMutating}
-      >
-        <ShoppingBag />
-      </Button>
-
-      <Button
-        variant="ghost"
-        title="Confirm Delivered"
-        className="h-8 w-8 p-0 text-emerald-500 hover:bg-emerald-500/10 [&_svg]:!h-4 [&_svg]:!w-4"
-        onClick={() => setDialogState({ open: true, targetState: "delivered" })}
-        disabled={isMutating}
-      >
-        {isMutating && dialogState.targetState === "delivered" && (
-          <PackageCheck />
-        )}
-      </Button>
+      {invoice.status === "pending" && (
+        <Button
+          variant="ghost"
+          title="Ordered"
+          className="h-8 w-8 p-0 text-indigo-500 hover:bg-indigo-500/10 [&_svg]:!h-4 [&_svg]:!w-4"
+          onClick={() => setDialogState({ open: true, targetState: "ordered" })}
+          disabled={isMutating}
+        >
+          <ShoppingBag />
+        </Button>
+      )}
 
       <AppDialog
         open={dialogState.open}
-        onOpenChange={(v) =>
-          !v && setDialogState({ open: false, targetState: null })
-        }
-        title="Confirm Workflow Execution Pipeline"
-        confirmText="Confirm Status Update"
-        loading={isMutating}
+        onOpenChange={(open) => setDialogState((prev) => ({ ...prev, open }))}
+        title="Change Invoice Status"
+        description={`Are you sure you want to change the status to ${dialogState.targetState}?`}
         onConfirm={executeStateTransition}
-      >
-        <p className="text-sm">
-          Are you sure you want to shift invoice document reference{" "}
-          <strong>{invoice.invoice_number}</strong> into stage:{" "}
-          <strong className="uppercase text-primary">
-            {dialogState.targetState}
-          </strong>
-          ?
-        </p>
-      </AppDialog>
+        isLoading={isMutating}
+      />
     </div>
   );
 };
